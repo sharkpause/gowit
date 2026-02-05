@@ -7,14 +7,12 @@ import (
 	"github.com/sharkpause/gowit/config"
 )
 
-
-
 func main() {
 	fmt.Println("Starting server, please wait...")
 
 	router := gin.Default()
 
-	router.GET("/ping", func(context *gin.Context) {
+	router.GET("/api/ping", func(context *gin.Context) {
 		context.JSON(config.OK, gin.H{
 			"message": "pong",
 		})
