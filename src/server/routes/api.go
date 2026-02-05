@@ -10,5 +10,6 @@ func SetupAPIRoutes(router *gin.Engine) {
 
 	{
 		api.GET("/ping", handlers.PingHandler)
+		api.GET("/movies", handlers.GetMovies)
 	}
 }
