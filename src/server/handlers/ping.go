@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
-	"github.com/sharkpause/gowit/config"
 )
 
 func PingHandler(context *gin.Context) {
-	context.JSON(config.OK, gin.H{
+	context.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
 }
