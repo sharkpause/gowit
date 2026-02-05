@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/config"
+	"github.com/sharkpause/gowit/routes"
 )
 
 func main() {
@@ -12,11 +13,7 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/api/ping", func(context *gin.Context) {
-		context.JSON(config.OK, gin.H{
-			"message": "pong",
-		})
-	})
+	routes.SetupAPIRoutes(router)
 
 	router.Run(config.LISTENING_PORT)
 }
