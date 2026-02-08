@@ -21,17 +21,17 @@ func main() {
 
 	router := gin.Default()
 
-	db, err := db.Connect()
+	database, err := db.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := db.Ping(); err != nil {
+	if err := database.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Connected successfully to database")
 
-	routes.SetupAPIRoutes(router)
+	routes.SetupAPIRoutes(router, database)
 
 	router.Run(os.Getenv("SERVER_PORT"))
 }

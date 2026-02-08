@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,10 @@ var movies = []models.Movie{
 	},
 }
 
-func GetMovies(context *gin.Context) {
-	context.JSON(http.StatusOK, movies)
+func GetMovies(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		rows, error := database.Query("SELECT id, title, release_year FROM films")
+
+		context.JSON(http.StatusOK, movies)
+	}
 }
