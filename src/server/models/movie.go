@@ -5,9 +5,9 @@ package models
 // &"foo", a value
 // &"", empty
 
-type Movie struct {
-	ID				int			`json:"id"`
+type Film struct {
+	ID				uint64			`json:"id"`
 	Title 			string		`json:"title"`
 	Description		*string 	`json:"description"`
-	ReleaseYear 	*int		`json:"release_year"`
+	ReleaseYear 	*int64		`json:"release_year"`
 }
