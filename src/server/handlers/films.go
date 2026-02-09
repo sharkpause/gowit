@@ -25,7 +25,9 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 				return
 			}
 			
-			page = query_page
+			if query_page > 1 {
+				page = query_page
+			}
 		}
 		
 		if limitStr := context.Query("limit"); limitStr != "" {
@@ -38,7 +40,9 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 				return
 			}
 			
-			limit = query_limit
+			if query_limit <= 100 && query_limit >= 1 {
+				limit = query_limit
+			}
 		}
 
 		offset := (page - 1) * limit
