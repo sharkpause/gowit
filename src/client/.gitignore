@@ -37,3 +37,4 @@ coverage/
 # typescript
 *.tsbuildinfo
 
+package-lock.json
