@@ -25,9 +25,14 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 				return
 			}
 			
-			if query_page > 1 {
-				page = query_page
+			if query_page < 1 {
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "page must be >= 1",
+				})
+				return
 			}
+
+			page = query_page
 		}
 		
 		if limitStr := context.Query("limit"); limitStr != "" {
@@ -39,10 +44,14 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 				})
 				return
 			}
-			
-			if query_limit <= 100 && query_limit >= 1 {
-				limit = query_limit
+			if query_limit < 1 || query_limit > 100 {
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "limit must be between 1 and 100",
+				})
+				return
 			}
+
+			limit = query_limit
 		}
 
 		offset := (page - 1) * limit
