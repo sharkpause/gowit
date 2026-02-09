@@ -77,9 +77,9 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 			var id uint64
 			var title string
 			var description *string
-			var release_year *int64
+			var releaseYear *int64
 			
-			err := rows.Scan(&id, &title, &description, &release_year)
+			err := rows.Scan(&id, &title, &description, &releaseYear)
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"error": fmt.Sprintf("db error:\n%s", err),
@@ -91,7 +91,7 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 				ID: id,
 				Title: title,
 				Description: description,
-				ReleaseYear: release_year,
+				ReleaseYear: releaseYear,
 			})
 		}
 
