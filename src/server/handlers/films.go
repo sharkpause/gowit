@@ -4,28 +4,51 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
 )
 
-// Temporary hardcoded list of movies
-// var movies = []models.Movie{
-// 	{
-// 		ID: 0,
-// 		Title: "Interstellar",
-// 		ReleaseYear: 2014,
-// 	},
-// 	{
-// 		ID: 1,
-// 		Title: "The Matrix",
-// 		ReleaseYear: 1999,
-// 	},
-// }
-
 func GetMovies(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
-		rows, err := database.Query("SELECT id, title, description, release_year FROM films")
+		page := 1
+		limit := 2
+
+		if pageStr := context.Query("page"); pageStr != "" {
+			query_page, err := strconv.Atoi(pageStr)
+			
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "invalid page parameter",
+				})
+				return
+			}
+			
+			page = query_page
+		}
+		
+		if limitStr := context.Query("limit"); limitStr != "" {
+			query_limit, err := strconv.Atoi(limitStr)
+
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "invalid limit parameter",
+				})
+				return
+			}
+			
+			limit = query_limit
+		}
+
+		offset := (page - 1) * limit
+
+		rows, err := database.Query(
+			`SELECT id, title, description, release_year FROM films
+			LIMIT ? OFFSET ?`,
+			limit, offset,
+		)
+
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"error": fmt.Sprintf("db error:\n%s", err),
