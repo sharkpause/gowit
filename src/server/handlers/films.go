@@ -14,7 +14,7 @@ import (
 func GetFilms(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		page := 1
-		limit := 2
+		limit := 10
 		sort := "id"
 		order := "ASC"
 
