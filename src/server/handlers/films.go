@@ -99,8 +99,51 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 	}
 }
 
-func GetFilmById(database *sql.DB) func(*gin.Context) {
+func GetFilmByID(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
+		IDParam := context.Param("id")
+
+		filmID, err := strconv.ParseUint(IDParam, 10, 64)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid film id",
+			})
+			return
+		}
 		
+		row := database.QueryRow(
+			`SELECT id, title, description, release_year FROM films
+			WHERE id = ?`,
+			filmID,
+		)
+		
+		var id uint64
+		var title string
+		var description *string
+		var release_year *int64
+		
+		err = row.Scan(&id, &title, &description, &release_year)
+		if err == sql.ErrNoRows {
+			context.JSON(http.StatusNotFound, gin.H{
+				"error": "film not found",
+			})
+			return
+		}
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "internal database error",
+			})
+			return
+		}
+
+		context.JSON(
+			http.StatusOK,
+			models.Film {
+				ID: id,
+				Title: title,
+				Description: description,
+				ReleaseYear: release_year,
+			},
+		)
 	}
 }
