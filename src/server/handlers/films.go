@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
@@ -14,6 +15,8 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		page := 1
 		limit := 2
+		sort := "id"
+		order := "ASC"
 
 		if pageParam := context.Query("page"); pageParam != "" {
 			pageQueryValue, err := strconv.Atoi(pageParam)
@@ -53,13 +56,44 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 			limit = limitQueryValue
 		}
+		
+		if sortParam := context.Query("sort"); sortParam != "" {
+			sortParam = strings.ToLower(sortParam)
+			
+			switch sortParam {
+			case "id", "title", "description", "release_year":
+				sort = sortParam
+			default:
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "invalid sort parameter",
+				})
+				return
+			}
+		}
+		
+		if orderParam := context.Query("order"); orderParam != "" {
+			orderParam = strings.ToUpper(orderParam)
+
+			switch orderParam {
+			case "ASC", "DESC":
+				order = orderParam
+			default:
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "invalid order parameter",
+				})
+				return
+			}
+		}
 
 		offset := (page - 1) * limit
 
 		rows, err := database.Query(
-			`SELECT id, title, description, release_year FROM films
-			ORDER BY id
-			LIMIT ? OFFSET ?`,
+			fmt.Sprintf(
+				`SELECT id, title, description, release_year FROM films
+				ORDER BY %s %s
+				LIMIT ? OFFSET ?`,
+				sort, order,
+			),
 			limit, offset,
 		)
 
@@ -96,7 +130,10 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			})
 		}
 
-		context.JSON(http.StatusOK, films)
+		context.JSON(http.StatusOK, gin.H{
+			"films": films,
+			"amount": len(films),
+		})
 	}
 }
 
