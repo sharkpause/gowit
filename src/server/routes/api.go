@@ -12,6 +12,8 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 
 	{
 		api.GET("/ping", handlers.PingHandler)
+
 		api.GET("/films", handlers.GetFilms(database))
+		api.GET("/films/:id", handlers.GetFilmByID(database))
 	}
 }
