@@ -58,6 +58,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 		rows, err := database.Query(
 			`SELECT id, title, description, release_year FROM films
+			ORDER BY id
 			LIMIT ? OFFSET ?`,
 			limit, offset,
 		)
