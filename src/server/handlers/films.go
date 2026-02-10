@@ -132,7 +132,9 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 		context.JSON(http.StatusOK, gin.H{
 			"films": films,
-			"amount": len(films),
+			"metadata": gin.H{
+				"amount": len(films),
+			},
 		})
 	}
 }

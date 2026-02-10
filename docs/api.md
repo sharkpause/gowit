@@ -12,7 +12,9 @@ Gets all films from the database
 #### Success response example (200)
 ```json
 {
-    "amount":2,
+    "metadata": {
+        "amount": 2,
+    },
     "films":[
         {
             "id": 1,
