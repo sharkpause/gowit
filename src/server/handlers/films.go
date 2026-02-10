@@ -10,7 +10,7 @@ import (
 	"github.com/sharkpause/gowit/models"
 )
 
-func GetMovies(database *sql.DB) func(*gin.Context) {
+func GetFilms(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		page := 1
 		limit := 2
@@ -71,7 +71,7 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 		
 		defer rows.Close()
 		
-		movies := make([]models.Film, 0)
+		films := make([]models.Film, 0)
 		
 		for rows.Next() {
 			var id uint64
@@ -87,7 +87,7 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 				return
 			}
 			
-			movies = append(movies, models.Film{
+			films = append(films, models.Film{
 				ID: id,
 				Title: title,
 				Description: description,
@@ -95,6 +95,12 @@ func GetMovies(database *sql.DB) func(*gin.Context) {
 			})
 		}
 
-		context.JSON(http.StatusOK, movies)
+		context.JSON(http.StatusOK, films)
+	}
+}
+
+func GetFilmById(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		
 	}
 }
