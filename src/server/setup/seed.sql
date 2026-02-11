@@ -15,7 +15,7 @@ VALUES
     'A thief who steals corporate secrets through dream-sharing technology.',
     2010,
     95,
-    'https://example.com/posters/inception.jpg',
+    'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg'
     'https://youtube.com/watch?v=YoHD9XEInc0'
   ),
   (
@@ -23,7 +23,7 @@ VALUES
     'A team of explorers travel through a wormhole in space.',
     2014,
     92,
-    'https://example.com/posters/interstellar.jpg',
+    'https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMjI2My00ODA1LTlkNzItOWFjMDU5ZDJlYWY3XkEyXkFqcGc@._V1_SX300.jpg',
     'https://youtube.com/watch?v=zSWdZVtXT7E'
   ),
   (
@@ -31,7 +31,7 @@ VALUES
     'A poor family schemes to become employed by a wealthy household.',
     2019,
     90,
-    'https://example.com/posters/parasite.jpg',
+    'https://m.media-amazon.com/images/M/MV5BYjk1Y2U4MjQtY2ZiNS00OWQyLWI3MmYtZWUwNmRjYWRiNWNhXkEyXkFqcGc@._V1_SX300.jpg',
     'https://youtube.com/watch?v=5xH0HfJHsaY'
   ),
   (
