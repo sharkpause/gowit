@@ -85,6 +85,31 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			}
 		}
 
+		conditions := []string{}
+		args := []any{}
+
+		if yearParam := context.Query("year"); yearParam != "" {
+			year, err := strconv.Atoi(yearParam)
+			if err == nil {
+				conditions = append(conditions, "release_year = ?")
+				args = append(args, year)
+			}
+		}
+
+		if minRatingParam := context.Query("min_rating"); minRatingParam != "" {
+			rating, err := strconv.Atoi(minRatingParam)
+			if err == nil {
+				conditions = append(conditions, "average_rating >= ?")
+				args = append(args, rating)
+			}
+		}
+
+		if searchParam := context.Query("search"); searchParam != "" {
+			conditions = append(conditions, "(title LIKE ? OR description LIKE ?)")
+			likePattern := "%" + searchParam + "%s"
+			args = append(args, likePattern)
+		}
+
 		offset := (page - 1) * limit
 
 		rows, err := database.Query(
