@@ -17,5 +17,6 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 		api.GET("/films/:id", handlers.GetFilmByID(database))
 
 		api.POST("/register", handlers.RegisterUser(database))
+		api.POST("/login", handlers.LoginUser(database))
 	}
 }
