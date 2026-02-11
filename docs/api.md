@@ -1,6 +1,6 @@
 # API documentation
 All APIs start with /api right after the root link (localhost:8080/api for example)
-So to get films/ you go to {URL}/api/films
+So to get films/ you go to **{URL}/api**/films
 
 ## /films
 
