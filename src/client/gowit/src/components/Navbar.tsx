@@ -15,11 +15,13 @@ export default function Navbar() {
             alt="GOWIT Logo"
             className="w-8 h-8 md:w-10 md:h-10 object-contain"
           />
-          <h1 className="text-white text-lg md:text-xl font-bold ">GOWIT</h1>
+          <h1 className="text-white text-lg md:text-xl font-bold mr-5 ">
+            GOWIT
+          </h1>
         </div>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden items-center gap-6">
+        <div className="flex gap-6">
           <Link
             to="/"
             className="text-white hover:text-gray-300 transition-colors font-medium"
@@ -41,7 +43,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Search Bar */}
-        <div className="hidden md:block flex-1 max-w-md mx-2 lg:mx-8 relative">
+        <div className="hidden md:block flex-1 max-w-md mx-2 lg:mx-6 relative">
           <input
             type="text"
             placeholder="Search Movies..."

@@ -3,6 +3,7 @@ import LightRays from "../components/LightRays";
 import { Film } from "lucide-react";
 // import MovieCard from "../components/MovieCard";
 import axios from "axios";
+import MovieCard from "../components/MovieCard";
 
 export default function HomePage() {
   const [previous, setPrevious] = useState(false);
@@ -11,7 +12,12 @@ export default function HomePage() {
 
   async function fetchFeaturedMovies() {
     // Simulate fetching featured movies\
-    const data = await axios.get("");
+    try {
+      const response = await axios.get("");
+      setMovieFeatured(response.data.films);
+    } catch (error) {
+      console.log("Error fetching featured movies:", error);
+    }
   }
 
   useEffect(() => {
@@ -55,7 +61,7 @@ export default function HomePage() {
 
         <div className="px-4 md:px-8 lg:px-32 h-full pt-32 pb-16 z-10 relative ">
           <h1
-            className="text-[#F5F2F2] text-3xl font-bold mb-5"
+            className="text-[#F5F2F2] text-4xl font-bold mb-5"
             style={{
               fontFamily: "Poppins, sans-serif",
             }}
@@ -87,6 +93,31 @@ export default function HomePage() {
               src="https://cdn-web-2.ruangguru.com/landing-pages/assets/ea26231f-6e60-41ae-b502-ed985e702f1c.jpg"
               alt="Movie Poster"
               className="h-72 w-52 object-contain"
+            />
+          </div>
+        </div>
+
+        <div className="px-4 md:px-8 lg:px-32 h-full pt-32 pb-16 z-10 relative ">
+          <h1
+            className="text-[#F5F2F2] text-4xl font-bold "
+            style={{
+              fontFamily: "Poppins, sans-serif",
+            }}
+          >
+            Featured Today
+          </h1>
+          <p className="text-[#F5F2F2] mt-2 mb-12">
+            TV Shows and Movies Just For You
+          </p>
+          <div className="flex gap-10 flex-wrap ">
+            <MovieCard
+              poster_url="https://cdn-web-2.ruangguru.com/landing-pages/assets/ea26231f-6e60-41ae-b502-ed985e702f1c.jpg"
+              rating={9.1}
+              title="Title"
+              description={
+                "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. "
+              }
+              year={2025}
             />
           </div>
         </div>
