@@ -6,7 +6,7 @@ package models
 // &"", empty
 
 type Film struct {
-	ID				uint64			`json:"id"`
+	ID				uint64		`json:"id"`
 	Title 			string		`json:"title"`
 	Description		*string 	`json:"description"`
 	ReleaseYear 	*int64		`json:"release_year"`
