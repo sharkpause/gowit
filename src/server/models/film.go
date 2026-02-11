@@ -10,4 +10,6 @@ type Film struct {
 	Title 			string		`json:"title"`
 	Description		*string 	`json:"description"`
 	ReleaseYear 	*int64		`json:"release_year"`
+	PosterImageURL 	*string		`json:"profile_image_url"`
+	TrailerURL 		*string		`json:"trailer_url"`
 }

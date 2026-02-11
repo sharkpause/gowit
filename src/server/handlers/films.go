@@ -97,7 +97,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		}
 
 		if minRatingParam := context.Query("min_rating"); minRatingParam != "" {
-			rating, err := strconv.Atoi(minRatingParam)
+			rating, err := strconv.ParseFloat(minRatingParam, 64)
 			if err == nil {
 				conditions = append(conditions, "average_rating >= ?")
 				args = append(args, rating)
@@ -106,21 +106,27 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 		if searchParam := context.Query("search"); searchParam != "" {
 			conditions = append(conditions, "(title LIKE ? OR description LIKE ?)")
-			likePattern := "%" + searchParam + "%s"
-			args = append(args, likePattern)
+			likePattern := "%" + searchParam + "%"
+			args = append(args, likePattern, likePattern)
+		}
+
+		where := ""
+		if len(conditions) > 0 {
+			where = "WHERE " + strings.Join(conditions, " AND ")
 		}
 
 		offset := (page - 1) * limit
 
-		rows, err := database.Query(
-			fmt.Sprintf(
-				`SELECT id, title, description, release_year FROM films
-				ORDER BY %s %s
-				LIMIT ? OFFSET ?`,
-				sort, order,
-			),
-			limit, offset,
+		query_string := fmt.Sprintf(
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url FROM films
+			%s
+			ORDER BY %s %s
+			LIMIT ? OFFSET ?`,
+			where, sort, order,
 		)
+		args = append(args, limit, offset)
+
+		rows, err := database.Query(query_string, args...)
 
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -138,8 +144,10 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			var title string
 			var description *string
 			var releaseYear *int64
-			
-			err := rows.Scan(&id, &title, &description, &releaseYear)
+			var posterImageURL *string
+			var trailerURL *string
+
+			err := rows.Scan(&id, &title, &description, &releaseYear, &posterImageURL, &trailerURL)
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"error": fmt.Sprintf("db error:\n%s", err),
@@ -152,6 +160,8 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 				Title: title,
 				Description: description,
 				ReleaseYear: releaseYear,
+				PosterImageURL: posterImageURL,
+				TrailerURL: trailerURL,
 			})
 		}
 
@@ -177,7 +187,7 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		}
 		
 		row := database.QueryRow(
-			`SELECT id, title, description, release_year FROM films
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url FROM films
 			WHERE id = ?`,
 			filmID,
 		)
@@ -186,6 +196,8 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		var title string
 		var description *string
 		var release_year *int64
+		var posterImageURL *string
+		var trailerURL *string
 		
 		err = row.Scan(&id, &title, &description, &release_year)
 		if err == sql.ErrNoRows {
@@ -208,6 +220,8 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 				Title: title,
 				Description: description,
 				ReleaseYear: release_year,
+				PosterImageURL: posterImageURL,
+				TrailerURL: trailerURL,
 			},
 		)
 	}
