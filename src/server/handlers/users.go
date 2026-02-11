@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"github.com/sharkpause/gowit/auth"
 )
 
 type registerRequest struct {
