@@ -1,11 +1,11 @@
 USE gowit;
 
 -- Users
-INSERT INTO users (name, email, password_hash, profile_picture_url)
-VALUES
-  ('Alice Tan', 'alice@example.com', 'hashed_password_1', NULL),
-  ('Budi Santoso', 'budi@example.com', 'hashed_password_2', NULL),
-  ('Charlie Lim', 'charlie@example.com', 'hashed_password_3', NULL);
+-- INSERT INTO users (name, email, password_hash, profile_picture_url)
+-- VALUES
+--   ('Alice Tan', 'alice@example.com', 'hashed_password_1', NULL),
+--   ('Budi Santoso', 'budi@example.com', 'hashed_password_2', NULL),
+--   ('Charlie Lim', 'charlie@example.com', 'hashed_password_3', NULL);
 
 -- Films
 INSERT INTO films (title, description, release_year, popularity, poster_image_url, trailer_url)
@@ -15,7 +15,7 @@ VALUES
     'A thief who steals corporate secrets through dream-sharing technology.',
     2010,
     95,
-    'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg'
+    'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg',
     'https://youtube.com/watch?v=YoHD9XEInc0'
   ),
   (
@@ -44,10 +44,10 @@ VALUES
   );
 
 -- Favorites
-INSERT INTO favorites (user_id, film_id, notes)
-VALUES
-  (1, 1, 'Mind-bending, watched twice'),
-  (1, 2, 'Great soundtrack'),
-  (2, 3, 'Very uncomfortable but brilliant'),
-  (3, 1, NULL);
+-- INSERT INTO favorites (user_id, film_id, notes)
+-- VALUES
+--   (1, 1, 'Mind-bending, watched twice'),
+--   (1, 2, 'Great soundtrack'),
+--   (2, 3, 'Very uncomfortable but brilliant'),
+--   (3, 1, NULL);
 
