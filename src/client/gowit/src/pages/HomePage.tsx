@@ -4,7 +4,14 @@ import { Film } from "lucide-react";
 export default function HomePage() {
   return (
     <>
-      <section className=" min-h-screen  bg-[#0F1115]">
+      <section className=" min-h-screen bg-[#0F1115] ">
+        {/* Background Image with Opacity */}
+        <div
+          className="absolute inset-0 z-0 opacity-30 bg-cover bg-center"
+          style={{ backgroundImage: "url('/netflix.jpg')" }}
+        />
+
+        {/* Light Rays Effect */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <LightRays />
         </div>
