@@ -59,6 +59,7 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 
 		// TODO: Add password requirements
 
+		// TODO: Add proper email validation because ParseAddress is very lenient
 		_, err := mail.ParseAddress(request.Email)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{
