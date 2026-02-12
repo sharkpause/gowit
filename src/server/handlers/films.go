@@ -118,7 +118,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		offset := (page - 1) * limit
 
 		query_string := fmt.Sprintf(
-			`SELECT id, title, description, release_year, poster_image_url, trailer_url FROM films
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating FROM films
 			%s
 			ORDER BY %s %s
 			LIMIT ? OFFSET ?`,
@@ -146,8 +146,9 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			var releaseYear *int64
 			var posterImageURL *string
 			var trailerURL *string
+			var average_rating *float64
 
-			err := rows.Scan(&id, &title, &description, &releaseYear, &posterImageURL, &trailerURL)
+			err := rows.Scan(&id, &title, &description, &releaseYear, &posterImageURL, &trailerURL, &average_rating)
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"error": fmt.Sprintf("db error:\n%s", err),
@@ -162,6 +163,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 				ReleaseYear: releaseYear,
 				PosterImageURL: posterImageURL,
 				TrailerURL: trailerURL,
+				AverageRating: average_rating,
 			})
 		}
 
