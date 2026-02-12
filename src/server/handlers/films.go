@@ -189,7 +189,7 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		}
 		
 		row := database.QueryRow(
-			`SELECT id, title, description, release_year, poster_image_url, trailer_url FROM films
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating FROM films
 			WHERE id = ?`,
 			filmID,
 		)
@@ -200,14 +200,16 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		var release_year *int64
 		var posterImageURL *string
 		var trailerURL *string
-		
-		err = row.Scan(&id, &title, &description, &release_year)
+		var average_rating *float64
+
+		err = row.Scan(&id, &title, &description, &release_year, &posterImageURL, &trailerURL, &average_rating)
 		if err == sql.ErrNoRows {
 			context.JSON(http.StatusNotFound, gin.H{
 				"error": "film not found",
 			})
 			return
 		}
+		fmt.Println(err)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"error": "internal database error",
@@ -224,6 +226,7 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 				ReleaseYear: release_year,
 				PosterImageURL: posterImageURL,
 				TrailerURL: trailerURL,
+				AverageRating: average_rating,
 			},
 		)
 	}
