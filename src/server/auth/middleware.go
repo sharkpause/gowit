@@ -23,9 +23,7 @@ func Middleware() gin.HandlerFunc {
 		token,err := jwt.Parse(
 			tokenString, 
 			func(t *jwt.Token) (interface{}, error) {
-				// TODO: Change jwtSecret to JWT_SECRET later is it really is a dotenv variable
-				// to match conventions
-				return []byte(os.Getenv("jwtSecret")), nil
+				return []byte(os.Getenv("JWT_SECRET")), nil
 			},
 		)
 
