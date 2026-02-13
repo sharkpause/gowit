@@ -29,5 +29,6 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
+.vscode/
 src/server/.env.example
+src/server/auth/authtester.go
