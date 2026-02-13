@@ -10,26 +10,34 @@ import (
 )
 
 // var jwtSecret = "i-love-jang-wonyoung"
-func Middleware() gin.HandlerFunc{
+func Middleware() gin.HandlerFunc {
 	return func(c *gin.Context){
 		tokenString,_ := c.Cookie("token")
 		fmt.Println(tokenString)
+
 		if tokenString == "" {
 			c.AbortWithStatusJSON(401, gin.H{"error": "no token"})
 			return
 		}
-		token,err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("jwtSecret")), nil
-		})
+
+		token,err := jwt.Parse(
+			tokenString, 
+			func(t *jwt.Token) (interface{}, error) {
+				// TODO: Change jwtSecret to JWT_SECRET later is it really is a dotenv variable
+				// to match conventions
+				return []byte(os.Getenv("jwtSecret")), nil
+			},
+		)
+
 		if err != nil {
-			c.AbortWithStatusJSON(401, "ERror")
+			c.AbortWithStatusJSON(401, "Error")
 			return
 		}
+		
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			userID := uint64(claims["user_id"].(float64))
 			c.Set("user_id", userID)
 			c.Next()
 		}
 	}
-	
 }
