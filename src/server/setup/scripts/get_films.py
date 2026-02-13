@@ -55,18 +55,23 @@ with open("movies.csv", newline="", encoding="utf8") as file:
 
         poster_url = f'https://image.tmdb.org/t/p/w500/{result['poster_path']}'
 
-        cursor.execute(
-            insert_query,
-            (
-                title, row.get('overview'),
-                result['release_date'][:4],
-                round(result['popularity']),
-                result['vote_average'],
-                result['vote_count'],
-                poster_url,
-                trailer_url
+        release_year = result['release_date'][:4] if result.get('release_date') else None
+
+        try:
+            cursor.execute(
+                insert_query,
+                (
+                    title, row.get('overview'),
+                    release_year,
+                    round(result['popularity']),
+                    result['vote_average'],
+                    result['vote_count'],
+                    poster_url,
+                    trailer_url
+                )
             )
-        )
+        except mysql.connector.Error as e:
+            print(f"Ignored insert error: {e}")
 
         count_limit += 1
     connection.commit()
