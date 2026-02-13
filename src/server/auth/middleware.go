@@ -12,7 +12,12 @@ import (
 // var jwtSecret = "i-love-jang-wonyoung"
 func Middleware() gin.HandlerFunc {
 	return func(c *gin.Context){
-		tokenString,_ := c.Cookie("token")
+		tokenString, err := c.Cookie("token")
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"error": "no token"})
+			return
+		}
+		
 		fmt.Println(tokenString)
 
 		if tokenString == "" {
@@ -20,7 +25,7 @@ func Middleware() gin.HandlerFunc {
 			return
 		}
 
-		token,err := jwt.Parse(
+		token, err := jwt.Parse(
 			tokenString, 
 			func(t *jwt.Token) (interface{}, error) {
 				return []byte(os.Getenv("JWT_SECRET")), nil
@@ -37,5 +42,7 @@ func Middleware() gin.HandlerFunc {
 			c.Set("user_id", userID)
 			c.Next()
 		}
+
+		c.AbortWithStatusJSON(401, gin.H{"error": "invalid token"})
 	}
 }
