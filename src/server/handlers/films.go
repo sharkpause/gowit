@@ -61,7 +61,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			sortParam = strings.ToLower(sortParam)
 			
 			switch sortParam {
-			case "id", "title", "description", "release_year":
+			case "id", "title", "description", "release_year", "average_rating", "popularity":
 				sort = sortParam
 			default:
 				context.JSON(http.StatusBadRequest, gin.H{

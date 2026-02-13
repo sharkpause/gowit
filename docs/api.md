@@ -57,7 +57,7 @@ Gets all films from the database
 | sort  | enum | id      | Field to sort by                   |
 | order | enum | ASC     | Sort order (ASC or DESC)           |
 
-Available for `sort`: id, title, description, release_year  
+Available for `sort`: id, title, description, release_year, average_rating, popularity  
 Available for `order`: asc, desc
 
 #### Examples:
