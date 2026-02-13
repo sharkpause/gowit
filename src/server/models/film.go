@@ -13,5 +13,5 @@ type Film struct {
 	PosterImageURL 	*string		`json:"profile_image_url"`
 	TrailerURL 		*string		`json:"trailer_url"`
 	AverageRating	*float64	`json:"average_rating"`
-	Popularity		int8		`json:"popularity"`
+	Popularity		uint8		`json:"popularity"`
 }

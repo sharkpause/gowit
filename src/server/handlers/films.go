@@ -118,7 +118,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		offset := (page - 1) * limit
 
 		query_string := fmt.Sprintf(
-			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating FROM films
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating, popularity FROM films
 			%s
 			ORDER BY %s %s
 			LIMIT ? OFFSET ?`,
@@ -147,8 +147,9 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			var posterImageURL *string
 			var trailerURL *string
 			var average_rating *float64
+			var popularity uint8
 
-			err := rows.Scan(&id, &title, &description, &releaseYear, &posterImageURL, &trailerURL, &average_rating)
+			err := rows.Scan(&id, &title, &description, &releaseYear, &posterImageURL, &trailerURL, &average_rating, &popularity)
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"error": fmt.Sprintf("db error:\n%s", err),
@@ -164,6 +165,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 				PosterImageURL: posterImageURL,
 				TrailerURL: trailerURL,
 				AverageRating: average_rating,
+				Popularity: popularity,
 			})
 		}
 
@@ -189,7 +191,7 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		}
 		
 		row := database.QueryRow(
-			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating FROM films
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating, popularity FROM films
 			WHERE id = ?`,
 			filmID,
 		)
@@ -201,8 +203,9 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		var posterImageURL *string
 		var trailerURL *string
 		var average_rating *float64
+		var popularity uint8
 
-		err = row.Scan(&id, &title, &description, &release_year, &posterImageURL, &trailerURL, &average_rating)
+		err = row.Scan(&id, &title, &description, &release_year, &posterImageURL, &trailerURL, &average_rating, &popularity)
 		if err == sql.ErrNoRows {
 			context.JSON(http.StatusNotFound, gin.H{
 				"error": "film not found",
@@ -227,6 +230,7 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 				PosterImageURL: posterImageURL,
 				TrailerURL: trailerURL,
 				AverageRating: average_rating,
+				Popularity: popularity,
 			},
 		)
 	}
