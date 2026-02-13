@@ -134,40 +134,57 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 			})
 			return
 		}
+
 		var userID uint64
 		var passwordHash string
-		err := database.QueryRow("SELECT id, password_hash FROM users WHERE email = ?", request.Email).Scan(&userID, &passwordHash)
-		if err != nil {
-			context.JSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid email or password",
+
+		err := database.
+			QueryRow(
+				"SELECT id, password_hash FROM users WHERE email = ?",
+				request.Email,
+			).Scan(&userID, &passwordHash)
+		
+		if err == sql.ErrNoRows {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "internal db error",
 			})
-			return
-		} else if err == sql.ErrNoRows {
-				context.JSON(http.StatusInternalServerError, gin.H{
-					"error": "internal db error",
-				})
-				return
-			} 
-		err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(request.Password))
-		// request.Password = "jangwonyoung" // Placeholder to simulate password check
-		// err := bcrypt.CompareHashAndPassword([]byte("$2a$10$GhZ5qKSmVckBI9Y4mfcBVO.kwf1Xmt09RPnQ6/cMF1oRK9Dvlho/O"), []byte(request.Password)) also an api tester
-		if err != nil {
-			context.JSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid email or password",
-			})
+
 			return
 		}
+		
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid email or password",
+			})
+
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(request.Password))
+		
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid email or password",
+			})
+			
+			return
+		}
+
 		token, err := auth.GenerateJWT(userID)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"error": "token error"})
 			return
 		}
-		context.SetCookie("token",token, 3600*24*30, "/", "", false, true)
+
+		// TODO: Change false to true (secure)
+		// TODO: Change to not return the token in json, since it's supposed to be
+		// http-only
+
+		context.SetCookie("token", token, 3600*24*30, "/", "", false, true)
 		context.JSON(http.StatusOK, gin.H{
 			"message": "login successful",
 			"token": token,
 			"user_ID": userID,
 		})
-		
 	}
 }
