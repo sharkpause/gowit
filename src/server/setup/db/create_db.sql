@@ -16,8 +16,9 @@ CREATE TABLE films (
 	title VARCHAR(255) NOT NULL,
 	description TEXT DEFAULT NULL,
 	release_year YEAR DEFAULT NULL,
-	popularity INT UNSIGNED DEFAULT 0, -- no idea what this is for
+	popularity INT UNSIGNED DEFAULT 0, 
 	average_rating DECIMAL(3,1) UNSIGNED DEFAULT NULL,
+	rating_count INT UNSIGNED DEFAULT NULL,
 	poster_image_url VARCHAR(512) DEFAULT NULL,
 	trailer_url VARCHAR(512) DEFAULT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
