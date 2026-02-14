@@ -346,4 +346,4 @@ func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
 	}
 }
 
-// TODO: make trending and featured today routes
+// TODO: Make random route
