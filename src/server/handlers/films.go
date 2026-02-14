@@ -11,6 +11,112 @@ import (
 	"github.com/sharkpause/gowit/models"
 )
 
+type Scanner interface {
+	Scan(dest ...any) error
+}
+
+func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
+	var film models.Film
+
+	var description, posterURL, trailerURL, tagline *string
+	var releaseYear, runtime *int64
+	var averageRating *float64
+	var popularity uint8
+
+	err := row.Scan(
+		&film.ID,
+		&film.Title,
+		&description,
+		&releaseYear,
+		&posterURL,
+		&trailerURL,
+		&averageRating,
+		&popularity,
+		&runtime,
+		&tagline,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	film.Description = description
+	film.ReleaseYear = releaseYear
+	film.PosterImageURL = posterURL
+	film.TrailerURL = trailerURL
+	film.AverageRating = averageRating
+	film.Popularity = popularity
+	film.Runtime = runtime
+	film.Tagline = tagline
+
+	genres := []string{}
+	rows, err := database.Query(`
+		SELECT g.name
+		FROM film_genres fg
+		JOIN genres g ON fg.genre_id = g.id
+		WHERE fg.film_id = ?`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			genres = append(genres, name)
+		}
+	}
+	fmt.Println(genres)
+	film.Genres = genres
+
+	companies := []string{}
+	rows, err = database.Query(`
+		SELECT pc.name
+		FROM film_production_companies fpc
+		JOIN production_companies pc ON fpc.company_id = pc.id
+		WHERE fpc.film_id = ?`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			companies = append(companies, name)
+		}
+	}
+	film.ProductionCompanies = companies
+
+	countries := []string{}
+	rows, err = database.Query(`
+		SELECT pc.name
+		FROM film_production_countries fpc
+		JOIN production_countries pc ON fpc.country_code = pc.iso_code
+		WHERE fpc.film_id = ?`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			countries = append(countries, name)
+		}
+	}
+	film.ProductionCountries = countries
+
+	casts := []string{}
+	rows, err = database.Query(`
+		SELECT actor_name
+		FROM film_casts
+		WHERE film_id = ?
+		ORDER BY cast_order ASC
+		LIMIT 10`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			casts = append(casts, name)
+		}
+	}
+	film.Casts = casts
+
+	return &film, nil
+}
+
 func GetFilms(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		page := 1
@@ -117,8 +223,8 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 		offset := (page - 1) * limit
 
-		query_string := fmt.Sprintf(
-			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating, popularity FROM films
+		queryString := fmt.Sprintf(
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating, popularity, runtime, tagline FROM films
 			%s
 			ORDER BY %s %s
 			LIMIT ? OFFSET ?`,
@@ -126,51 +232,25 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		)
 		args = append(args, limit, offset)
 
-		rows, err := database.Query(query_string, args...)
-
+		rows, err := database.Query(queryString, args...)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("db error:\n%s", err),
-			})
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		
 		defer rows.Close()
-		
-		films := make([]models.Film, 0)
-		
-		for rows.Next() {
-			var id uint64
-			var title string
-			var description *string
-			var releaseYear *int64
-			var posterImageURL *string
-			var trailerURL *string
-			var average_rating *float64
-			var popularity uint8
 
-			err := rows.Scan(&id, &title, &description, &releaseYear, &posterImageURL, &trailerURL, &average_rating, &popularity)
+		films := []models.Film{}
+		for rows.Next() {
+			film, err := scanFilm(database, rows)
 			if err != nil {
-				context.JSON(http.StatusInternalServerError, gin.H{
-					"error": fmt.Sprintf("db error:\n%s", err),
-				})
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
-			
-			films = append(films, models.Film{
-				ID: id,
-				Title: title,
-				Description: description,
-				ReleaseYear: releaseYear,
-				PosterImageURL: posterImageURL,
-				TrailerURL: trailerURL,
-				AverageRating: average_rating,
-				Popularity: popularity,
-			})
+			films = append(films, *film)
 		}
 
 		context.JSON(http.StatusOK, gin.H{
-			"films": films,
+			"films":    films,
 			"metadata": gin.H{
 				"amount": len(films),
 			},
@@ -180,59 +260,29 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 func GetFilmByID(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
-		IDParam := context.Param("id")
-
-		filmID, err := strconv.ParseUint(IDParam, 10, 64)
+		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"error": "invalid film id",
-			})
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid film id"})
 			return
 		}
-		
-		row := database.QueryRow(
-			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating, popularity FROM films
-			WHERE id = ?`,
-			filmID,
-		)
-		
-		var id uint64
-		var title string
-		var description *string
-		var release_year *int64
-		var posterImageURL *string
-		var trailerURL *string
-		var average_rating *float64
-		var popularity uint8
 
-		err = row.Scan(&id, &title, &description, &release_year, &posterImageURL, &trailerURL, &average_rating, &popularity)
+		row := database.QueryRow(`
+			SELECT id, title, description, release_year, poster_image_url, trailer_url,
+			       average_rating, popularity, runtime, tagline
+			FROM films
+			WHERE id = ?`, filmID)
+
+		film, err := scanFilm(database, row)
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusNotFound, gin.H{
-				"error": "film not found",
-			})
+			context.JSON(http.StatusNotFound, gin.H{"error": "film not found"})
 			return
 		}
-		fmt.Println(err)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": "internal database error",
-			})
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		context.JSON(
-			http.StatusOK,
-			models.Film {
-				ID: id,
-				Title: title,
-				Description: description,
-				ReleaseYear: release_year,
-				PosterImageURL: posterImageURL,
-				TrailerURL: trailerURL,
-				AverageRating: average_rating,
-				Popularity: popularity,
-			},
-		)
+		context.JSON(http.StatusOK, film)
 	}
 }
 

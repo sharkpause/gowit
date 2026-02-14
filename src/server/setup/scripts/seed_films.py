@@ -21,8 +21,8 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=3):
 
     insert_film_query = """
     INSERT INTO films
-    (title, description, release_year, popularity, average_rating, rating_count, poster_image_url, trailer_url, runtime)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    (title, description, release_year, popularity, average_rating, rating_count, poster_image_url, trailer_url, runtime, tagline)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     apikey = os.getenv("TMDB_API_KEY")
@@ -77,6 +77,8 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=3):
                     except ValueError:
                         release_year = None
 
+                tagline = details.get('tagline') if details.get('tagline') is not None else None
+
                 popularity = round(details.get("popularity", 0))
                 vote_avg = details.get("vote_average") if details.get("vote_average") is not None else None
                 vote_count = details.get("vote_count") if details.get("vote_count") is not None else None
@@ -110,6 +112,7 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=3):
                                 poster_url,
                                 trailer_url,
                                 runtime,
+                                tagline
                             ),
                         )
                         connection.commit()
