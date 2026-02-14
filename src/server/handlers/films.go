@@ -287,3 +287,20 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 }
 
 // TODO: make trending and featured today routes
+func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
+	return func(context *gin.Context){
+		// get by :id
+		film_id,_ := strconv.ParseUint(context.Param("id"),10,64) 
+		user_id,exists := context.Get("user_id")
+		if !exists{
+			context.JSON(http.StatusUnauthorized, gin.H{"Error": "unauthorized!"}) // will revised error code later
+			return
+		}
+		_,err := database.Exec("INSERT INTO favorites (user_id, film_id) VALUES (?,?)", user_id, film_id)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"Error": "failed"}) // idk the code, will fix this later
+			return
+		}
+		context.JSON(http.StatusCreated, gin.H{"mes": "ok", "film_id" : film_id, "user_id": user_id,})
+	}
+}
