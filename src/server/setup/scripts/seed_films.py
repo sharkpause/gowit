@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def seed_films(connection=None, movie_csv_path="movies.csv", limit=3):
+def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
     # own_connection here is needed incase seed_films is ran as a standalone script
     
     own_connection = False
