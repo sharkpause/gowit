@@ -286,4 +286,4 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 	}
 }
 
-// TODO: make trending and top-rated APIs
+// TODO: make trending and featured today routes
