@@ -21,7 +21,52 @@ CREATE TABLE films (
 	rating_count INT UNSIGNED DEFAULT NULL,
 	poster_image_url VARCHAR(512) DEFAULT NULL,
 	trailer_url VARCHAR(512) DEFAULT NULL,
+	runtime UNSIGNED INT DEFAULT NULL,
+	tagline VARCHAR(255) DEFAULT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE genres (
+	id BIGINT UNSIGNED PRIMARY KEY,
+	name VARCHAR(40) NOT NULL,
+);
+
+CREATE TABLE film_genres (
+	film_id BIGINT UNSIGNED,
+	genre_id BIGINT UNSIGNED,
+	
+	PRIMARY KEY(film_id, genre_id),
+
+	FOREIGN KEY(film_id) REFERENCES films(id),
+	FOREIGN KEY(genre_id) REFERENCES genres(id)
+);
+
+CREATE TABLE production_companies (
+	id BIGINT UNSIGNED PRIMARY KEY,
+	name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE film_production_companies (
+	film_id BIGINT UNSIGNED
+	company_id BIGINT UNSIGNED
+
+	PRIMARY KEY(film_id, company_id)
+
+	FOREIGN KEY(film_id) REFERENCES films(id),
+	FOREIGN KEY(company_id) REFERENCES production_companies(id)
+);
+
+CREATE TABLE production_countries (
+    iso_code CHAR(2) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE film_production_countries (
+    film_id BIGINT UNSIGNED,
+    country_code CHAR(2),
+    PRIMARY KEY(film_id, country_code),
+    FOREIGN KEY(film_id) REFERENCES films(id),
+    FOREIGN KEY(country_code) REFERENCES production_countries(iso_code)
 );
 
 CREATE TABLE ratings (
