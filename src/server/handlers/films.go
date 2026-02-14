@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
@@ -283,6 +284,65 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		}
 
 		context.JSON(http.StatusOK, film)
+	}
+}
+
+func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		const defaultLimit = 10
+		limit := defaultLimit
+
+		if limitParam := context.Query("limit"); limitParam != "" {
+			limitQuery, err := strconv.Atoi(limitParam)
+			if err == nil && limitQuery > 0 && limitQuery <= 100 {
+				limit = limitQuery
+			}
+		}
+
+		currentYear := time.Now().Year()
+
+		// Weighted score: popularity dominates, recent movies get boost, rating counts a little
+		query := `
+			SELECT id, title, description, release_year, poster_image_url, trailer_url,
+				   average_rating, popularity, runtime, tagline
+			FROM films
+			ORDER BY (? - release_year * 2.0 + popularity * 0.5 + COALESCE(average_rating,0) * 1.0) ASC
+			LIMIT ?`
+
+		rows, err := database.Query(query, currentYear, limit)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+			return
+		}
+		defer rows.Close()
+
+		var films []models.Film
+
+		for rows.Next() {
+			var film models.Film
+			err := rows.Scan(
+				&film.ID,
+				&film.Title,
+				&film.Description,
+				&film.ReleaseYear,
+				&film.PosterImageURL,
+				&film.TrailerURL,
+				&film.AverageRating,
+				&film.Popularity,
+				&film.Runtime,
+				&film.Tagline,
+			)
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			films = append(films, film)
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"films":    films,
+			"metadata": gin.H{"amount": len(films)},
+		})
 	}
 }
 
