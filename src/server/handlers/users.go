@@ -176,15 +176,9 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		// TODO: Change false to true (secure)
-		// TODO: Change to not return the token in json, since it's supposed to be
-		// http-only
-
-		context.SetCookie("token", token, 3600*24*30, "/", "", false, true)
+		context.SetCookie("token", token, 3600*24*30, "/", "", true, true)
 		context.JSON(http.StatusOK, gin.H{
 			"message": "login successful",
-			"token": token,
-			"user_ID": userID,
 		})
 	}
 }
