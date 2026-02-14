@@ -69,6 +69,14 @@ CREATE TABLE film_production_countries (
     FOREIGN KEY(country_code) REFERENCES production_countries(iso_code)
 );
 
+CREATE TABLE film_casts (
+    film_id BIGINT UNSIGNED NOT NULL,
+    actor_name VARCHAR(255) NOT NULL,
+    cast_order INT DEFAULT NULL,
+    PRIMARY KEY(film_id, actor_name),
+    FOREIGN KEY(film_id) REFERENCES films(id)
+);
+
 CREATE TABLE ratings (
 	id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	user_id BIGINT UNSIGNED NOT NULL,
