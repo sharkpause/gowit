@@ -25,11 +25,10 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 		// TODO: Later change so that protected APIs are still accessed through {URL}/api and not {URL}/
 		// to keep API consistency
 
-		protected := router.Group("/")
+		protected := api.Group("/") // 我tmd有点儿醉，修改了，请查看是否有没有问题 pllease check, saya rase sudah okehyyyhhhhhhhhh。 i 婷 it was router.group('/'); idk if its wrong or not, but it works with /api/test…… no idea. but the correct way of doing it maybe looks like deez
 		protected.Use(auth.Middleware())
-		
 		{
-		
+			// protected.GET("/test", auth.Test) //auffth.Test just ignore, will delete later, forgot to put into .gitignore. mb.
 		}
 		
 		api.Use(auth.Middleware())
