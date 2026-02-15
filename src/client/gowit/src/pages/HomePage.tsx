@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Film } from "lucide-react";
 import axios from "axios";
 import MovieCard from "../components/MovieCard";
 import TrailerCard from "../components/TrailerCard";
+import Footer from "../components/Footer";
 
 export default function HomePage() {
   const [previous, setPrevious] = useState(false);
@@ -213,6 +214,8 @@ export default function HomePage() {
             />
           </div>
         </div>
+
+        <Footer />
       </section>
     </>
   );
