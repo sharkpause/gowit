@@ -1,62 +1,139 @@
-# API documentation
-All APIs start with /api right after the root link (localhost:8080/api for example)
-So to get films/ you go to **{URL}/api**/films
+# API documentation /api
 
-## /films
+All APIs start with `/api` right after the root URL (e.g., `localhost:8080/api`).
+
+## /api/films
 
 ### GET
 
-- ### /
-Gets all films from the database
+* ### `/api/films`
+
+Gets all films from the database with full details.
 
 #### Success response example (200)
+
 ```json
 {
-    "metadata": {
-        "amount": 2,
-    },
-    "films":[
-        {
-            "id": 1,
-            "title": "Inception",
-            "description": "A thief who steals corporate secrets through dream-sharing technology.",
-            "release_year": 2010
-        },
-        {
-            "id": 2,
-            "title": "Interstellar",
-            "description": "A team of explorers travel through a wormhole in space.",
-            "release_year": 2014
-        }
-    ]
+  "films": [
+    {
+      "id": 11,
+      "title": "The Godfather",
+      "description": "Spanning the years 1945 to 1955...",
+      "release_year": 1972,
+      "poster_image_url": "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+      "trailer_url": "https://www.youtube.com/watch?v=tlFyyzXVEMk",
+      "average_rating": 8.7,
+      "popularity": 39,
+      "runtime": 175,
+      "tagline": "An offer you can't refuse.",
+      "genres": ["Drama", "Crime"],
+      "production_companies": ["Paramount Pictures", "Alfran Productions"],
+      "production_countries": ["United States of America"],
+      "casts": [
+        "Marlon Brando", "Al Pacino", "James Caan", "Robert Duvall",
+        "Richard S. Castellano", "Diane Keaton", "Talia Shire",
+        "Gianni Russo", "Sterling Hayden", "John Marley"
+      ]
+    }
+  ],
+  "metadata": {
+    "amount": 1
+  }
 }
 ```
 
-#### Query parameters
+#### Error response example (400)
 
-| Name  | Type | Default | Description                        |
-| -------| ------| ---------| ------------------------------------|
-| page  | int  | 1       | Page number (1-based)              |
-| limit | int  | 10      | Number of items per page (max 100) |
-| sort  | enum | id      | Field to sort by                   |
-| order | enum | ASC     | Sort order (ASC or DESC)           |
+```json
+{
+  "error": "invalid page parameter"
+}
+```
 
-Available for `sort`: id, title, description, release_year  
+### Query parameters
+
+#### Pagination
+
+| Name  | Type | Default | Rules                     |
+| ----- | ---- | ------- | ------------------------- |
+| page  | int  | 1       | Must be ≥ 1               |
+| limit | int  | 10      | Must be between 1 and 100 |
+
+#### Examples:
+
+```
+/api/films?page=2  
+/api/films?limit=10  
+```
+
+#### Sorting
+
+| Name  | Type | Default | Description              |
+| ----- | ---- | ------- | ------------------------ |
+| sort  | enum | id      | Field to sort by         |
+| order | enum | ASC     | Sort order (ASC or DESC) |
+
+Available for `sort`: id, title, description, release_year, average_rating, popularity, runtime  
 Available for `order`: asc, desc
 
-Example: localhost:8080/api/films?sort=title
+#### Examples:
+
+```
+/api/films?sort=title  
+/api/films?order=desc  
+```
+
+#### Filtering
+
+| Name       | Type   | Description                                     |
+| ---------- | ------ | ----------------------------------------------- |
+| year       | int    | Filters films by exact release year             |
+| min_rating | float  | Filters films with average_rating ≥ value       |
+| search     | string | Case-insensitive search on title OR description |
+
+#### Examples:
+
+```
+/api/films?year=2014  
+/api/films?min_rating=8.5  
+/api/films?search=space  
+```
 
 ---
 
-- ### /:id
-Gets one film based on an id
+### `/api/films/:id`
+
+Gets a single film by ID, with full details.
 
 #### Success response example (200)
+
 ```json
 {
-    "id": 2,
-    "title": "Interstellar",
-    "description": "A team of explorers travel through a wormhole in space.",
-    "release_year": 2014
+  "id": 11,
+  "title": "The Godfather",
+  "description": "Spanning the years 1945 to 1955...",
+  "release_year": 1972,
+  "poster_image_url": "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+  "trailer_url": "https://www.youtube.com/watch?v=tlFyyzXVEMk",
+  "average_rating": 8.7,
+  "popularity": 39,
+  "runtime": 175,
+  "tagline": "An offer you can't refuse.",
+  "genres": ["Drama", "Crime"],
+  "production_companies": ["Paramount Pictures", "Alfran Productions"],
+  "production_countries": ["United States of America"],
+  "casts": [
+    "Marlon Brando", "Al Pacino", "James Caan", "Robert Duvall",
+    "Richard S. Castellano", "Diane Keaton", "Talia Shire",
+    "Gianni Russo", "Sterling Hayden", "John Marley"
+  ]
+}
+```
+
+#### Error response example (400)
+
+```json
+{
+  "error": "invalid film id"
 }
 ```

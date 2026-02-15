@@ -16,6 +16,11 @@ type registerRequest struct {
 	Password	string `json:"password"`
 }
 
+type loginRequest struct {
+	Email		string `json:"email"`
+	Password	string `json:"password"`
+}
+
 func RegisterUser(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		var request registerRequest
@@ -116,6 +121,64 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
 			"message": "user registered successfully",
 			"user_id": userID,
+		})
+	}
+}
+
+func LoginUser(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		var request loginRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid request body",
+			})
+			return
+		}
+
+		var userID uint64
+		var passwordHash string
+
+		err := database.
+			QueryRow(
+				"SELECT id, password_hash FROM users WHERE email = ?",
+				request.Email,
+			).Scan(&userID, &passwordHash)
+		
+		if err == sql.ErrNoRows {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "internal db error",
+			})
+
+			return
+		}
+		
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid email or password",
+			})
+
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(request.Password))
+		
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid email or password",
+			})
+			
+			return
+		}
+
+		token, err := auth.GenerateJWT(userID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "token error"})
+			return
+		}
+
+		context.SetCookie("token", token, 3600*24*30, "/", "", true, true)
+		context.JSON(http.StatusOK, gin.H{
+			"message": "login successful",
 		})
 	}
 }

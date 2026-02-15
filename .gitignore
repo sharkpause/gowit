@@ -29,5 +29,6 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
-src/server/.env.example
+.vscode/
+src/server/auth/authtester.go
+src/server/setup/scripts/__pycache__/

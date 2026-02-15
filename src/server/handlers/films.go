@@ -6,10 +6,117 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
 )
+
+type Scanner interface {
+	Scan(dest ...any) error
+}
+
+func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
+	var film models.Film
+
+	var description, posterURL, trailerURL, tagline *string
+	var releaseYear, runtime *int64
+	var averageRating *float64
+	var popularity uint8
+
+	err := row.Scan(
+		&film.ID,
+		&film.Title,
+		&description,
+		&releaseYear,
+		&posterURL,
+		&trailerURL,
+		&averageRating,
+		&popularity,
+		&runtime,
+		&tagline,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	film.Description = description
+	film.ReleaseYear = releaseYear
+	film.PosterImageURL = posterURL
+	film.TrailerURL = trailerURL
+	film.AverageRating = averageRating
+	film.Popularity = popularity
+	film.Runtime = runtime
+	film.Tagline = tagline
+
+	genres := []string{}
+	rows, err := database.Query(`
+		SELECT g.name
+		FROM film_genres fg
+		JOIN genres g ON fg.genre_id = g.id
+		WHERE fg.film_id = ?`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			genres = append(genres, name)
+		}
+	}
+	fmt.Println(genres)
+	film.Genres = genres
+
+	companies := []string{}
+	rows, err = database.Query(`
+		SELECT pc.name
+		FROM film_production_companies fpc
+		JOIN production_companies pc ON fpc.company_id = pc.id
+		WHERE fpc.film_id = ?`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			companies = append(companies, name)
+		}
+	}
+	film.ProductionCompanies = companies
+
+	countries := []string{}
+	rows, err = database.Query(`
+		SELECT pc.name
+		FROM film_production_countries fpc
+		JOIN production_countries pc ON fpc.country_code = pc.iso_code
+		WHERE fpc.film_id = ?`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			countries = append(countries, name)
+		}
+	}
+	film.ProductionCountries = countries
+
+	casts := []string{}
+	rows, err = database.Query(`
+		SELECT actor_name
+		FROM film_casts
+		WHERE film_id = ?
+		ORDER BY cast_order ASC
+		LIMIT 10`, film.ID)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			casts = append(casts, name)
+		}
+	}
+	film.Casts = casts
+
+	return &film, nil
+}
 
 func GetFilms(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
@@ -61,7 +168,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			sortParam = strings.ToLower(sortParam)
 			
 			switch sortParam {
-			case "id", "title", "description", "release_year":
+			case "id", "title", "description", "release_year", "average_rating", "popularity":
 				sort = sortParam
 			default:
 				context.JSON(http.StatusBadRequest, gin.H{
@@ -97,7 +204,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		}
 
 		if minRatingParam := context.Query("min_rating"); minRatingParam != "" {
-			rating, err := strconv.Atoi(minRatingParam)
+			rating, err := strconv.ParseFloat(minRatingParam, 64)
 			if err == nil {
 				conditions = append(conditions, "average_rating >= ?")
 				args = append(args, rating)
@@ -106,57 +213,45 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 		if searchParam := context.Query("search"); searchParam != "" {
 			conditions = append(conditions, "(title LIKE ? OR description LIKE ?)")
-			likePattern := "%" + searchParam + "%s"
-			args = append(args, likePattern)
+			likePattern := "%" + searchParam + "%"
+			args = append(args, likePattern, likePattern)
+		}
+
+		where := ""
+		if len(conditions) > 0 {
+			where = "WHERE " + strings.Join(conditions, " AND ")
 		}
 
 		offset := (page - 1) * limit
 
-		rows, err := database.Query(
-			fmt.Sprintf(
-				`SELECT id, title, description, release_year FROM films
-				ORDER BY %s %s
-				LIMIT ? OFFSET ?`,
-				sort, order,
-			),
-			limit, offset,
+		queryString := fmt.Sprintf(
+			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating, popularity, runtime, tagline FROM films
+			%s
+			ORDER BY %s %s
+			LIMIT ? OFFSET ?`,
+			where, sort, order,
 		)
+		args = append(args, limit, offset)
 
+		rows, err := database.Query(queryString, args...)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("db error:\n%s", err),
-			})
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		
 		defer rows.Close()
-		
-		films := make([]models.Film, 0)
-		
+
+		films := []models.Film{}
 		for rows.Next() {
-			var id uint64
-			var title string
-			var description *string
-			var releaseYear *int64
-			
-			err := rows.Scan(&id, &title, &description, &releaseYear)
+			film, err := scanFilm(database, rows)
 			if err != nil {
-				context.JSON(http.StatusInternalServerError, gin.H{
-					"error": fmt.Sprintf("db error:\n%s", err),
-				})
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
-			
-			films = append(films, models.Film{
-				ID: id,
-				Title: title,
-				Description: description,
-				ReleaseYear: releaseYear,
-			})
+			films = append(films, *film)
 		}
 
 		context.JSON(http.StatusOK, gin.H{
-			"films": films,
+			"films":    films,
 			"metadata": gin.H{
 				"amount": len(films),
 			},
@@ -166,49 +261,107 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 
 func GetFilmByID(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
-		IDParam := context.Param("id")
-
-		filmID, err := strconv.ParseUint(IDParam, 10, 64)
+		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"error": "invalid film id",
-			})
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid film id"})
 			return
 		}
-		
-		row := database.QueryRow(
-			`SELECT id, title, description, release_year FROM films
-			WHERE id = ?`,
-			filmID,
-		)
-		
-		var id uint64
-		var title string
-		var description *string
-		var release_year *int64
-		
-		err = row.Scan(&id, &title, &description, &release_year)
+
+		row := database.QueryRow(`
+			SELECT id, title, description, release_year, poster_image_url, trailer_url,
+			       average_rating, popularity, runtime, tagline
+			FROM films
+			WHERE id = ?`, filmID)
+
+		film, err := scanFilm(database, row)
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusNotFound, gin.H{
-				"error": "film not found",
-			})
+			context.JSON(http.StatusNotFound, gin.H{"error": "film not found"})
 			return
 		}
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": "internal database error",
-			})
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		context.JSON(
-			http.StatusOK,
-			models.Film {
-				ID: id,
-				Title: title,
-				Description: description,
-				ReleaseYear: release_year,
-			},
-		)
+		context.JSON(http.StatusOK, film)
 	}
 }
+
+// TODO: make trending and featured today routes
+func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
+	return func(context *gin.Context){
+		// get by :id
+		film_id,_ := strconv.ParseUint(context.Param("id"),10,64) 
+		user_id,exists := context.Get("user_id")
+		if !exists{
+			context.JSON(http.StatusUnauthorized, gin.H{"Error": "unauthorized!"}) // will revised error code later
+			return
+		}
+		_,err := database.Exec("INSERT INTO favorites (user_id, film_id) VALUES (?,?)", user_id, film_id)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"Error": "failed"}) // idk the code, will fix this later
+			return
+		}
+		context.JSON(http.StatusCreated, gin.H{"mes": "ok", "film_id" : film_id, "user_id": user_id,})
+	}
+}
+func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		const defaultLimit = 10
+		limit := defaultLimit
+
+		if limitParam := context.Query("limit"); limitParam != "" {
+			limitQuery, err := strconv.Atoi(limitParam)
+			if err == nil && limitQuery > 0 && limitQuery <= 100 {
+				limit = limitQuery
+			}
+		}
+
+		currentYear := time.Now().Year()
+
+		// Weighted score: popularity dominates, recent movies get boost, rating counts a little
+		query := `
+			SELECT id, title, description, release_year, poster_image_url, trailer_url,
+				   average_rating, popularity, runtime, tagline
+			FROM films
+			ORDER BY (? - release_year * 2.0 + popularity * 0.5 + COALESCE(average_rating,0) * 1.0) ASC
+			LIMIT ?`
+
+		rows, err := database.Query(query, currentYear, limit)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+			return
+		}
+		defer rows.Close()
+
+		var films []models.Film
+
+		for rows.Next() {
+			var film models.Film
+			err := rows.Scan(
+				&film.ID,
+				&film.Title,
+				&film.Description,
+				&film.ReleaseYear,
+				&film.PosterImageURL,
+				&film.TrailerURL,
+				&film.AverageRating,
+				&film.Popularity,
+				&film.Runtime,
+				&film.Tagline,
+			)
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			films = append(films, film)
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"films":    films,
+			"metadata": gin.H{"amount": len(films)},
+		})
+	}
+}
+
+// TODO: Make random route
