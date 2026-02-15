@@ -17,7 +17,7 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
             database=os.getenv("DB_NAME"),
         )
 
-    cursor = connection.cursor()
+    cursor = connection.cursor(buffered=True)
 
     insert_film_query = """
     INSERT INTO films
