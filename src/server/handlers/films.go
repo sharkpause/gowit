@@ -287,22 +287,37 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 	}
 }
 
-// TODO: make trending and featured today routes
 func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
 	return func(context *gin.Context){
 		// get by :id
-		film_id,_ := strconv.ParseUint(context.Param("id"),10,64) 
-		user_id,exists := context.Get("user_id")
-		if !exists{
-			context.JSON(http.StatusUnauthorized, gin.H{"Error": "unauthorized!"}) // will revised error code later
-			return
-		}
-		_,err := database.Exec("INSERT INTO favorites (user_id, film_id) VALUES (?,?)", user_id, film_id)
+		film_id, err := strconv.ParseUint(context.Param("id"), 10, 64) 
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"Error": "failed"}) // idk the code, will fix this later
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 			return
 		}
-		context.JSON(http.StatusCreated, gin.H{"mes": "ok", "film_id" : film_id, "user_id": user_id,})
+		
+		user_id, exists := context.Get("user_id")
+		if !exists{
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
+			return
+		}
+		_, err = database.Exec(
+			"INSERT INTO favorites (user_id, film_id) VALUES (?,?)",
+			user_id, film_id,
+		)
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "internal database error"}) // idk the code, will fix this later
+			return
+		}
+		context.JSON(
+			http.StatusCreated,
+			gin.H{
+				"message": "successfully add film to favorite",
+				"film_id" : film_id,
+				"user_id": user_id,
+			},
+		)
 	}
 }
 func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
@@ -319,7 +334,6 @@ func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
 
 		currentYear := time.Now().Year()
 
-		// Weighted score: popularity dominates, recent movies get boost, rating counts a little
 		query := `
 			SELECT id, title, description, release_year, poster_image_url, trailer_url,
 				   average_rating, popularity, runtime, tagline
@@ -359,7 +373,9 @@ func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
 
 		context.JSON(http.StatusOK, gin.H{
 			"films":    films,
-			"metadata": gin.H{"amount": len(films)},
+			"metadata": gin.H{
+				"amount": len(films),
+			},
 		})
 	}
 }
