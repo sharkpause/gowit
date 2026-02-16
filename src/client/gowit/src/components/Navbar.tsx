@@ -51,7 +51,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-6">
           <Link
             to="/watchlist"
             className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
