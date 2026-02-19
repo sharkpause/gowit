@@ -100,8 +100,34 @@ export default function FavoritePage() {
 
   return (
     <div className="bg-[#0F1115] overflow-hidden px-4 md:px-8 lg:px-32 pt-32 pb-16">
+      <div className="flex flex-wrap gap-4 mb-8">
+        <div className="flex items-center gap-2">
+          <label className="text-[#F5F2F2] text-sm font-medium">Sort by:</label>
+          <select className="bg-[#1C1E22]  text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E50914] transition-colors cursor-pointer">
+            <option value="title">Title</option>
+            <option value="average_rating">Rating</option>
+            <option value="release_year">Year</option>
+            <option value="popularity">Popularity</option>
+            <option value="runtime">Runtime</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-[#F5F2F2] text-sm font-medium">Order:</label>
+          <select className="bg-[#1C1E22] text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E50914] transition-colors cursor-pointer">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+
+        <input
+          type="text"
+          className="flex-1 text-[#F5F2F2] text-sm font-medium px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E50914] transition-colors cursor-pointer"
+          placeholder="Search"
+        />
+      </div>
       {data.length > 0 ? (
-        <div className="min-h-screen flex flex-wrap gap-16">
+        <div className="min-h-screen flex flex-wrap gap-16 justify-center">
           {data.map((el: MovieWatchlist, idx: number) => {
             return (
               <div className="relative flex-shrink-0" key={idx}>
