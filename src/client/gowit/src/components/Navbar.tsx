@@ -20,24 +20,24 @@ export default function Navbar() {
         </div>
 
         <div className="flex gap-6">
-          <Link
-            to="/"
+          <a
+            href="/"
             className="text-white hover:text-gray-300 transition-colors font-medium"
           >
             Home
-          </Link>
-          <Link
-            to="/movies"
+          </a>
+          <a
+            href="#movies"
             className="text-white hover:text-gray-300 transition-colors font-medium"
           >
             Movies
-          </Link>
-          <Link
-            to="/contact"
+          </a>
+          <a
+            href="#contact-us"
             className="text-white hover:text-gray-300 transition-colors font-medium"
           >
             Contact Us
-          </Link>
+          </a>
         </div>
 
         <div className="hidden md:block flex-1 max-w-md mx-2 lg:mx-6 relative">
@@ -88,27 +88,27 @@ export default function Navbar() {
           </div>
 
           <div className="flex flex-col py-2">
-            <Link
-              to="/"
+            <a
+              href="/"
               className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
-            </Link>
-            <Link
-              to="/movies"
+            </a>
+            <a
+              href="#movies"
               className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Movies
-            </Link>
-            <Link
-              to="/contact"
+            </a>
+            <a
+              href="#contact-us"
               className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact Us
-            </Link>
+            </a>
             <Link
               to="/watchlist"
               className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium flex items-center gap-2"

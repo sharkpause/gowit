@@ -6,26 +6,54 @@ import axios from "axios";
 import MovieCard from "../components/MovieCard";
 import TrailerCard from "../components/TrailerCard";
 import Footer from "../components/Footer";
+import { serverApi } from "../api";
+import type { MovieType } from "../type";
+import { Link } from "react-router";
+import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperType } from "swiper";
+import { Navigation, Pagination } from "swiper/modules";
+
+import "swiper/swiper-bundle.css";
 
 export default function HomePage() {
-  const [previous, setPrevious] = useState(false);
-  const [next, setNext] = useState(true);
-  const [movieFeatured, setMovieFeatured] = useState<string[]>([]);
+  const [topMovie, setTopMovie] = useState<MovieType[]>([]);
+  const [movieFeatured, setMovieFeatured] = useState<MovieType[]>([]);
   const [index, setIndex] = useState<number>(0);
   const [visibleFeatured, setVisibleFeatured] = useState(0);
+  const [isBeginning, setIsBeginning] = useState(true);
+  const [isEnd, setIsEnd] = useState(false);
+
+  const syncEdges = (swiper: SwiperType) => {
+    setIsBeginning(swiper.isBeginning);
+    setIsEnd(swiper.isEnd);
+  };
+
+  console.log(isBeginning, isEnd);
 
   async function fetchFeaturedMovies() {
     // Simulate fetching featured movies\
     try {
-      const response = await axios.get("");
+      const response = await serverApi.get("/api/films");
       setMovieFeatured(response.data.films);
     } catch (error) {
       console.log("Error fetching featured movies:", error);
     }
   }
 
+  async function fetchTopMovie() {
+    try {
+      const response = await serverApi.get(
+        "/api/films?sort=average_rating&order=desc&limit=10",
+      );
+      setTopMovie(response.data.films);
+    } catch (error) {
+      console.log("Error fetching top movies:", error);
+    }
+  }
+
   useEffect(() => {
     fetchFeaturedMovies();
+    fetchTopMovie();
   }, []);
 
   useEffect(() => {
@@ -88,16 +116,22 @@ export default function HomePage() {
             next.
           </p>
           <div className="flex gap-4 mt-8">
-            <button className="px-8 py-3  bg-[#E50914] text-white font-semibold rounded-full hover:bg-[#E50914]/90 transition-all shadow-lg shadow-[#E50914]/30">
-              Get Started
-            </button>
-            <button className="px-8 py-3 bg-white/10 text-[#F5F2F2] font-semibold rounded-full hover:bg-white/20 transition-all ring-1 ring-white/20 backdrop-blur-sm">
-              Learn More
-            </button>
+            <a
+              href="#movies"
+              className="px-8 py-3  bg-[#E50914] text-white font-semibold rounded-full hover:bg-[#E50914]/90 transition-all shadow-lg shadow-[#E50914]/30"
+            >
+              Explore Movies
+            </a>
+            <a
+              href="#top"
+              className="px-8 py-3 bg-white/10 text-[#F5F2F2] font-semibold rounded-full hover:bg-white/20 transition-all ring-1 ring-white/20 backdrop-blur-sm"
+            >
+              Explore Top Films
+            </a>
           </div>
         </div>
 
-        <div className="px-4 md:px-8 lg:px-32 pt-32 pb-16">
+        <div id="movies" className="px-4 md:px-8 lg:px-32 pt-32 pb-16">
           <h1
             className="text-[#F5F2F2] text-4xl font-bold mb-5"
             style={{
@@ -114,36 +148,24 @@ export default function HomePage() {
                 transform: `translateX(${translateX}px)`,
               }}
             >
-              <img
-                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB1tnFQzWr9K8CaNrKDfZpX9CNbOx3pZf-01gJ7rILOwfK-uDSEMUPVL5ikUq1DFDMCS0JXTaiR6OSbUx28onsNHtS3lRxOMsCcsec05G4F1VQQV_jZcLeZr6OoJGCRpgLlRRuAlubTfR8/s1600/poster+film+terbaik+sicario+-+namafilm.jpg"
-                alt="Movie Poster"
-                className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
-              />
-              <img
-                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB1tnFQzWr9K8CaNrKDfZpX9CNbOx3pZf-01gJ7rILOwfK-uDSEMUPVL5ikUq1DFDMCS0JXTaiR6OSbUx28onsNHtS3lRxOMsCcsec05G4F1VQQV_jZcLeZr6OoJGCRpgLlRRuAlubTfR8/s1600/poster+film+terbaik+sicario+-+namafilm.jpg"
-                alt="Movie Poster"
-                className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
-              />
-              <img
-                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB1tnFQzWr9K8CaNrKDfZpX9CNbOx3pZf-01gJ7rILOwfK-uDSEMUPVL5ikUq1DFDMCS0JXTaiR6OSbUx28onsNHtS3lRxOMsCcsec05G4F1VQQV_jZcLeZr6OoJGCRpgLlRRuAlubTfR8/s1600/poster+film+terbaik+sicario+-+namafilm.jpg"
-                alt="Movie Poster"
-                className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
-              />
-              <img
-                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB1tnFQzWr9K8CaNrKDfZpX9CNbOx3pZf-01gJ7rILOwfK-uDSEMUPVL5ikUq1DFDMCS0JXTaiR6OSbUx28onsNHtS3lRxOMsCcsec05G4F1VQQV_jZcLeZr6OoJGCRpgLlRRuAlubTfR8/s1600/poster+film+terbaik+sicario+-+namafilm.jpg"
-                alt="Movie Poster"
-                className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
-              />
-              <img
-                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB1tnFQzWr9K8CaNrKDfZpX9CNbOx3pZf-01gJ7rILOwfK-uDSEMUPVL5ikUq1DFDMCS0JXTaiR6OSbUx28onsNHtS3lRxOMsCcsec05G4F1VQQV_jZcLeZr6OoJGCRpgLlRRuAlubTfR8/s1600/poster+film+terbaik+sicario+-+namafilm.jpg"
-                alt="Movie Poster"
-                className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
-              />
-              <img
-                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB1tnFQzWr9K8CaNrKDfZpX9CNbOx3pZf-01gJ7rILOwfK-uDSEMUPVL5ikUq1DFDMCS0JXTaiR6OSbUx28onsNHtS3lRxOMsCcsec05G4F1VQQV_jZcLeZr6OoJGCRpgLlRRuAlubTfR8/s1600/poster+film+terbaik+sicario+-+namafilm.jpg"
-                alt="Movie Poster"
-                className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
-              />
+              {movieFeatured.length
+                ? movieFeatured.map((el) => {
+                    return (
+                      <Link
+                        key={el.id}
+                        to={`/movies/${el.id}`}
+                        className="inline-block shrink-0"
+                      >
+                        <img
+                          key={el.id}
+                          src={el.poster_image_url}
+                          alt="Movie Poster"
+                          className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
+                        />
+                      </Link>
+                    );
+                  })
+                : ""}
             </div>
 
             {index > 0 && (
@@ -166,7 +188,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="px-4 md:px-8 lg:px-32 h-full pt-24 pb-16 z-10">
+        <div className="px-4 md:px-8 lg:px-32 h-full pt-24 pb-16 z-10" id="top">
           <h1
             className="text-[#F5F2F2] text-4xl font-bold "
             style={{
@@ -178,17 +200,61 @@ export default function HomePage() {
           <p className="text-[#F5F2F2] mt-2 mb-12 font-light">
             TV Shows and Movies Just For You
           </p>
-          <div className="flex gap-10 flex-wrap ">
-            <MovieCard
-              poster_url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB1tnFQzWr9K8CaNrKDfZpX9CNbOx3pZf-01gJ7rILOwfK-uDSEMUPVL5ikUq1DFDMCS0JXTaiR6OSbUx28onsNHtS3lRxOMsCcsec05G4F1VQQV_jZcLeZr6OoJGCRpgLlRRuAlubTfR8/s1600/poster+film+terbaik+sicario+-+namafilm.jpg"
-              rating={9.1}
-              title="Title"
-              description={
-                "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. "
-              }
-              year={2025}
-              rank={1}
-            />
+          <div className="flex gap-8 relative">
+            <button
+              className={[
+                "prev-btn absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isBeginning
+                  ? "opacity-0 pointer-events-none"
+                  : "hover:scale-110",
+              ].join(" ")}
+            >
+              <ArrowLeft className="text-white w-8 h-8" />
+            </button>
+            <button
+              className={[
+                "next-btn absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isEnd ? "opacity-0 pointer-events-none" : "hover:scale-110",
+              ].join(" ")}
+            >
+              <ArrowRight className="text-white w-8 h-8" />
+            </button>
+            <Swiper
+              modules={[Navigation]}
+              spaceBetween={16}
+              slidesPerView={1.2}
+              navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
+              breakpoints={{
+                640: { slidesPerView: 2.2 },
+                1024: { slidesPerView: 4 },
+              }}
+              loop={false}
+              onSwiper={syncEdges}
+              onSlideChange={syncEdges}
+              observer
+              observeParents
+              updateOnWindowResize
+              onResize={syncEdges}
+            >
+              {topMovie.length
+                ? topMovie.map((el, idx) => {
+                    return (
+                      <SwiperSlide key={el.id}>
+                        <Link to={`/movies/${el.id}`} className="inline-block">
+                          <MovieCard
+                            poster_url={el.poster_image_url}
+                            rating={el.average_rating}
+                            title={el.title}
+                            description={el.description}
+                            year={el.release_year}
+                            rank={idx + 1}
+                          />
+                        </Link>
+                      </SwiperSlide>
+                    );
+                  })
+                : ""}
+            </Swiper>
           </div>
         </div>
 
@@ -225,7 +291,10 @@ export default function HomePage() {
             }}
           />
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-12 lg:gap-20 text-[#F5F2F2]">
+          <div
+            id="contact-us"
+            className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-12 lg:gap-20 text-[#F5F2F2]"
+          >
             <div className="flex-1 align-top space-y-8">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-3">
