@@ -240,7 +240,7 @@ export default function HomePage() {
                 ? topMovie.map((el, idx) => {
                     return (
                       <SwiperSlide key={el.id}>
-                        <Link to={`/movie/${el.id}`} className="inline-block">
+                        <Link to={`/movies/${el.id}`} className="inline-block">
                           <MovieCard
                             poster_url={el.poster_image_url}
                             rating={el.average_rating}
