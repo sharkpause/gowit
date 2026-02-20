@@ -10,16 +10,25 @@ import { serverApi } from "../api";
 import type { MovieType } from "../type";
 import { Link } from "react-router";
 import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperType } from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
 
-// Import Swiper styles
-import "swiper/css/bundle";
+import "swiper/swiper-bundle.css";
 
 export default function HomePage() {
   const [topMovie, setTopMovie] = useState<MovieType[]>([]);
   const [movieFeatured, setMovieFeatured] = useState<MovieType[]>([]);
   const [index, setIndex] = useState<number>(0);
   const [visibleFeatured, setVisibleFeatured] = useState(0);
+  const [isBeginning, setIsBeginning] = useState(true);
+  const [isEnd, setIsEnd] = useState(false);
+
+  const syncEdges = (swiper: SwiperType) => {
+    setIsBeginning(swiper.isBeginning);
+    setIsEnd(swiper.isEnd);
+  };
+
+  console.log(isBeginning, isEnd);
 
   async function fetchFeaturedMovies() {
     // Simulate fetching featured movies\
@@ -34,7 +43,7 @@ export default function HomePage() {
   async function fetchTopMovie() {
     try {
       const response = await serverApi.get(
-        "/api/films?sort=average_rating&order=desc&limit=5",
+        "/api/films?sort=average_rating&order=desc&limit=10",
       );
       setTopMovie(response.data.films);
     } catch (error) {
@@ -191,17 +200,41 @@ export default function HomePage() {
           <p className="text-[#F5F2F2] mt-2 mb-12 font-light">
             TV Shows and Movies Just For You
           </p>
-          <div className="w-full">
+          <div className="flex gap-8 relative">
+            <button
+              className={[
+                "prev-btn absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isBeginning
+                  ? "opacity-0 pointer-events-none"
+                  : "hover:scale-110",
+              ].join(" ")}
+            >
+              <ArrowLeft className="text-white w-8 h-8" />
+            </button>
+            <button
+              className={[
+                "next-btn absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isEnd ? "opacity-0 pointer-events-none" : "hover:scale-110",
+              ].join(" ")}
+            >
+              <ArrowRight className="text-white w-8 h-8" />
+            </button>
             <Swiper
-              modules={[Navigation, Pagination]}
+              modules={[Navigation]}
               spaceBetween={16}
               slidesPerView={1.2}
-              navigation
-              pagination={{ clickable: true }}
+              navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
               breakpoints={{
                 640: { slidesPerView: 2.2 },
                 1024: { slidesPerView: 4 },
               }}
+              loop={false}
+              onSwiper={syncEdges}
+              onSlideChange={syncEdges}
+              observer
+              observeParents
+              updateOnWindowResize
+              onResize={syncEdges}
             >
               {topMovie.length
                 ? topMovie.map((el, idx) => {
