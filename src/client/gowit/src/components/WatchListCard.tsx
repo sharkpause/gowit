@@ -1,33 +1,27 @@
-import { Star } from "lucide-react";
+import { Dot, Star } from "lucide-react";
 
-export default function MovieCard({
+export default function WatchListCard({
   poster_url,
   rating,
   title,
   description,
   year,
-  rank,
+  minute,
 }: {
   poster_url: string;
   rating: number;
   title: string;
   description: string;
   year: number;
-  rank: number;
+  minute: number;
 }) {
   return (
-    <div className="w-48 md:w-56 lg:w-64 bg-[#1C1E22] rounded-lg overflow-hidden shadow-lg hover:scale-105 transform transition-all duration-300 ">
-      <div className="relative">
-        <div className="absolute top-0 left-0 bg-gradient-to-br from-yellow-400 to-amber-600 text-black font-bold px-3 py-1 rounded-br-lg shadow-lg z-10">
-          <span className="text-lg">#{rank}</span>
-        </div>
-
-        <img
-          src={poster_url}
-          alt="Movie Poster"
-          className="w-full h-72 object-cover"
-        />
-      </div>
+    <div className="w-48 md:w-56 lg:w-64 bg-[#1C1E22] rounded-lg overflow-hidden shadow-lg  ">
+      <img
+        src={poster_url}
+        alt="Movie Poster"
+        className="w-full h-72 object-cover"
+      />
       <div className="bg-gray-900 h-full py-2 px-3 text-[#F5F2F2]">
         <div className="flex items-center gap-1 mt-1">
           <span>
@@ -42,7 +36,12 @@ export default function MovieCard({
             ? description
             : description.substring(0, 100) + "..."}
         </p>
-        <p className="text-sm mt-5 mb-2 text-[#F5F2F2]">{year}</p>
+
+        <div className="flex items-center text-sm mt-5 mb-2 text-[#F5F2F2]">
+          <p>{year}</p>
+          <Dot />
+          <p>{minute}m</p>
+        </div>
       </div>
     </div>
   );
