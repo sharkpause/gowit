@@ -2,14 +2,30 @@ package routes
 
 import (
 	"database/sql"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/sharkpause/gowit/handlers"
+
 	"github.com/sharkpause/gowit/auth"
-	
+	"github.com/sharkpause/gowit/handlers"
 )
 
 func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
+	router.Use(cors.New(cors.Config{
+		// Ganti origin sesuai frontend kamu
+		AllowOrigins: []string{
+			"http://localhost:3000",
+			"http://localhost:5173",
+			// "https://domain-frontend-kamu.com",
+		},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders: []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge: 12 * time.Hour,
+	}))
+
 	api := router.Group("/api")
 
 	{
