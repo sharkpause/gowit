@@ -18,7 +18,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="/"
+                  href="#"
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Home
@@ -26,7 +26,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="/movies"
+                  href="#movies"
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Movies
@@ -34,7 +34,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="/contact"
+                  href="#contact-us"
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Contact Us
