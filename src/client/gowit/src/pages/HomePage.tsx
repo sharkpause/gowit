@@ -14,6 +14,7 @@ import type { Swiper as SwiperType } from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
 
 import "swiper/swiper-bundle.css";
+import Navbar from "../components/Navbar";
 
 export default function HomePage() {
   const [topMovie, setTopMovie] = useState<MovieType[]>([]);
@@ -91,6 +92,7 @@ export default function HomePage() {
 
   return (
     <>
+      <Navbar />
       <section className=" min-h-screen bg-[#0F1115] ">
         {/* Background Image with Opacity */}
         <div

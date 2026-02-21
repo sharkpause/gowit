@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import FavoritePage from "./pages/FavoritePage";
 import DetailPage from "./pages/DetailPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -14,10 +15,11 @@ function App() {
         <Routes>
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/movies/:id" element={<DetailPage />} />
           <Route path="/" element={<Layout />}>
-            <Route path="" element={<HomePage />} />
             <Route path="watchlist" element={<FavoritePage />} />
-            <Route path="movies/:id" element={<DetailPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>
