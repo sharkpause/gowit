@@ -46,7 +46,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 		protected.Use(auth.Middleware())
 		{
 			// protected.GET("/test", auth.Test) //auffth.Test just ignore, will delete later, forgot to put into .gitignore. mb.
-			protected.POST("/add/:id", handlers.AddFilmToFavorite(database)) // dear @gilbert-sunbaenim, 我不知道要放什么route，只好先这样咯，
+			protected.POST("/favorites", handlers.AddFilmToFavorite(database)) // dear @gilbert-sunbaenim, 我不知道要放什么route，只好先这样咯，
 		}
 		
 		api.Use(auth.Middleware())

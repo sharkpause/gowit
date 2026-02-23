@@ -16,6 +16,11 @@ type Scanner interface {
 	Scan(dest ...any) error
 }
 
+type favoriteRequest struct {
+	FilmID		uint64		`json:"film_id"`
+	Notes		string		`json:"notes"`
+}
+
 func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	var film models.Film
 
@@ -289,33 +294,38 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 
 func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
 	return func(context *gin.Context){
-		// get by :id
-		film_id, err := strconv.ParseUint(context.Param("id"), 10, 64) 
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		var request favoriteRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid request body",
+			})
 			return
 		}
 		
-		user_id, exists := context.Get("user_id")
+		userID, exists := context.Get("user_id")
 		if !exists{
 			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
 			return
 		}
-		_, err = database.Exec(
-			"INSERT INTO favorites (user_id, film_id) VALUES (?,?)",
-			user_id, film_id,
+
+		fmt.Println(userID, request.Notes, request.FilmID)
+		_, err := database.Exec(
+			"INSERT INTO favorites (user_id, notes, film_id) VALUES (?, ?, ?)",
+			userID, request.Notes, request.FilmID,
 		)
 
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"error": "internal database error"}) // idk the code, will fix this later
+			fmt.Println(err)
 			return
 		}
+
 		context.JSON(
 			http.StatusCreated,
 			gin.H{
 				"message": "successfully add film to favorite",
-				"film_id" : film_id,
-				"user_id": user_id,
+				"film_id" : request.FilmID,
+				"user_id": userID,
 			},
 		)
 	}
