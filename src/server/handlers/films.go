@@ -330,6 +330,13 @@ func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
 		)
 	}
 }
+
+func GetFavorites(databse *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		
+	}
+}
+
 func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		const defaultLimit = 10
