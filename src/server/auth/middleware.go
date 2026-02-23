@@ -41,6 +41,7 @@ func Middleware() gin.HandlerFunc {
 			userID := uint64(claims["user_id"].(float64))
 			c.Set("user_id", userID)
 			c.Next()
+			return
 		}
 
 		c.AbortWithStatusJSON(401, gin.H{"error": "invalid token"})

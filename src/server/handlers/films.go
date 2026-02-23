@@ -331,9 +331,50 @@ func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
 	}
 }
 
-func GetFavorites(databse *sql.DB) func(*gin.Context) {
+func GetFavorites(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
-		
+		userID, exists := context.Get("user_id")
+		if !exists{
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
+			return
+		}
+
+		query := `
+			SELECT id, film_id, notes FROM favorites WHERE user_id=?
+		`
+
+		rows, err := database.Query(query, userID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+			return
+		}
+
+		defer rows.Close()
+
+		var favorites []models.Favorite
+
+		for rows.Next() {
+			var favorite models.Favorite
+			err := rows.Scan(
+				&favorite.ID,
+				&favorite.FilmID,
+				&favorite.Notes,
+			)
+
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			favorites = append(favorites, favorite)
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"favorites": favorites,
+			"metadata":	gin.H{
+				"amount": len(favorites),
+			},
+		})
 	}
 }
 
