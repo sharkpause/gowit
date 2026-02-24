@@ -1,8 +1,9 @@
-import { Heart, X } from "lucide-react";
+import { Heart, X, Download, Upload } from "lucide-react";
 import { Link } from "react-router";
-import MovieCard from "../components/MovieCard";
+
 import type { MovieWatchlist } from "../type";
 import WatchListCard from "../components/WatchListCard";
+import * as XLSX from "xlsx";
 
 export default function FavoritePage() {
   const data = [
@@ -98,8 +99,39 @@ export default function FavoritePage() {
     },
   ];
 
+  const download = () => {
+    const formattedData = data.map((el) => {
+      return {
+        Title: el.title,
+        Description: el.description,
+        "Poster URL": el.poster_url,
+        "Average Rating": el.rating,
+        "Release Year": el.year,
+        "Duration (Minutes)": el.minute,
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+    worksheet["!cols"] = [
+      { wch: 25 },
+      { wch: 80 },
+      { wch: 80 },
+      { wch: 17 },
+      { wch: 17 },
+      { wch: 17 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "My Watchlist");
+
+    XLSX.writeFile(workbook, "my-watchlist.xlsx", {
+      compression: true,
+    });
+  };
+
   return (
-    <div className="bg-[#0F1115] overflow-hidden px-4 md:px-8 lg:px-32 pt-32 pb-16">
+    <div className="bg-[#0F1115] overflow-hidden px-4 md:px-8 lg:px-36 pt-32 pb-16">
       <div className="flex flex-wrap gap-4 mb-8">
         <div className="flex items-center gap-2">
           <label className="text-[#F5F2F2] text-sm font-medium">Sort by:</label>
@@ -125,6 +157,19 @@ export default function FavoritePage() {
           className="flex-1 text-[#F5F2F2] text-sm font-medium px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E50914] transition-colors cursor-pointer"
           placeholder="Search"
         />
+
+        <button
+          onClick={download}
+          className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E50914] focus:outline-none transition-colors flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Export
+        </button>
+
+        <button className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E50914] focus:outline-none transition-colors flex items-center gap-2">
+          <Upload className="w-4 h-4" />
+          Import
+        </button>
       </div>
       {data.length > 0 ? (
         <div className="min-h-screen flex flex-wrap gap-16 justify-center">
