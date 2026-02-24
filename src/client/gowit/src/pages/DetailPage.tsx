@@ -21,5 +21,88 @@ export default function DetailPage() {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, []);
 
-  return <div className="bg-[#0F1115]">\\</div>;
+  return (
+    <div className="bg-[#0F1115]">
+      <div className="max-w-6xl mx-auto px-6 py-10 ">
+        <div className="bg-[#0B0C0D] border border-gray-800 rounded-lg p-8 shadow-xl mt-12">
+          <h2 className="text-white mb-6 font-bold text-3xl">
+            {detailMovie?.title}
+          </h2>
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-2xl bg-black">
+            <iframe
+              className="w-full h-full"
+              src={detailMovie?.trailer_url}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            ></iframe>
+          </div>
+          <div className="mt-6 bg-black rounded-md p-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="max-w-5xl mx-auto grid md:grid-cols-[280px_1fr] gap-5">
+                <img
+                  src={detailMovie?.poster_image_url}
+                  className="rounded-lg shadow-lg"
+                  alt="Poster"
+                />
+              </div>
+              <div className="md:col-span-2 space-y-4 .md:-ml-3">
+                <h1 className="text-3xl font-bold text-white">
+                  {" "}
+                  {detailMovie?.title}
+                </h1>
+                <div className="mt-4 items-center text-xl py-1 rounded-md shadow-sm">
+                  <span className="text-yellow-400 text-lg">⭐</span>
+                  <span className="text-white font-semibold ml-1">
+                    {detailMovie?.average_rating}
+                  </span>
+                  <span className="text-gray-400 text-sm">/10</span>
+                </div>
+                <p className="text-gray-300 text-justify">
+                  {detailMovie?.description}
+                </p>
+                <div className="grid grid-cols-2 gap-4 text-sm text-gray-400 pt-4">
+                  <p>
+                    <span className="text-white font-semibold">Released:</span>{" "}
+                    {detailMovie?.release_year}
+                  </p>
+                  <p>
+                    <span className="text-white font-semibold">Duration:</span>{" "}
+                    {detailMovie?.runtime} min
+                  </p>
+                  <p>
+                    <span className="text-white font-semibold">Genre:</span>{" "}
+                    {detailMovie?.genres.join(" ")}
+                  </p>
+                  <p>
+                    <span className="text-white font-semibold">Country:</span>{" "}
+                    {detailMovie?.production_countries.join(" ")}
+                  </p>
+                  <p>
+                    <span className="text-white font-semibold">
+                      Production:
+                    </span>{" "}
+                    {detailMovie?.production_companies.join(" ")}
+                  </p>
+                  <p>
+                    <span className="text-white font-semibold">Casts:</span>{" "}
+                    {detailMovie?.casts.join(" ")}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button className="bg-[#E50914] hover:bg-red-800 text-white px-5 py-3 rounded-lg transition flex items-center gap-2 font-bold">
+                <img
+                  src="../watchlisticon.png"
+                  alt="Watchlist"
+                  className="w-4 h-4"
+                />
+                Add to Watchlist
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
