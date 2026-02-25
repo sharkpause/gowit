@@ -292,92 +292,6 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 	}
 }
 
-func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
-	return func(context *gin.Context){
-		var request favoriteRequest
-		if err := context.ShouldBindJSON(&request); err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"error": "invalid request body",
-			})
-			return
-		}
-		
-		userID, exists := context.Get("user_id")
-		if !exists{
-			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
-			return
-		}
-
-		fmt.Println(userID, request.Notes, request.FilmID)
-		_, err := database.Exec(
-			"INSERT INTO favorites (user_id, notes, film_id) VALUES (?, ?, ?)",
-			userID, request.Notes, request.FilmID,
-		)
-
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": "internal database error"}) // idk the code, will fix this later
-			fmt.Println(err)
-			return
-		}
-
-		context.JSON(
-			http.StatusCreated,
-			gin.H{
-				"message": "successfully add film to favorite",
-				"film_id" : request.FilmID,
-				"user_id": userID,
-			},
-		)
-	}
-}
-
-func GetFavorites(database *sql.DB) func(*gin.Context) {
-	return func(context *gin.Context) {
-		userID, exists := context.Get("user_id")
-		if !exists{
-			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
-			return
-		}
-
-		query := `
-			SELECT id, film_id, notes FROM favorites WHERE user_id=?
-		`
-
-		rows, err := database.Query(query, userID)
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
-			return
-		}
-
-		defer rows.Close()
-
-		var favorites []models.Favorite
-
-		for rows.Next() {
-			var favorite models.Favorite
-			err := rows.Scan(
-				&favorite.ID,
-				&favorite.FilmID,
-				&favorite.Notes,
-			)
-
-			if err != nil {
-				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-
-			favorites = append(favorites, favorite)
-		}
-
-		context.JSON(http.StatusOK, gin.H{
-			"favorites": favorites,
-			"metadata":	gin.H{
-				"amount": len(favorites),
-			},
-		})
-	}
-}
-
 func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		const defaultLimit = 10
@@ -433,6 +347,157 @@ func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
 			"films":    films,
 			"metadata": gin.H{
 				"amount": len(films),
+			},
+		})
+	}
+}
+
+func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
+	return func(context *gin.Context){
+		var request favoriteRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid request body",
+			})
+			return
+		}
+		
+		userID, exists := context.Get("user_id")
+		if !exists{
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
+			return
+		}
+
+		fmt.Println(userID, request.Notes, request.FilmID)
+		_, err := database.Exec(
+			"INSERT INTO favorites (user_id, notes, film_id) VALUES (?, ?, ?)",
+			userID, request.Notes, request.FilmID,
+		)
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "internal database error"}) // idk the code, will fix this later
+			fmt.Println(err)
+			return
+		}
+
+		context.JSON(
+			http.StatusCreated,
+			gin.H{
+				"message": "successfully add film to favorite",
+				"film_id" : request.FilmID,
+				"user_id": userID,
+			},
+		)
+	}
+}
+
+func DeleteFilmFromFavorite(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		filmID, err := strconv.Atoi(context.Param("film_id"))
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "error while reading film id"})
+			return
+		}
+
+		userID, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"})
+			return
+		}
+
+		query := `
+			DELETE FROM favorites WHERE user_id=? and film_id=?
+		`
+
+		result, err := database.Exec(query, userID, filmID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+			return
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "internal db error",
+			})
+			fmt.Println(err)
+			return
+		}
+
+		if rowsAffected == 0 {
+			context.JSON(http.StatusNotFound, gin.H{
+				"error": "favorite film not found",
+			})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"message": "successfully deleted film from favorite",
+		})
+	}
+}
+
+func GetFavorites(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		userID, exists := context.Get("user_id")
+		if !exists{
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
+			return
+		}
+
+		query := `
+			SELECT
+				favorite.id,
+				favorite.notes,
+				film.id,
+				film.title,
+				film.description,
+				film.poster_image_url,
+				film.average_rating,
+				film.release_year,
+				film.runtime
+			FROM favorites favorite
+			JOIN films film
+			ON favorite.film_id = film.id
+			WHERE favorite.user_id = ?
+		`
+
+		rows, err := database.Query(query, userID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+			return
+		}
+
+		defer rows.Close()
+
+		var favorites []models.Favorite
+
+		for rows.Next() {
+			var favorite models.Favorite
+			err := rows.Scan(
+				&favorite.ID,
+				&favorite.Notes,
+				&favorite.FilmID,
+				&favorite.Title,
+				&favorite.Description,
+				&favorite.PosterImageURL,
+				&favorite.AverageRating,
+				&favorite.ReleaseYear,
+				&favorite.Runtime,
+			)
+
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			favorites = append(favorites, favorite)
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"favorites": favorites,
+			"metadata":	gin.H{
+				"amount": len(favorites),
 			},
 		})
 	}
