@@ -102,9 +102,12 @@ export default function Navbar() {
             <Plus size={20} className="border border-white/40 rounded" />
             <span className="font-medium hidden lg:inline">Watch List</span>
           </Link>
-          <button className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base">
+          <Link
+            to="/login"
+            className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base"
+          >
             Sign In
-          </button>
+          </Link>
         </div>
 
         <button
@@ -204,9 +207,12 @@ export default function Navbar() {
           </div>
 
           <div className="px-4 py-4 border-t border-white/10">
-            <button className="w-full bg-white text-black py-2.5 rounded-full font-semibold hover:bg-gray-200 transition-all">
+            <Link
+              to="/login"
+              className="w-full bg-white text-black py-2.5 rounded-full font-semibold hover:bg-gray-200 transition-all"
+            >
               Sign In
-            </button>
+            </Link>
           </div>
         </div>
       )}
