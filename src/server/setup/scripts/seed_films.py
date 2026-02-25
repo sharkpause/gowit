@@ -58,7 +58,7 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
                 trailer_url = None
                 for video in videos:
                     if video.get("site") == "YouTube" and video.get("type") == "Trailer":
-                        trailer_url = f"https://www.youtube.com/watch?v={video.get('key')}"
+                        trailer_url = f"https://www.youtube.com/embed/{video.get('key')}"
                         break
 
                 credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
