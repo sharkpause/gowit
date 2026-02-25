@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { serverApi } from "../api";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { errorAlert } from "../helper/errorAlert";
 
 export default function RegisterPage() {
@@ -16,16 +16,27 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       if (password !== confirmPassword) {
-        return errorAlert(
-          "Passwords don't match",
-          "Please make sure the confirm password matches your password.",
-        );
+        return errorAlert("Passwords don't match");
       }
 
       const response = await serverApi.post("/api/register", {
         name,
         email,
         password,
+      });
+
+      Swal.fire({
+        title: "Register Successful!",
+
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+        },
       });
 
       navigate("/login");
@@ -97,10 +108,10 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={confirmPasswordFunction}
-                className={`w-full bg-transparent border-b border-gray-600  focus:outline-none py-2 mb-2 ${style ? style : "focus:border-white"}`}
+                className={`w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 mb-2 ${style ? style : ""}`}
               />
               {style ? (
-                <p className="text-red-500 text-sm font-light">
+                <p className="text-red-500 font-light text-sm ">
                   Passwords do not match.
                 </p>
               ) : (
@@ -109,11 +120,20 @@ export default function RegisterPage() {
             </div>
             <button
               type="submit"
-              className="w-full bg-[#E50914] hover:bg-red-800 py-3 rounded-lg font-bold transition-300"
+              className="w-full bg-[#E50914] hover:bg-red-800 py-3 rounded-lg font-bold transition-300 mb-2"
             >
               Create Account
             </button>
           </form>
+          <p className="text-center text-gray-400 mt-1">
+            Already Have an account?{" "}
+            <Link
+              to="/login"
+              className="text-white underline hover:text-white/90"
+            >
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

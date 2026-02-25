@@ -1,6 +1,39 @@
-import { Link } from "react-router";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { serverApi } from "../api";
+import Swal from "sweetalert2";
+import { errorAlert } from "../helper/errorAlert";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const loginSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await serverApi.post("/api/login", { email, password });
+
+      Swal.fire({
+        title: "Login Successful!",
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+        },
+      });
+
+      navigate("/");
+    } catch (error) {
+      console.log("Error at Login Page: ", error);
+      // errorAlert(error);
+    }
+  };
+
   return (
     <>
       <div className="flex min-h-screen bg-[#0F1115]">
@@ -35,12 +68,14 @@ export default function LoginPage() {
               </span>
               <div className="grow border-t border-gray-600" />
             </div>
-            <form action="/login" method="POST" className="space-y-6">
+            <form onSubmit={loginSubmit} className="space-y-6">
               <div>
                 <label className="text-sm text-gray-400">Email address</label>
                 <input
                   type="email"
                   name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2"
                 />
               </div>
@@ -49,6 +84,8 @@ export default function LoginPage() {
                 <input
                   type="password"
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 mb-10"
                 />
               </div>
