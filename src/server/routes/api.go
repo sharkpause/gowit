@@ -31,6 +31,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 
 	{
 		api.GET("/ping", handlers.PingHandler)
+		api.GET("/me", handlers.MeHandler(database))
 
 		api.GET("/films", handlers.GetFilms(database))
 		api.GET("/films/trending", handlers.GetTrendingFilms(database))
