@@ -39,8 +39,8 @@ export default function RegisterPage() {
     const value = e.target.value;
     setConfirmPassword(value);
 
-    if (value !== password) {
-      setStyle("decoration-red-500");
+    if (value !== password && value.length > 0) {
+      setStyle("border-red-500");
     } else {
       setStyle("");
     }
@@ -97,8 +97,15 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={confirmPasswordFunction}
-                className={`w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 mb-10 ${style ? style : ""}`}
+                className={`w-full bg-transparent border-b border-gray-600  focus:outline-none py-2 mb-2 ${style ? style : "focus:border-white"}`}
               />
+              {style ? (
+                <p className="text-red-500 text-sm font-light">
+                  Passwords do not match.
+                </p>
+              ) : (
+                ""
+              )}
             </div>
             <button
               type="submit"
