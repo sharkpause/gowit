@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { serverApi } from "../api";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { errorAlert } from "../helper/errorAlert";
 
 export default function RegisterPage() {
@@ -47,67 +47,75 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0F1115]">
-      <img
-        src="../background.png"
-        className="hidden md:block md:w-1/2 h-screen object-cover"
-        alt="Background"
-      />
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-[#0F1115] px-8">
-        <div className="w-full max-w-md text-white">
-          <h2 className="text-3xl font-bold mb-2">Create your Account</h2>
-          <p className="text-gray-400 mb-10">
-            Start watching unlimited movies today
-          </p>
+
+
+  <div className="flex min-h-screen bg-[#0F1115]">
+    <img
+      src="../background.png"
+      className="hidden md:block md:w-1/2 h-screen object-cover"
+      alt="Background"
+    />
+    <div className="w-full md:w-1/2 flex items-center justify-center bg-[#0F1115] px-8">
+      <div className="w-full max-w-md text-white">
+        <h2 className="text-3xl font-bold mb-2">Create your Account</h2>
+        <p className="text-gray-400 mb-10">
+          Start watching unlimited movies today
+        </p>
           <form action="/login" onSubmit={submitRegister} className="space-y-4">
-            <div>
-              <label className="text-sm text-gray-400">Full Name</label>
-              <input
-                type="full name"
-                name="full"
+          <div>
+            <label className="text-sm text-gray-400">Full Name</label>
+            <input
+              type="full name"
+              name="full"
                 onChange={(e) => setName(e.target.value)}
                 value={name}
-                className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-gray-400">Email Address</label>
-              <input
-                type="email"
-                name="email"
+              className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Email Address</label>
+            <input
+              type="email"
+              name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-gray-400">Password</label>
-              <input
-                type="password"
-                name="password"
+              className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Password</label>
+            <input
+              type="password"
+              name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-gray-400">Password Confirm</label>
-              <input
-                type="password"
+              className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Password Confirm</label>
+            <input
+              type="password"
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={confirmPasswordFunction}
                 className={`w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 mb-10 ${style ? style : ""}`}
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-[#E50914] hover:bg-red-800 py-3 rounded-lg font-bold transition-300"
-            >
-              Create Account
-            </button>
-          </form>
-        </div>
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-[#E50914] hover:bg-red-800 py-3 rounded-lg font-bold transition-300"
+          >
+            Create Account
+          </button>
+        </form>
+         <p className="text-center text-white mt-1">
+          Already Have an account?{" "}
+          <Link to="/login" className="text-white underline hover:text-white/90">
+            Sign in
+          </Link>
+        </p>
+      </div>
       </div>
     </div>
   );
