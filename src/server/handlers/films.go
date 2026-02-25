@@ -446,7 +446,20 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 		}
 
 		query := `
-			SELECT id, film_id, notes FROM favorites WHERE user_id=?
+			SELECT
+				favorite.id,
+				favorite.notes,
+				film.id,
+				film.title,
+				film.description,
+				film.poster_image_url,
+				film.average_rating,
+				film.release_year,
+				film.runtime
+			FROM favorites favorite
+			JOIN films film
+			ON favorite.film_id = film.id
+			WHERE favorite.user_id = ?
 		`
 
 		rows, err := database.Query(query, userID)
@@ -463,8 +476,14 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 			var favorite models.Favorite
 			err := rows.Scan(
 				&favorite.ID,
-				&favorite.FilmID,
 				&favorite.Notes,
+				&favorite.FilmID,
+				&favorite.Title,
+				&favorite.Description,
+				&favorite.PosterImageURL,
+				&favorite.AverageRating,
+				&favorite.ReleaseYear,
+				&favorite.Runtime,
 			)
 
 			if err != nil {
