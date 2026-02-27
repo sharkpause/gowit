@@ -1,14 +1,15 @@
-import { Outlet } from "react-router";
+import { Navigate, Outlet } from "react-router";
 import Navbar from "../components/Navbar";
 import { serverApi } from "../api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Layout() {
+  const [id, setId] = useState("");
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await serverApi.get("/api/me");
-        console.log(response);
+        setId(response.data.id);
       } catch (error) {
         console.log("Error at Layout:", error);
       }
@@ -16,6 +17,10 @@ export default function Layout() {
 
     fetchUser();
   }, []);
+
+  if (!id) {
+    return <Navigate to="/login?loginFirst=true" />;
+  }
 
   return (
     <>
