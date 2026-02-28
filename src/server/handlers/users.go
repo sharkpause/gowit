@@ -182,3 +182,9 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 		})
 	}
 }
+func LogoutUser(context *gin.Context){
+	context.SetCookie("token", "", -1, "/","",true,true)
+	context.JSON(200, gin.H{
+		"message":"Logged Out",
+	})
+}
