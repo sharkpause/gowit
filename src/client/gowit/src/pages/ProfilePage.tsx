@@ -1,8 +1,11 @@
 import Swal from "sweetalert2";
 import { serverApi } from "../api";
 import { Navigate, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import type { ProfileType } from "../type";
 
 export default function ProfilePage() {
+  const [profile, setProfile] = useState<ProfileType>();
   const navigate = useNavigate();
   const logout = async () => {
     try {
@@ -27,6 +30,21 @@ export default function ProfilePage() {
       console.log("Error at ProfilePage: ", error);
     }
   };
+
+  const fetchUser = async () => {
+    try {
+      const response = await serverApi.get("/api/userprofile");
+      console.log(response.data);
+
+      setProfile(response.data);
+    } catch (error) {
+      console.log("Error at ProfilePage: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   return (
     <div className="h-[100vh] relative">
@@ -74,7 +92,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="text"
-              value="Samantha Jones"
+              value={profile?.name}
               disabled
               className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
             />
@@ -86,7 +104,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="email"
-              value="samantha.jones@example.com"
+              value={profile?.email}
               disabled
               className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
             />
@@ -98,7 +116,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="date"
-              value="2025-12-12"
+              value={profile?.created}
               disabled
               className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
             />

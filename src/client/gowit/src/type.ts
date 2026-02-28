@@ -30,3 +30,10 @@ export type WatchListType = {
   notes: string;
   film: MovieWatchlistType;
 };
+
+export type ProfileType = {
+  name: string;
+  email: string;
+  profile: string;
+  created: Date;
+};
