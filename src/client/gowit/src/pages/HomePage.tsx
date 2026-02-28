@@ -96,7 +96,6 @@ export default function HomePage() {
     total = movieFeatured.length;
   }
   const maxIndex = Math.max(0, total - visibleFeatured);
-  console.log(maxIndex);
 
   const prevFeatured = () => setIndex((i) => i - 1);
   const nextFeatured = () => setIndex((i) => i + 1);
