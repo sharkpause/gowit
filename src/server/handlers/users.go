@@ -190,7 +190,7 @@ func LogoutUser(context *gin.Context){
 	})
 }
 
-func UserDetail(database *sql.DB) gin.HandlerFunc{
+func GetUserDetail(database *sql.DB) gin.HandlerFunc{
 	return func(context *gin.Context) {
 		userID,exists := context.Get("user_id")
 			if !exists {

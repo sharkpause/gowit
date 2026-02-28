@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { serverApi } from "../api";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link, Navigate } from "react-router";
 import { errorAlert } from "../helper/errorAlert";
 
 import axios from "axios";
@@ -14,6 +14,40 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [style, setStyle] = useState("");
   const navigate = useNavigate();
+  const [id, setId] = useState("");
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await serverApi.get("/api/me");
+
+        setId(response.data.id);
+      } catch (error) {
+        console.log("Error at Layout:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0F1115]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-400 text-sm tracking-widest uppercase">
+            Loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (id) {
+    return <Navigate to="/" />;
+  }
 
   const submitRegister = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();

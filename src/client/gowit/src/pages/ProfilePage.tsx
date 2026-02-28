@@ -1,4 +1,33 @@
+import Swal from "sweetalert2";
+import { serverApi } from "../api";
+import { Navigate, useNavigate } from "react-router";
+
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  const logout = async () => {
+    try {
+      const response = await serverApi.post("/api/logout");
+
+      Swal.fire({
+        title: "Logout Successful!",
+
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+        },
+      });
+
+      navigate("/");
+    } catch (error) {
+      console.log("Error at ProfilePage: ", error);
+    }
+  };
+
   return (
     <div className="h-[100vh] relative">
       <div
@@ -26,9 +55,15 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <button className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-lg shadow-[#E50914]/30">
+        <div className="flex justify-between mb-5">
+          <button className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer">
             Edit Profile
+          </button>
+          <button
+            onClick={logout}
+            className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
+          >
+            Logout
           </button>
         </div>
 

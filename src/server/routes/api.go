@@ -51,7 +51,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.POST("/favorites", handlers.AddFilmToFavorite(database)) // dear @gilbert-sunbaenim, 我不知道要放什么route，只好先这样咯，
 			protected.DELETE("/favorites/:film_id", handlers.DeleteFilmFromFavorite(database))
 			protected.POST("/logout", handlers.LogoutUser)
-			protected.GET("/userprofile", handlers.UserDetail(database))
+			protected.GET("/userprofile", handlers.GetUserDetail(database))
 		}
 		
 		api.Use(auth.Middleware())
