@@ -35,5 +35,6 @@ export type ProfileType = {
   name: string;
   email: string;
   profile: string;
-  created: Date;
+  created: string;
+  favorite_count: number;
 };

@@ -3,6 +3,7 @@ import { serverApi } from "../api";
 import { Navigate, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import type { ProfileType } from "../type";
+import { toDateInputValue } from "../helper/helper";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileType>();
@@ -116,7 +117,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="date"
-              value={profile?.created}
+              value={toDateInputValue(profile?.created)}
               disabled
               className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
             />
@@ -129,17 +130,11 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-gray-400 text-sm mb-2">Your Watchlist</p>
                     <h3 className="text-3xl font-bold text-[#F5F2F2]">
-                      21{" "}
+                      {profile?.favorite_count || 0}{" "}
                       <span className="text-lg text-gray-400 font-normal">
                         Movies
                       </span>
                     </h3>
-                  </div>
-                  <div className="mt-2">
-                    <span className="text-gray-400">Recently Added At:</span>{" "}
-                    <span className="text-[#F5F2F2] font-medium">
-                      February 22, 2026
-                    </span>
                   </div>
                 </div>
 
