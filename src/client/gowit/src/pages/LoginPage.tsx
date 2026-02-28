@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { serverApi } from "../api";
 import Swal from "sweetalert2";
 import { errorAlert } from "../helper/errorAlert";
+import axios from "axios";
+import { capitalizeEachWord } from "../helper/helper";
 
 export default function LoginPage() {
   let [searchParams] = useSearchParams();
@@ -31,9 +33,12 @@ export default function LoginPage() {
       });
 
       navigate("/");
-    } catch (error) {
-      console.log("Error at Login Page: ", error);
-      // errorAlert(error);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else {
+        console.log("Error at Login Page: ", error);
+      }
     }
   };
 

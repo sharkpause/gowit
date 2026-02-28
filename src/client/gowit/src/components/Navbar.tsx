@@ -13,7 +13,6 @@ export default function Navbar() {
     const fetchUser = async () => {
       try {
         const response = await serverApi.get("/api/me");
-        console.log(response);
 
         setId(response.data.id);
       } catch (error) {

@@ -4,6 +4,9 @@ import { serverApi } from "../api";
 import { useNavigate, Link } from "react-router";
 import { errorAlert } from "../helper/errorAlert";
 
+import axios from "axios";
+import { capitalizeEachWord } from "../helper/helper";
+
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,8 +44,11 @@ export default function RegisterPage() {
 
       navigate("/login");
     } catch (error: unknown) {
-      console.log("Error at Register Page: ", error);
-      // errorAlert(error);
+      if (axios.isAxiosError(error)) {
+        errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else {
+        console.log("Error at Register Page: ", error);
+      }
     }
   };
 
