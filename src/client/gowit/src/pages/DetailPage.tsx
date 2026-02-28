@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import type { MovieType } from "../type";
 import { serverApi } from "../api";
+import { errorAlert } from "../helper/errorAlert";
+import Swal from "sweetalert2";
+
+import axios from "axios";
+import { capitalizeEachWord } from "../helper/helper";
 
 export default function DetailPage() {
   const [detailMovie, setDetailMovie] = useState<MovieType>();
   let { id } = useParams();
+  const navigate = useNavigate();
 
   const fetchMovie = async () => {
     try {
@@ -13,6 +19,36 @@ export default function DetailPage() {
       setDetailMovie(response.data);
     } catch (error) {
       console.log("Error at Detail Page ", error);
+    }
+  };
+
+  const addMovieToFavorites = async () => {
+    try {
+      const response = await serverApi.post("/api/favorites", {
+        film_id: Number(id),
+      });
+
+      Swal.fire({
+        title: `${detailMovie?.title} Added Successful!"`,
+
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+        },
+      });
+
+      navigate("/watchlist");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else {
+        console.log("Error at Detail Page: ", error);
+      }
     }
   };
 
@@ -90,8 +126,11 @@ export default function DetailPage() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-4">
-              <button className="bg-[#E50914] hover:bg-red-800 text-white px-5 py-3 rounded-lg transition flex items-center gap-2 font-bold">
+            <div className="flex gap-4 ml-2 mt-2">
+              <button
+                onClick={addMovieToFavorites}
+                className="bg-[#E50914] hover:bg-red-800 text-white px-5 py-3 rounded-lg transition flex items-center gap-2 font-bold"
+              >
                 <img
                   src="../watchlisticon.png"
                   alt="Watchlist"

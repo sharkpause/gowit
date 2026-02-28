@@ -1,8 +1,16 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useEffect, useState } from "react";
+import {
+  Link,
+  Navigate,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router";
 import { serverApi } from "../api";
 import Swal from "sweetalert2";
 import { errorAlert } from "../helper/errorAlert";
+import axios from "axios";
+import { capitalizeEachWord } from "../helper/helper";
 
 export default function LoginPage() {
   let [searchParams] = useSearchParams();
@@ -11,6 +19,40 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [id, setId] = useState("");
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await serverApi.get("/api/me");
+
+        setId(response.data.id);
+      } catch (error) {
+        console.log("Error at Layout:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0F1115]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-400 text-sm tracking-widest uppercase">
+            Loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (id) {
+    return <Navigate to="/" />;
+  }
 
   const loginSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,9 +73,12 @@ export default function LoginPage() {
       });
 
       navigate("/");
-    } catch (error) {
-      console.log("Error at Login Page: ", error);
-      // errorAlert(error);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else {
+        console.log("Error at Login Page: ", error);
+      }
     }
   };
 

@@ -10,7 +10,6 @@ export default function Layout() {
     const fetchUser = async () => {
       try {
         const response = await serverApi.get("/api/me");
-        console.log(response);
 
         setId(response.data.id);
       } catch (error) {
