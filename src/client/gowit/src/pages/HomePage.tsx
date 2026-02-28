@@ -8,7 +8,7 @@ import TrailerCard from "../components/TrailerCard";
 import Footer from "../components/Footer";
 import { serverApi } from "../api";
 import type { MovieType } from "../type";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
@@ -24,12 +24,27 @@ export default function HomePage() {
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash === "#movies") {
+      const el = document.getElementById("movies");
+      el?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+    if (location.hash === "#contact-us") {
+      const el = document.getElementById("contact-us");
+      el?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  }, [location]);
+
   const syncEdges = (swiper: SwiperType) => {
     setIsBeginning(swiper.isBeginning);
     setIsEnd(swiper.isEnd);
   };
-
-  console.log(isBeginning, isEnd);
 
   async function fetchFeaturedMovies() {
     // Simulate fetching featured movies\
@@ -105,7 +120,10 @@ export default function HomePage() {
           <LightRays />
         </div>
 
-        <div className="relative flex flex-col z-10 min-h-screen justify-center items-center px-6 text-center">
+        <div
+          className="relative flex flex-col z-10 min-h-screen justify-center items-center px-6 text-center"
+          id="home"
+        >
           <h1 className="text-3xl md:text-4xl lg:text-5xl  font-bold text-[#F5F2F2] mt-8 ">
             Discover Movies with Smarter Insights
           </h1>

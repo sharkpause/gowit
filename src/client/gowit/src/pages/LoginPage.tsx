@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { serverApi } from "../api";
 import Swal from "sweetalert2";
 import { errorAlert } from "../helper/errorAlert";
 
 export default function LoginPage() {
+  let [searchParams] = useSearchParams();
+  const loginFirst = searchParams.get("loginFirst");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -54,6 +57,27 @@ export default function LoginPage() {
                 Create a new Account now!
               </Link>
             </p>
+            {loginFirst ? (
+              <div className="flex items-center gap-3 bg-[#E50914]/10 border border-[#E50914] text-[#E50914] px-4 py-3 rounded-lg mb-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm font-medium">
+                  You must login first before access the page
+                </span>
+              </div>
+            ) : (
+              ""
+            )}
             <button className="w-full flex items-center justify-center gap-3 bg-[#1E1E1E] hover:bg-[#2d3745] py-3 rounded-lg mb-6 transition">
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
