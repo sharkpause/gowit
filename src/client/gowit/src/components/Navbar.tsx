@@ -1,11 +1,51 @@
-import { Search, Plus, Menu, X } from "lucide-react";
+import { Search, Plus, Menu, X, CircleUserRound } from "lucide-react";
 import { Link } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { serverApi } from "../api";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [mobileSearch, setMobileSearch] = useState("");
+  const [id, setId] = useState("");
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await serverApi.get("/api/me");
+        console.log(response);
+
+        setId(response.data.id);
+      } catch (error) {
+        console.log("Error at Layout:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) {
+    return (
+      <nav className="bg-black/95 backdrop-blur-sm fixed left-0 right-0 z-50 shadow-lg shadow-black/30">
+        <div className="h-16 flex items-center justify-between px-4 md:px-8 lg:px-32">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded bg-white/10 animate-pulse" />
+            <div className="w-16 h-5 rounded bg-white/10 animate-pulse" />
+          </div>
+          <div className="hidden md:flex gap-6">
+            <div className="w-12 h-4 rounded bg-white/10 animate-pulse" />
+            <div className="w-14 h-4 rounded bg-white/10 animate-pulse" />
+            <div className="w-20 h-4 rounded bg-white/10 animate-pulse" />
+          </div>
+          <div className="hidden md:flex items-center gap-4">
+            <div className="w-24 h-8 rounded-full bg-white/10 animate-pulse" />
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="bg-black/95 backdrop-blur-sm fixed left-0 right-0 z-50 shadow-lg shadow-black/30">
@@ -23,7 +63,7 @@ export default function Navbar() {
 
         <div className="flex gap-6">
           <a
-            href="/"
+            href="/#home"
             className="text-white hover:text-gray-300 transition-colors font-medium"
           >
             Home
@@ -102,12 +142,22 @@ export default function Navbar() {
             <Plus size={20} className="border border-white/40 rounded" />
             <span className="font-medium hidden lg:inline">Watch List</span>
           </Link>
-          <Link
-            to="/login"
-            className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base"
-          >
-            Sign In
-          </Link>
+
+          {id ? (
+            <Link
+              to="/profile"
+              className="text-white hover:text-gray-300 transition-colors"
+            >
+              <CircleUserRound size={28} />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
 
         <button
