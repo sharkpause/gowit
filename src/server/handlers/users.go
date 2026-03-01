@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"net/mail"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/sharkpause/gowit/auth"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type registerRequest struct {
@@ -187,4 +189,47 @@ func LogoutUser(context *gin.Context){
 	context.JSON(200, gin.H{
 		"message":"Logged Out",
 	})
+}
+
+func GetUserDetail(database *sql.DB) gin.HandlerFunc{
+	return func(context *gin.Context) {
+		userID,exists := context.Get("user_id")
+			if !exists {
+				context.JSON(401, gin.H{"message": "Unauthorized",})
+				return
+			}
+		userID=userID.(uint64)
+		
+		var name,email,profile_picture_url string
+		var created_at time.Time
+		var favoritecount int
+		query := "select users.name, users.email,users.profile_picture_url,users.created_at, COUNT(favorites.film_id) AS total_favorites FROM users JOIN favorites ON users.id = favorites.user_id WHERE users.id = ? GROUP BY users.id, users.name, users.email, users.created_at, users.profile_picture_url;"
+		err:=database.QueryRow(query,userID).Scan(
+			&name,
+			&email,
+			&profile_picture_url,
+			&created_at,
+			&favoritecount,
+		)
+		
+		if err != nil{
+			context.JSON(500, gin.H{"message": "Internal Database Error"})
+			return
+		}
+		context.JSON(200, gin.H{
+			"name": name,
+			"email": email,
+			"profile": profile_picture_url,
+			"created": created_at.Format(time.RFC3339), // chatgpt told me its uhhh some 2026-02-14T23:49:22Z, didnt understand shit, but okay. let the frontend do their magic
+			"favorite_count": favoritecount,
+			// 			
+			//     "created": "2026-02-14T23:49:22Z",
+			//     "email": "john@example.com",
+			//     "name": "John Doe",
+			//     "profile": "nulnot"
+			// 		"uhh": "uhh"
+			//  	also returning like this, map. im too rude you know what he said to me, he was like 'you are so rude' and i was like boy does it look like i could care i couldnt even care less rude
+		})
+	}
+	
 }

@@ -6,3 +6,9 @@ export function capitalizeEachWord(str: string) {
     })
     .join(" ");
 }
+
+export function toDateInputValue(s?: string | null) {
+  if (!s) return "";
+  if (s.includes("T")) return s.split("T")[0];
+  return s;
+}
