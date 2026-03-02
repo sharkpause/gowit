@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"database/sql"
-	"fmt"
+	// "fmt"
 	"net/http"
 	"net/mail"
 	"time"
