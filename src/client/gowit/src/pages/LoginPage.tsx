@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  Link,
-  Navigate,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router";
 import { serverApi } from "../api";
 import Swal from "sweetalert2";
 import { errorAlert } from "../helper/errorAlert";
 import axios from "axios";
 import { capitalizeEachWord } from "../helper/helper";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeClosed, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   let [searchParams] = useSearchParams();
@@ -37,6 +31,14 @@ export default function LoginPage() {
 
     fetchUser();
   }, []);
+
+  const loginWithGoogle = async () => {
+    try {
+      const response = await serverApi.get("/auth/google/login");
+    } catch (error) {
+      console.log("Error at LoginPage: ", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -93,6 +95,13 @@ export default function LoginPage() {
         />
         <div className="w-full md:w-1/2 flex items-center justify-center bg-[#0F1115] px-8">
           <div className="w-full max-w-md text-white">
+            <Link
+              to="/"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8 text-sm"
+            >
+              <ArrowLeft size={16} />
+              Back to Home
+            </Link>
             <h2 className="text-3xl font-bold mb-2">Login to your Account</h2>
             <p className="text-gray-400 mb-6">
               Don't have an Account?{" "}
@@ -124,7 +133,10 @@ export default function LoginPage() {
             ) : (
               ""
             )}
-            <button className="w-full flex items-center justify-center gap-3 bg-[#1E1E1E] hover:bg-[#2d3745] py-3 rounded-lg mb-6 transition">
+            <button
+              onClick={loginWithGoogle}
+              className="w-full flex items-center justify-center gap-3 bg-[#1E1E1E] hover:bg-[#2d3745] py-3 rounded-lg mb-6 transition"
+            >
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
                 className="w-5 h-5"

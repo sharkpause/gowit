@@ -229,23 +229,22 @@ Each favorite includes display-ready film data for frontend rendering.
 
 ```json
 {
-  "favorites": [
-    {
-      "favorite_id": 1,
-      "notes": "Classic mafia masterpiece.",
-      "film": {
-        "id": 11,
-        "title": "The Godfather",
-        "description": "Spanning the years 1945 to 1955...",
-        "release_year": 1972,
-        "runtime": 175,
-        "poster_image_url": "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg"
-      }
+    "favorites": [
+        {
+            "id": 4,
+            "film_id": 1,
+            "notes": "this film was aight",
+            "title": "The Godfather",
+            "description": "Spanning the years 1945 to 1955, a chronicle of the fictional Italian-American Corleone crime family. When organized crime family patriarch, Vito Corleone barely survives an attempt on his life, his youngest son, Michael steps in to take care of the would-be killers, launching a campaign of bloody revenge.",
+            "poster_image_url": "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+            "average_rating": 8.7,
+            "release_year": 1972,
+            "runtime": 175
+        }
+    ],
+    "metadata": {
+        "amount": 1
     }
-  ],
-  "metadata": {
-    "amount": 1
-  }
 }
 ```
 

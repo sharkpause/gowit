@@ -15,20 +15,16 @@ export type MovieType = {
   casts: string[];
 };
 
-export type MovieWatchlistType = {
+export type WatchListType = {
   id: number;
+  notes: string;
+  film_id: number;
   title: string;
   description: string;
   poster_image_url: string;
   release_year: number;
   average_rating: number;
   runtime: number;
-};
-
-export type WatchListType = {
-  favorite_id: number;
-  notes: string;
-  film: MovieWatchlistType;
 };
 
 export type ProfileType = {
