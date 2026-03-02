@@ -157,7 +157,7 @@ export default function LoginPage() {
                     name="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 pr-8"
+                    className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 "
                   />
                   <button
                     type="button"
