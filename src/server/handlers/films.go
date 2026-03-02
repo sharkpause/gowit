@@ -16,8 +16,12 @@ type Scanner interface {
 	Scan(dest ...any) error
 }
 
-type favoriteRequest struct {
+type postFavoriteRequest struct {
 	FilmID		uint64		`json:"film_id"`
+	Notes		string		`json:"notes"`
+}
+
+type patchFavoriteRequest struct {
 	Notes		string		`json:"notes"`
 }
 
@@ -354,7 +358,7 @@ func GetTrendingFilms(database *sql.DB) func(*gin.Context) {
 
 func AddFilmToFavorite(database *sql.DB) func(*gin.Context){ // protected
 	return func(context *gin.Context){
-		var request favoriteRequest
+		var request postFavoriteRequest
 		if err := context.ShouldBindJSON(&request); err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid request body",
@@ -433,6 +437,44 @@ func DeleteFilmFromFavorite(database *sql.DB) func(*gin.Context) {
 
 		context.JSON(http.StatusOK, gin.H{
 			"message": "successfully deleted film from favorite",
+		})
+	}
+}
+
+func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		filmID, err := strconv.Atoi(context.Param("film_id"))
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "error while reading film id"})
+			return
+		}
+
+		userID, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"})
+			return
+		}
+
+		var request patchFavoriteRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid request body",
+			})
+			return
+		}
+
+		query := `
+			UPDATE favorites SET notes = ? WHERE film_id = ? AND user_id = ?
+		`
+
+		_, err = database.Exec(query, request.Notes, userID, filmID)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"message": "successfully updated favorite film",
 		})
 	}
 }
