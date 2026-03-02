@@ -32,6 +32,14 @@ export default function LoginPage() {
     fetchUser();
   }, []);
 
+  const loginWithGoogle = async () => {
+    try {
+      const response = await serverApi.get("/auth/google/login");
+    } catch (error) {
+      console.log("Error at LoginPage: ", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0F1115]">
@@ -125,7 +133,10 @@ export default function LoginPage() {
             ) : (
               ""
             )}
-            <button className="w-full flex items-center justify-center gap-3 bg-[#1E1E1E] hover:bg-[#2d3745] py-3 rounded-lg mb-6 transition">
+            <button
+              onClick={loginWithGoogle}
+              className="w-full flex items-center justify-center gap-3 bg-[#1E1E1E] hover:bg-[#2d3745] py-3 rounded-lg mb-6 transition"
+            >
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
                 className="w-5 h-5"

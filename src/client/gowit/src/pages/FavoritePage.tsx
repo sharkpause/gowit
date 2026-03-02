@@ -20,7 +20,7 @@ export default function FavoritePage() {
       const response = await serverApi.get("/api/favorites");
       console.log(response.data);
 
-      setFavorite(response.data.favorites);
+      setFavorite(response.data.favorites || []);
     } catch (error) {
       console.log("Error at Favorite Page: ", error);
     }
@@ -43,6 +43,8 @@ export default function FavoritePage() {
             "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
         },
       });
+
+      fetchFavorite();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
@@ -55,12 +57,12 @@ export default function FavoritePage() {
   const download = () => {
     const formattedData = favorite.map((el) => {
       return {
-        Title: el.film.title,
-        Description: el.film.description,
-        "Poster URL": el.film.poster_image_url,
-        "Average Rating": el.film.average_rating,
-        "Release Year": el.film.release_year,
-        "Duration (Minutes)": el.film.runtime,
+        Title: el.title,
+        Description: el.description,
+        "Poster URL": el.poster_image_url,
+        "Average Rating": el.average_rating,
+        "Release Year": el.release_year,
+        "Duration (Minutes)": el.runtime,
       };
     });
 
@@ -141,20 +143,20 @@ export default function FavoritePage() {
         <div className="min-h-screen flex flex-wrap gap-16 justify-center">
           {favorite.map((el, idx: number) => {
             return (
-              <div className="relative flex-shrink-0" key={idx}>
+              <div className="relative flex-shrink-0" key={el.id}>
                 <button
-                  onClick={() => deleteFavorite(el.film.id)}
+                  onClick={() => deleteFavorite(el.film_id)}
                   className="absolute top-2 right-2 z-10 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 transition-all shadow-lg hover:scale-110 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
                 <WatchListCard
-                  title={el.film.title}
-                  rating={el.film.average_rating}
-                  description={el.film.description}
-                  poster_url={el.film.poster_image_url}
-                  year={el.film.release_year}
-                  minute={el.film.runtime}
+                  title={el.title}
+                  rating={el.average_rating}
+                  description={el.description}
+                  poster_url={el.poster_image_url}
+                  year={el.release_year}
+                  minute={el.runtime}
                 />
               </div>
             );
