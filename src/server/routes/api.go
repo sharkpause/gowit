@@ -50,6 +50,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			// protected.GET("/test", auth.Test) //auffth.Test just ignore, will delete later, forgot to put into .gitignore. mb.
 			protected.POST("/favorites", handlers.AddFilmToFavorite(database)) // dear @gilbert-sunbaenim, 我不知道要放什么route，只好先这样咯，
 			protected.DELETE("/favorites/:film_id", handlers.DeleteFilmFromFavorite(database))
+			protected.PATCH("/favorites/:film_id", handlers.UpdateFavoriteFilm(database))
 			protected.POST("/logout", handlers.LogoutUser)
 			protected.GET("/userprofile", handlers.GetUserDetail(database))
 		}
