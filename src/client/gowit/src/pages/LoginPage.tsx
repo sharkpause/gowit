@@ -11,11 +11,12 @@ import Swal from "sweetalert2";
 import { errorAlert } from "../helper/errorAlert";
 import axios from "axios";
 import { capitalizeEachWord } from "../helper/helper";
+import { Eye, EyeClosed } from "lucide-react";
 
 export default function LoginPage() {
   let [searchParams] = useSearchParams();
   const loginFirst = searchParams.get("loginFirst");
-
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -150,13 +151,22 @@ export default function LoginPage() {
               </div>
               <div>
                 <label className="text-sm text-gray-400">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 mb-10"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-transparent border-b border-gray-600 focus:border-white focus:outline-none py-2 "
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-0 text-gray-400 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <Eye size={18} /> : <EyeClosed size={18} />}
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"
