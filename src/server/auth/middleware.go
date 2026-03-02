@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"fmt"
+	
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,7 @@ func Middleware() gin.HandlerFunc {
 			return
 		}
 		
-		fmt.Println(tokenString)
+		
 
 		if tokenString == "" {
 			c.AbortWithStatusJSON(401, gin.H{"error": "no token"})

@@ -1,4 +1,52 @@
+import Swal from "sweetalert2";
+import { serverApi } from "../api";
+import { Navigate, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import type { ProfileType } from "../type";
+import { toDateInputValue } from "../helper/helper";
+
 export default function ProfilePage() {
+  const [profile, setProfile] = useState<ProfileType>();
+  const navigate = useNavigate();
+  const logout = async () => {
+    try {
+      const response = await serverApi.post("/api/logout");
+
+      Swal.fire({
+        title: "Logout Successful!",
+
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+        },
+      });
+
+      navigate("/");
+    } catch (error) {
+      console.log("Error at ProfilePage: ", error);
+    }
+  };
+
+  const fetchUser = async () => {
+    try {
+      const response = await serverApi.get("/api/userprofile");
+      console.log(response.data);
+
+      setProfile(response.data);
+    } catch (error) {
+      console.log("Error at ProfilePage: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   return (
     <div className="h-[100vh] relative">
       <div
@@ -26,9 +74,15 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <button className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-lg shadow-[#E50914]/30">
+        <div className="flex justify-between mb-5">
+          <button className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer">
             Edit Profile
+          </button>
+          <button
+            onClick={logout}
+            className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
+          >
+            Logout
           </button>
         </div>
 
@@ -39,7 +93,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="text"
-              value="Samantha Jones"
+              value={profile?.name}
               disabled
               className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
             />
@@ -51,7 +105,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="email"
-              value="samantha.jones@example.com"
+              value={profile?.email}
               disabled
               className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
             />
@@ -63,7 +117,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="date"
-              value="2025-12-12"
+              value={toDateInputValue(profile?.created)}
               disabled
               className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
             />
@@ -76,17 +130,11 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-gray-400 text-sm mb-2">Your Watchlist</p>
                     <h3 className="text-3xl font-bold text-[#F5F2F2]">
-                      21{" "}
+                      {profile?.favorite_count || 0}{" "}
                       <span className="text-lg text-gray-400 font-normal">
                         Movies
                       </span>
                     </h3>
-                  </div>
-                  <div className="mt-2">
-                    <span className="text-gray-400">Recently Added At:</span>{" "}
-                    <span className="text-[#F5F2F2] font-medium">
-                      February 22, 2026
-                    </span>
                   </div>
                 </div>
 
