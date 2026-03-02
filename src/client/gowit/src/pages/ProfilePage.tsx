@@ -7,6 +7,7 @@ import { toDateInputValue } from "../helper/helper";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileType>();
+  const [isEdit, setIsEdit] = useState(false);
   const navigate = useNavigate();
   const logout = async () => {
     try {
@@ -75,9 +76,22 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex justify-between mb-5">
-          <button className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer">
-            Edit Profile
-          </button>
+          {isEdit ? (
+            <button
+              onClick={() => setIsEdit(false)}
+              className="py-3 px-5 bg-gray-700 text-white font-semibold rounded-xl hover:bg-gray-800 shadow-md cursor-pointer transition-colors"
+            >
+              Done
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsEdit(true)}
+              className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
+            >
+              Edit Profile
+            </button>
+          )}
+
           <button
             onClick={logout}
             className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
@@ -94,8 +108,12 @@ export default function ProfilePage() {
             <input
               type="text"
               value={profile?.name}
-              disabled
-              className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
+              disabled={!isEdit}
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
+                isEdit
+                  ? "text-[#F5F2F2] border-white/30 focus:border-white/60 focus:outline-none cursor-text"
+                  : "text-gray-500 border-white/10 cursor-not-allowed opacity-60"
+              }`}
             />
           </div>
 
@@ -106,8 +124,12 @@ export default function ProfilePage() {
             <input
               type="email"
               value={profile?.email}
-              disabled
-              className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
+              disabled={!isEdit}
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
+                isEdit
+                  ? "text-[#F5F2F2] border-white/30 focus:border-white/60 focus:outline-none cursor-text"
+                  : "text-gray-500 border-white/10 cursor-not-allowed opacity-60"
+              }`}
             />
           </div>
 
@@ -118,8 +140,7 @@ export default function ProfilePage() {
             <input
               type="date"
               value={toDateInputValue(profile?.created)}
-              disabled
-              className="w-full bg-[#1C1E22] text-[#F5F2F2] px-4 py-3 rounded-lg border border-white/10 cursor-not-allowed opacity-90"
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60`}
             />
           </div>
 
