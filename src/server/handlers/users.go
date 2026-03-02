@@ -204,12 +204,17 @@ func GetUserDetail(database *sql.DB) gin.HandlerFunc{
 		var profile_picture_url *string
 		var created_at time.Time
 		var favoritecount int
-		query := `
-			SELECT
-			users.name, users.email, users.profile_picture_url,
-			users.created_at, 
-			
-			COUNT(favorites.film_id) AS total_favorites FROM users JOIN favorites ON users.id = favorites.user_id WHERE users.id = ? GROUP BY users.id, users.name, users.email, users.created_at, users.profile_picture_url;`
+		query := `SELECT
+			users.name,
+			users.email,
+			users.profile_picture_url,
+			users.created_at,
+			COUNT(favorites.film_id) AS total_favorites
+		FROM users
+		LEFT JOIN favorites ON users.id = favorites.user_id
+		WHERE users.id = ?
+		GROUP BY users.id, users.name, users.email, users.created_at, users.profile_picture_url;`
+
 		err:=database.QueryRow(query,userID).Scan(
 			&name,
 			&email,
