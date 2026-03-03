@@ -27,8 +27,8 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 		MaxAge: 12 * time.Hour,
 	}))
 
-	
-	// router.("/auth/google/callback")
+	router.GET("/auth/google/login", handlers.GoogleLoginHandler)
+	router.GET("/auth/google/callback", handlers.GoogleCallbackHandler(database))
 
 	api := router.Group("/api")
 
