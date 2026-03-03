@@ -53,6 +53,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.PATCH("/favorites/:film_id", handlers.UpdateFavoriteFilm(database))
 			protected.POST("/logout", handlers.LogoutUser)
 			protected.GET("/userprofile", handlers.GetUserDetail(database))
+			protected.PATCH("/updateuser", handlers.UpdateUserDetail(database))
 		}
 		
 		api.Use(auth.Middleware())
