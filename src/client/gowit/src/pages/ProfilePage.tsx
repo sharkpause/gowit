@@ -4,10 +4,54 @@ import { Navigate, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import type { ProfileType } from "../type";
 import { toDateInputValue } from "../helper/helper";
+import { Pencil } from "lucide-react";
+import { errorAlert } from "../helper/errorAlert";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileType>();
   const [isEdit, setIsEdit] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [picture, setPicture] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setLoading(true);
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const allowedTypes = ["image/jpeg", "image/png"];
+
+      if (!allowedTypes.includes(file.type)) {
+        errorAlert("Only JPG and PNG files are allowed.");
+        e.target.value = "";
+        return;
+      }
+
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", import.meta.env.VITE_UPLOAD_PRESET);
+      data.append("cloud_name", import.meta.env.VITE_CLOUD_NAME);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: data,
+        },
+      );
+
+      const uploadedImageUrl = await res.json();
+
+      setPicture(uploadedImageUrl.url);
+    } catch (error) {
+      console.log("Error at Profile Picture: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const navigate = useNavigate();
   const logout = async () => {
     try {
@@ -36,8 +80,10 @@ export default function ProfilePage() {
   const fetchUser = async () => {
     try {
       const response = await serverApi.get("/api/userprofile");
-      console.log(response.data);
 
+      setName(response.data.name);
+      setEmail(response.data.email);
+      setPicture(response.data.picture);
       setProfile(response.data);
     } catch (error) {
       console.log("Error at ProfilePage: ", error);
@@ -65,24 +111,56 @@ export default function ProfilePage() {
       <div className="h-[50vh] bg-[#0F1115]" />
       <div className="absolute left-1/2 top-6/12 h-fit w-4xl rounded-2xl -translate-x-1/2 -translate-y-1/2 px-5 py-8 bg-[#0F1115] shadow-2xl shadow-black/50 border border-white/10">
         <div className="absolute left-1/2 -top-15 -translate-x-1/2">
-          <div>
+          <div className="relative">
             <img
-              src="https://res.cloudinary.com/degghm3hf/image/upload/v1771748577/does-anyone-know-how-to-create-the-netflix-colored-lines-v0-zp69f0bdm13e1_qg1oay.webp"
+              src={
+                picture
+                  ? picture
+                  : "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
+              }
               alt="Profile"
               className="w-32 h-32 rounded-full border-4 border-[#0F1115] shadow-xl object-cover"
             />
+
+            {isEdit ? (
+              loading ? (
+                <div className="flex justify-center items-center bg-gray-900/50 cursor-not-allowed absolute inset-0 w-32 h-32 rounded-full">
+                  <div className="w-7 h-7 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                </div>
+              ) : (
+                <label className="flex justify-center items-center bg-gray-900/50 cursor-pointer hover:bg-gray-900/70 border-4 border-[#0F1115] absolute inset-0 w-32 h-32 rounded-full transition-colors">
+                  <Pencil size={20} className="text-white" />
+                  <input
+                    accept=".jpg,.jpeg,.png"
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </label>
+              )
+            ) : (
+              ""
+            )}
+
             <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-[#0F1115]" />
           </div>
         </div>
 
         <div className="flex justify-between mb-5">
           {isEdit ? (
-            <button
-              onClick={() => setIsEdit(false)}
-              className="py-3 px-5 bg-gray-700 text-white font-semibold rounded-xl hover:bg-gray-800 shadow-md cursor-pointer transition-colors"
-            >
-              Done
-            </button>
+            loading ? (
+              <div className="flex items-center gap-2 py-3 px-5 bg-gray-700/50 text-gray-400 font-semibold rounded-xl cursor-not-allowed">
+                <div className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin" />
+                Uploading...
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsEdit(false)}
+                className="py-3 px-5 bg-gray-700 text-white font-semibold rounded-xl hover:bg-gray-800 shadow-md cursor-pointer transition-colors"
+              >
+                Done
+              </button>
+            )
           ) : (
             <button
               onClick={() => setIsEdit(true)}
@@ -107,7 +185,8 @@ export default function ProfilePage() {
             </label>
             <input
               type="text"
-              value={profile?.name}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               disabled={!isEdit}
               className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
                 isEdit
@@ -123,7 +202,8 @@ export default function ProfilePage() {
             </label>
             <input
               type="email"
-              value={profile?.email}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={!isEdit}
               className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
                 isEdit
@@ -140,6 +220,7 @@ export default function ProfilePage() {
             <input
               type="date"
               value={toDateInputValue(profile?.created)}
+              onChange={() => {}}
               className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60`}
             />
           </div>
