@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/mail"
 	"time"
-
+	"strings"
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/auth"
 	"golang.org/x/crypto/bcrypt"
@@ -245,4 +245,54 @@ func GetUserDetail(database *sql.DB) gin.HandlerFunc{
 		})
 	}
 	
+}
+
+func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
+	return func(context *gin.Context){
+	type users struct{
+		Name *string `json:"name"`
+		Email *string `json:"email"`
+		Profile_picture_url *string `json:"profile_picture_url"`
+		}
+	userId,exists := context.Get("user_id")
+	if !exists {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized User",})
+	}
+	userId=userId.(uint64)
+	var user users
+	if err := context.ShouldBindJSON(&user); err != nil{
+		context.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid Request Body",
+			})
+		fmt.Println(err)	
+		return
+	}
+	args := []interface{}{}
+	field := []string{}
+	query := "UPDATE users SET "
+	if user.Name != nil {
+		args = append(args, *user.Name)
+		field = append(field, " name = ?")
+	}
+	if user.Email != nil{
+		args = append(args,*user.Email)
+		field = append(field, " email = ?")
+	}
+	if user.Profile_picture_url != nil{
+		args = append(args, *user.Profile_picture_url)
+		field = append(field, " profile_picture_url = ?")
+	}
+	if len(args) == 0 {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "No provided field, so no update occured",})
+	}
+	query += strings.Join(field, ", ") + " WHERE id = ?"
+	args = append(args, userId)
+	_,err := database.Exec(query,args...)
+	fmt.Println(err)
+	if err != nil{
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update",})
+		return
+	}
+	context.JSON(200, gin.H{"message": "Successfulll "},)
+	}
 }
