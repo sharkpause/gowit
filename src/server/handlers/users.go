@@ -1,15 +1,23 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/mail"
-	"time"
+	"os"
 	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sharkpause/gowit/auth"
 	"golang.org/x/crypto/bcrypt"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type registerRequest struct {
@@ -76,12 +84,16 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": "failed to hash password",
-			})
-			return
+		var hashedPassword []byte
+		if request.Password != "" {
+			hashedPassword, err = bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{
+					"error": "failed to hash password",
+				})
+				fmt.Println(err)
+				return
+			}
 		}
 
 		var existingID uint64
@@ -109,6 +121,7 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"error": "internal db error",
 			})
+			fmt.Println(err)
 			return
 		}
 
@@ -295,4 +308,161 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 	}
 	context.JSON(200, gin.H{"message": "Successfulll "},)
 	}
+}
+
+func NewGoogleOAuthConfig() *oauth2.Config {
+    return &oauth2.Config{
+        ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+        ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+        RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
+        Scopes:       []string{"openid", "profile", "email"},
+        Endpoint:     google.Endpoint,
+    }
+}
+
+func GoogleLoginHandler(context *gin.Context) {
+	state := uuid.New().String()
+	url := NewGoogleOAuthConfig().AuthCodeURL(state)
+
+	context.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
+    return func(requestContext *gin.Context) {
+        // 1. Get query params
+        // state := requestContext.Query("state")
+        code := requestContext.Query("code")
+
+        if code == "" {
+            requestContext.JSON(http.StatusBadRequest, gin.H{"error": "no code in request"})
+            return
+        }
+
+		googleOAuthConfig := NewGoogleOAuthConfig()
+
+        // 2. Exchange code for token
+        token, err := googleOAuthConfig.Exchange(context.Background(), code)
+        if err != nil {
+            requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "token exchange failed"})
+            return
+        }
+
+        // 3. Use token to call Google’s userinfo endpoint
+        client := googleOAuthConfig.Client(context.Background(), token)
+        resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+        if err != nil {
+            requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user info"})
+            return
+        }
+        defer resp.Body.Close()
+
+        var userInfo struct {
+            ID            string `json:"id"`
+            Email         string `json:"email"`
+            VerifiedEmail bool   `json:"verified_email"`
+            Name          string `json:"name"`
+            Picture       string `json:"picture"`
+        }
+
+        if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
+            requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to parse user info"})
+            return
+        }
+
+		var userID uint64
+		err = database.QueryRow(
+			"SELECT id FROM users WHERE google_id = ?",
+			userInfo.ID,
+		).Scan(&userID)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				err = database.QueryRow(
+					"SELECT id FROM users WHERE email = ?",
+					userInfo.Email,
+				).Scan(&userID)
+
+				if err != nil {
+					if err == sql.ErrNoRows {
+						// user doesn't exist
+						res, insertErr := database.Exec(
+							"INSERT INTO users (name, email, google_id, profile_picture_url) VALUES (?, ?, ?, ?)",
+							userInfo.Name, userInfo.Email, userInfo.ID, userInfo.Picture,
+						)
+						if insertErr != nil {
+							requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "insert error"})
+							fmt.Println(insertErr)
+							return
+						}
+						newID, _ := res.LastInsertId()
+						userID = uint64(newID)
+					} else {
+						requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "internal db error"})
+						fmt.Println((err))
+						return
+					}
+				} else {
+					_, updateErr := database.Exec(
+						"UPDATE users SET google_id = ? WHERE id = ?",
+						userInfo.ID, userID,
+					)
+					if updateErr != nil {
+						requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert google id"})
+						fmt.Println(updateErr)
+						return
+					}
+				}
+			} else {
+				requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "internal db error"})
+				fmt.Println(err)
+				return
+			}
+		}
+
+		// continue — userID now contains correct id
+
+        if err != nil {
+            if err == sql.ErrNoRows {
+                // Insert new user
+                res, insertErr := database.Exec(
+                    "INSERT INTO users (name, email, google_id, profile_picture_url) VALUES (?, ?, ?, ?)",
+                    userInfo.Name,
+                    userInfo.Email,
+                    userInfo.ID,
+                    userInfo.Picture,
+                )
+                if insertErr != nil {
+                    requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert user"})
+					fmt.Println(insertErr)
+                    return
+                }
+                id, _ := res.LastInsertId()
+                userID = uint64(id)
+            } else {
+                requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "database query error"})
+                return
+            }
+        }
+
+        // 5. Generate your JWT or session token
+        sessionToken, tokenErr := auth.GenerateJWT(userID) // YOU implement this
+        if tokenErr != nil {
+            requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate JWT"})
+            return
+        }
+
+        // 6. Set HttpOnly cookie
+        requestContext.SetCookie(
+            "token",
+            sessionToken,
+            3600*24,      // expiration
+            "/",
+            "localhost",  // change for production domain
+            false,        // Set to true if HTTPS
+            true,         // HttpOnly
+        )
+
+        // 7. Redirect to frontend home
+        requestContext.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173/")
+    }
 }

@@ -32,12 +32,8 @@ export default function LoginPage() {
     fetchUser();
   }, []);
 
-  const loginWithGoogle = async () => {
-    try {
-      const response = await serverApi.get("/auth/google/login");
-    } catch (error) {
-      console.log("Error at LoginPage: ", error);
-    }
+  const loginWithGoogle = () => {
+    window.location.href = `${serverApi.defaults.baseURL}/auth/google/login`;
   };
 
   if (loading) {
