@@ -7,9 +7,16 @@ import (
 	"net/mail"
 	"time"
 	"strings"
+	_ "os"
+	_ "context"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/auth"
 	"golang.org/x/crypto/bcrypt"
+	_ "github.com/google/uuid"
+
+	_ "golang.org/x/oauth2"
+	_ "golang.org/x/oauth2/google"
 )
 
 type registerRequest struct {
@@ -296,3 +303,110 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 	context.JSON(200, gin.H{"message": "Successfulll "},)
 	}
 }
+
+// var googleOAuthConfig = &oauth2.Config{
+// 	ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+// 	ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+// 	RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
+// 	Scopes:       []string{"openid", "profile", "email"},
+// 	Endpoint:     google.Endpoint,
+// }
+
+// func GoogleLoginHandler(context *gin.Context) {
+// 	state := uuid.New().String()
+// 	url := googleOAuthConfig.AuthCodeURL(state)
+
+// 	context.Redirect(http.StatusTemporaryRedirect, url)
+// }
+
+// func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
+//     return func(requestContext *gin.Context) {
+//         // 1. Get query params
+//         // state := requestContext.Query("state")
+//         code := requestContext.Query("code")
+
+//         if code == "" {
+//             requestContext.JSON(http.StatusBadRequest, gin.H{"error": "no code in request"})
+//             return
+//         }
+
+//         // 2. Exchange code for token
+//         token, err := googleOAuthConfig.Exchange(context.Background(), code)
+//         if err != nil {
+//             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "token exchange failed"})
+//             return
+//         }
+
+//         // 3. Use token to call Google’s userinfo endpoint
+//         client := googleOAuthConfig.Client(context.Background(), token)
+//         resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+//         if err != nil {
+//             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user info"})
+//             return
+//         }
+//         defer resp.Body.Close()
+
+//         var userInfo struct {
+//             ID            string `json:"id"`
+//             Email         string `json:"email"`
+//             VerifiedEmail bool   `json:"verified_email"`
+//             Name          string `json:"name"`
+//             Picture       string `json:"picture"`
+//         }
+
+//         if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
+//             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to parse user info"})
+//             return
+//         }
+
+//         // 4. Check if user exists or create
+//         var userID int
+//         err = database.QueryRow(
+//             "SELECT id FROM users WHERE google_id = ?",
+//             userInfo.ID,
+//         ).Scan(&userID)
+
+//         if err != nil {
+//             if err == sql.ErrNoRows {
+//                 // Insert new user
+//                 res, insertErr := database.Exec(
+//                     "INSERT INTO users (name, email, google_id, profile_picture_url) VALUES (?, ?, ?, ?)",
+//                     userInfo.Name,
+//                     userInfo.Email,
+//                     userInfo.ID,
+//                     userInfo.Picture,
+//                 )
+//                 if insertErr != nil {
+//                     requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert user"})
+//                     return
+//                 }
+//                 id, _ := res.LastInsertId()
+//                 userID = int(id)
+//             } else {
+//                 requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "database query error"})
+//                 return
+//             }
+//         }
+
+//         // 5. Generate your JWT or session token
+//         sessionToken, tokenErr := generateJWTForUser(userID) // YOU implement this
+//         if tokenErr != nil {
+//             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate JWT"})
+//             return
+//         }
+
+//         // 6. Set HttpOnly cookie
+//         requestContext.SetCookie(
+//             "token",
+//             sessionToken,
+//             3600*24,      // expiration
+//             "/",
+//             "localhost",  // change for production domain
+//             false,        // Set to true if HTTPS
+//             true,         // HttpOnly
+//         )
+
+//         // 7. Redirect to frontend home
+//         requestContext.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173/")
+//     }
+// }
