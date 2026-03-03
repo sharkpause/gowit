@@ -19,10 +19,14 @@ import Navbar from "../components/Navbar";
 export default function HomePage() {
   const [topMovie, setTopMovie] = useState<MovieType[]>([]);
   const [movieFeatured, setMovieFeatured] = useState<MovieType[]>([]);
+  const [comingMovie, setComingMovie] = useState<MovieType[]>([]);
   const [index, setIndex] = useState<number>(0);
   const [visibleFeatured, setVisibleFeatured] = useState(0);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
 
   const location = useLocation();
 
@@ -53,6 +57,15 @@ export default function HomePage() {
       setMovieFeatured(response.data.films);
     } catch (error) {
       console.log("Error fetching featured movies:", error);
+    }
+  }
+
+  async function fetchComingMovies() {
+    try {
+      const response = await serverApi.get("/api/films?");
+      setComingMovie(response.data.films);
+    } catch (error) {
+      console.log("Error fetching coming movies:", error);
     }
   }
 
@@ -372,6 +385,8 @@ export default function HomePage() {
                       type="text"
                       placeholder="Name..."
                       className="w-full px-6 py-3 bg-white/90 text-gray-800 placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E50914] focus:bg-white transition-all font-medium"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                     />
                   </div>
 
@@ -380,6 +395,8 @@ export default function HomePage() {
                       type="email"
                       placeholder="Email..."
                       className="w-full px-6 py-3 bg-white/90 text-gray-800 placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E50914] focus:bg-white transition-all font-medium"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
 
@@ -388,6 +405,8 @@ export default function HomePage() {
                       placeholder="Messages..."
                       rows={6}
                       className="w-full px-6 py-3 bg-white/90 text-gray-800 placeholder-gray-500 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#E50914] focus:bg-white transition-all font-medium"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
 
