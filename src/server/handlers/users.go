@@ -1,20 +1,20 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/mail"
-	"time"
-	"strings"
 	"os"
-	"context"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sharkpause/gowit/auth"
 	"golang.org/x/crypto/bcrypt"
-	"github.com/google/uuid"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
