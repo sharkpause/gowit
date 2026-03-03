@@ -78,6 +78,7 @@ export default function ProfilePage() {
       });
 
       setIsEdit(false);
+      fetchUser();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
@@ -116,16 +117,10 @@ export default function ProfilePage() {
   const fetchUser = async () => {
     try {
       const response = await serverApi.get("/api/userprofile");
-
       setName(response.data.name);
       setEmail(response.data.email);
-
-      setPicture(response.data.picture);
-      console.log(response.data);
-
+      setPicture(response.data.profile);
       setProfile(response.data);
-
-      console.log(picture);
     } catch (error) {
       console.log("Error at ProfilePage: ", error);
     }
@@ -187,128 +182,124 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()}>
-          <div className="flex justify-between mb-5">
-            {isEdit ? (
-              loading ? (
-                <div className="flex items-center gap-2 py-3 px-5 bg-gray-700/50 text-gray-400 font-semibold rounded-xl cursor-not-allowed">
-                  <div className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin" />
-                  Uploading...
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="py-3 px-5 bg-gray-700 text-white font-semibold rounded-xl hover:bg-gray-800 shadow-md cursor-pointer transition-colors"
-                  onClick={updateProfile}
-                >
-                  Done
-                </button>
-              )
+        <div className="flex justify-between mb-5">
+          {isEdit ? (
+            loading ? (
+              <div className="flex items-center gap-2 py-3 px-5 bg-gray-700/50 text-gray-400 font-semibold rounded-xl cursor-not-allowed">
+                <div className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin" />
+                Uploading...
+              </div>
             ) : (
               <button
                 type="button"
-                onClick={() => setIsEdit(true)}
-                className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
+                className="py-3 px-5 bg-gray-700 text-white font-semibold rounded-xl hover:bg-gray-800 shadow-md cursor-pointer transition-colors"
+                onClick={updateProfile}
               >
-                Edit Profile
+                Done
               </button>
-            )}
-
+            )
+          ) : (
             <button
               type="button"
-              onClick={logout}
+              onClick={() => setIsEdit(true)}
               className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
             >
-              Logout
+              Edit Profile
             </button>
+          )}
+
+          <button
+            type="button"
+            onClick={logout}
+            className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
+          >
+            Logout
+          </button>
+        </div>
+
+        <div className=" space-y-6">
+          <div>
+            <label className="block text-gray-400 text-sm mb-2 ml-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!isEdit}
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
+                isEdit
+                  ? "text-[#F5F2F2] border-white/30 focus:border-white/60 focus:outline-none cursor-text"
+                  : "text-gray-500 border-white/10 cursor-not-allowed opacity-60"
+              }`}
+            />
           </div>
 
-          <div className=" space-y-6">
-            <div>
-              <label className="block text-gray-400 text-sm mb-2 ml-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={!isEdit}
-                className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
-                  isEdit
-                    ? "text-[#F5F2F2] border-white/30 focus:border-white/60 focus:outline-none cursor-text"
-                    : "text-gray-500 border-white/10 cursor-not-allowed opacity-60"
-                }`}
-              />
-            </div>
+          <div>
+            <label className="block text-gray-400 text-sm mb-2 ml-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={!isEdit}
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
+                isEdit
+                  ? "text-[#F5F2F2] border-white/30 focus:border-white/60 focus:outline-none cursor-text"
+                  : "text-gray-500 border-white/10 cursor-not-allowed opacity-60"
+              }`}
+            />
+          </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-2 ml-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={!isEdit}
-                className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
-                  isEdit
-                    ? "text-[#F5F2F2] border-white/30 focus:border-white/60 focus:outline-none cursor-text"
-                    : "text-gray-500 border-white/10 cursor-not-allowed opacity-60"
-                }`}
-              />
-            </div>
+          <div>
+            <label className="block text-gray-400 text-sm mb-2 ml-1">
+              Member Since
+            </label>
+            <input
+              type="date"
+              value={toDateInputValue(profile?.created)}
+              onChange={() => {}}
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60`}
+            />
+          </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-2 ml-1">
-                Member Since
-              </label>
-              <input
-                type="date"
-                value={toDateInputValue(profile?.created)}
-                onChange={() => {}}
-                className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60`}
-              />
-            </div>
-
-            <div>
-              <div className="bg-gradient-to-r from-[#E50914]/10 via-[#E50914]/5 to-transparent p-6 rounded-xl border border-[#E50914]/20">
-                <div className="flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <div>
-                      <p className="text-gray-400 text-sm mb-2">
-                        Your Watchlist
-                      </p>
-                      <h3 className="text-3xl font-bold text-[#F5F2F2]">
-                        {profile?.favorite_count || 0}{" "}
-                        <span className="text-lg text-gray-400 font-normal">
-                          Movies
-                        </span>
-                      </h3>
-                    </div>
-                  </div>
-
+          <div>
+            <div className="bg-gradient-to-r from-[#E50914]/10 via-[#E50914]/5 to-transparent p-6 rounded-xl border border-[#E50914]/20">
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col">
                   <div>
-                    <div className="bg-[#E50914]/20 p-4 rounded-full  ">
-                      <svg
-                        className="w-8 h-8 text-[#E50914]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                        />
-                      </svg>
-                    </div>
+                    <p className="text-gray-400 text-sm mb-2">Your Watchlist</p>
+                    <h3 className="text-3xl font-bold text-[#F5F2F2]">
+                      {profile?.favorite_count || 0}{" "}
+                      <span className="text-lg text-gray-400 font-normal">
+                        Movies
+                      </span>
+                    </h3>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="bg-[#E50914]/20 p-4 rounded-full  ">
+                    <svg
+                      className="w-8 h-8 text-[#E50914]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
