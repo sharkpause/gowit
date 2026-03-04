@@ -27,6 +27,7 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [] = useState([]);
 
   const location = useLocation();
 
@@ -308,8 +309,9 @@ export default function HomePage() {
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLVVf6K62C8N59BIawk68Y-tKk-Ask_4H9lA&s"
               }
               duration={100}
-              date={"2025-12-25"}
+              year={1975}
               title={"Title"}
+              trailer_url="https://youtu.be/wkFACDYhTio?si=FyxfdBrwUs_i9Iny"
             />
           </div>
         </div>
