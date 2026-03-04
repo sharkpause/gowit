@@ -551,7 +551,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 func GetComingSoon(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		query := `
-			SELECT title, thumbnail_url, runtime, release_date
+			SELECT title, thumbnail_url, runtime, release_date, trailer_url
 			FROM films
 			WHERE release_date > CURDATE()
 			ORDER BY release_date DESC
@@ -573,6 +573,7 @@ func GetComingSoon(database *sql.DB) func(*gin.Context) {
 				&film.ThumbnailURL,
 				&film.Runtime,
 				&film.ReleaseDate,
+				&film.TrailerURL,
 			)
 
 			if err != nil {

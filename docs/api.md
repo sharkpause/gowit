@@ -376,7 +376,7 @@ GET /api/films/coming-soon
 | `title`           | string | The film title                                |
 | `thumbnail_url`   | string | URL to the film’s poster/thumbnail image      |
 | `runtime`         | int    | Film duration in minutes                      |
-| `release_year`    | int    | The year the film is scheduled to be released |
+| `release_date`    | int    | The year the film is scheduled to be released |
 | `metadata.amount` | int    | The number of coming soon films returned      |
 
 ---
