@@ -21,8 +21,10 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
 
     insert_film_query = """
     INSERT INTO films
-    (title, description, release_year, popularity, average_rating, rating_count, poster_image_url, trailer_url, runtime, tagline)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    (title, description, release_year, popularity,
+    average_rating, rating_count, poster_image_url,
+    trailer_url, runtime, tagline, thumbnail_url)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     apikey = os.getenv("TMDB_API_KEY")
@@ -56,9 +58,11 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
                 videos = videos_resp.json().get("results", [])
 
                 trailer_url = None
+                thumbnail_url = None
                 for video in videos:
                     if video.get("site") == "YouTube" and video.get("type") == "Trailer":
                         trailer_url = f"https://www.youtube.com/embed/{video.get('key')}"
+                        thumbnail_url = f'https://img.youtube.com/vi/{video.get('key')}/hqdefault.jpg'
                         break
 
                 credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
@@ -112,7 +116,8 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
                                 poster_url,
                                 trailer_url,
                                 runtime,
-                                tagline
+                                tagline,
+                                thumbnail_url
                             ),
                         )
                         connection.commit()
