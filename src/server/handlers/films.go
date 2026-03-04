@@ -29,7 +29,8 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	var film models.Film
 
 	var description, posterURL, trailerURL, tagline *string
-	var releaseYear, runtime *int64
+	var releaseDate *time.Time
+	var runtime *int64
 	var averageRating *float64
 	var popularity uint8
 
@@ -37,7 +38,7 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 		&film.ID,
 		&film.Title,
 		&description,
-		&releaseYear,
+		&releaseDate,
 		&posterURL,
 		&trailerURL,
 		&averageRating,
@@ -50,7 +51,9 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	}
 
 	film.Description = description
-	film.ReleaseYear = releaseYear
+
+	releaseDateYear := int64(releaseDate.Year())
+	film.ReleaseYear = &releaseDateYear
 	film.PosterImageURL = posterURL
 	film.TrailerURL = trailerURL
 	film.AverageRating = averageRating
@@ -207,7 +210,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		if yearParam := context.Query("year"); yearParam != "" {
 			year, err := strconv.Atoi(yearParam)
 			if err == nil {
-				conditions = append(conditions, "release_year = ?")
+				conditions = append(conditions, "YEAR(release_date) = ?")
 				args = append(args, year)
 			}
 		}
@@ -234,7 +237,7 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		offset := (page - 1) * limit
 
 		queryString := fmt.Sprintf(
-			`SELECT id, title, description, release_year, poster_image_url, trailer_url, average_rating, popularity, runtime, tagline FROM films
+			`SELECT id, title, description, release_date, poster_image_url, trailer_url, average_rating, popularity, runtime, tagline FROM films
 			%s
 			ORDER BY %s %s
 			LIMIT ? OFFSET ?`,
@@ -277,7 +280,7 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 		}
 
 		row := database.QueryRow(`
-			SELECT id, title, description, release_year, poster_image_url, trailer_url,
+			SELECT id, title, description, release_date, poster_image_url, trailer_url,
 			       average_rating, popularity, runtime, tagline
 			FROM films
 			WHERE id = ?`, filmID)
@@ -545,4 +548,47 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 	}
 }
 
-// TODO: Make random route
+func GetComingSoon(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		query := `
+			SELECT title, thumbnail_url, runtime, release_date
+			FROM films
+			WHERE release_date > CURDATE()
+			ORDER BY release_date DESC
+			LIMIT 20;
+		`
+
+		rows, err := database.Query(query)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "internal db error"})
+			fmt.Println(err)
+			return
+		}
+
+		var comingSoons []models.ComingSoonFilm
+		for rows.Next() {
+			var film models.ComingSoonFilm
+			err := rows.Scan(
+				&film.Title,
+				&film.ThumbnailURL,
+				&film.Runtime,
+				&film.ReleaseDate,
+			)
+
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": "internal db error"})
+				fmt.Println(err)
+				return
+			}
+
+			comingSoons = append(comingSoons, film)
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"coming_soon": comingSoons,
+			"metadata":	gin.H{
+				"amount": len(comingSoons),
+			},
+		})
+	}
+}

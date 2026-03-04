@@ -47,10 +47,13 @@ def main():
     print("Seeding movies...")
     seed_films(connection)
 
+    print('Seeding with coming_soon.csv')
+
+    seed_films(connection, movie_csv_path='coming_soon.csv')
+
     connection.close()
 
     print("Setup complete.")
-
 
 if __name__ == "__main__":
     main()
