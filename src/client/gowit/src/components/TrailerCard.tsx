@@ -4,13 +4,13 @@ import { useState } from "react";
 export default function TrailerCard({
   image_url,
   duration,
-  year,
+  date,
   title,
   trailer_url,
 }: {
   image_url: string;
   duration: number;
-  year: number;
+  date: string;
   title: string;
   trailer_url: string;
 }) {
@@ -20,6 +20,15 @@ export default function TrailerCard({
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
   };
 
   return (
@@ -87,7 +96,9 @@ export default function TrailerCard({
           </div>
 
           <div className="flex flex-col">
-            <span className="text-gray-400 text-sm font-semibold">{year}</span>
+            <span className="text-gray-400 text-sm font-semibold">
+              {formatDate(date)}
+            </span>
             <h3 className="text-white text-lg font-semibold">{title}</h3>
           </div>
         </div>
