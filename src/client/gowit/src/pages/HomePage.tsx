@@ -333,7 +333,7 @@ export default function HomePage() {
                   Contact Us
                 </h1>
                 <p className="text-gray-300 text-lg">
-                  Having a Problem? We're ready to help.
+                  Having a Problem? We're ready to help!
                 </p>
               </div>
 
@@ -384,7 +384,7 @@ export default function HomePage() {
                     <input
                       type="text"
                       placeholder="Name..."
-                      className="w-full px-6 py-3 bg-white/90 text-gray-800 placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E50914] focus:bg-white transition-all font-medium"
+                      className="w-full px-6 py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
@@ -394,7 +394,7 @@ export default function HomePage() {
                     <input
                       type="email"
                       placeholder="Email..."
-                      className="w-full px-6 py-3 bg-white/90 text-gray-800 placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E50914] focus:bg-white transition-all font-medium"
+                      className="w-full px-6 py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -404,7 +404,7 @@ export default function HomePage() {
                     <textarea
                       placeholder="Messages..."
                       rows={6}
-                      className="w-full px-6 py-3 bg-white/90 text-gray-800 placeholder-gray-500 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#E50914] focus:bg-white transition-all font-medium"
+                      className="w-full px-6 py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl resize-none focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />

@@ -86,7 +86,7 @@ export default function Navbar() {
             <input
               type="text"
               placeholder="Search Movies..."
-              className="w-full bg-white/10 text-white placeholder-gray-400 rounded-full px-5 py-1.5 pr-12 border border-white/20 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all"
+              className="w-full bg-white/10 text-white placeholder-gray-400 rounded-full px-5 py-1.5 pr-12 border-1 border-white/20 hover:border-white/40 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all"
               onChange={(e) => setSearch(e.target.value)}
             />
             {search ? (
@@ -168,13 +168,13 @@ export default function Navbar() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden bg-black/98 backdrop-blur-lg border-t border-white/10">
+        <div className="md:hidden bg-black/98 backdrop-blur-lg border-t border-white/10"> 
           <div className="px-4 py-3 border-b border-white/10">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search Movies..."
-                className="w-full bg-white/10 text-white placeholder-gray-400 rounded-full px-5 py-2 pr-12 border border-white/20 focus:outline-none focus:border-white/40"
+                className="w-full bg-white/10 text-white placeholder-gray-400 rounded-full px-5 py-2 pr-12 border-2 border-white/20 hover:border-white/40 focus:outline-none focus:border-white/40"
                 onChange={(e) => setMobileSearch(e.target.value)}
               />
               <button className="absolute right-3 top-3 text-gray-400">
