@@ -1,9 +1,10 @@
 import csv, mysql.connector, os, requests, json
 from dotenv import load_dotenv
+from datetime import date
 
 load_dotenv()
 
-def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
+def seed_films(connection=None, movie_csv_path="movies.csv", limit=5):
     # own_connection here is needed incase seed_films is ran as a standalone script
     
     own_connection = False
@@ -21,9 +22,9 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
 
     insert_film_query = """
     INSERT INTO films
-    (title, description, release_year, popularity,
+    (title, description, popularity,
     average_rating, rating_count, poster_image_url,
-    trailer_url, runtime, tagline, thumbnail_url)
+    trailer_url, runtime, tagline, thumbnail_url, release_date)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
@@ -74,12 +75,7 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
                 title = details.get("title")
                 overview = details.get("overview")
                 release_date = details.get("release_date")
-                release_year = None
-                if release_date:
-                    try:
-                        release_year = int(release_date[:4])
-                    except ValueError:
-                        release_year = None
+                release_date = date.fromisoformat(release_date)
 
                 tagline = details.get('tagline') if details.get('tagline') is not None else None
 
@@ -92,8 +88,8 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
                 existing_film_id = None
                 try:
                     cursor.execute(
-                        "SELECT id FROM films WHERE title = %s AND (release_year = %s OR release_year IS NULL AND %s IS NULL)",
-                        (title, release_year, release_year),
+                        "SELECT id FROM films WHERE title = %s AND (release_date = %s OR release_date IS NULL AND %s IS NULL)",
+                        (title, release_date, release_date),
                     )
                     row_id = cursor.fetchone()
                     if row_id:
@@ -109,15 +105,15 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
                             (
                                 title,
                                 overview,
-                                release_year,
                                 popularity,
-                                vote_avg,
-                                vote_count,
+                                0,
+                                0,
                                 poster_url,
                                 trailer_url,
                                 runtime,
                                 tagline,
-                                thumbnail_url
+                                thumbnail_url,
+                                release_date
                             ),
                         )
                         connection.commit()
@@ -126,7 +122,7 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
                         print(f"Ignored insert error for film {title!r}: {e}")
                         try:
                             # Try again, film might already be in there
-                            cursor.execute("SELECT id FROM films WHERE title=%s AND release_year=%s", (title, release_year))
+                            cursor.execute("SELECT id FROM films WHERE title=%s AND release_date=%s", (title, release_date))
                             res = cursor.fetchone()
                             if res:
                                 film_id = res[0]
@@ -225,5 +221,11 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=20):
     print(f"Seeding complete. Processed {processed} movies.")
 
 if __name__ == "__main__":
+    print('Seeding with movies.csv')
+    
     seed_films()
+
+    print('Seeding with coming_soon.csv')
+
+    seed_films(movie_csv_path='coming_soon.csv')
 

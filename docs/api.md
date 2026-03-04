@@ -323,3 +323,84 @@ Removes a film from the authenticated user's favorites.
   "error": "db error: ..."
 }
 ```
+
+---
+
+## **📌 `/api/films/coming-soon`**
+
+### **GET**
+
+Returns a list of upcoming films — i.e., films with a release date after today — up to 20 results sorted by release date in ascending order (soonest first).
+
+---
+
+### **Description**
+
+Retrieves films from the database whose release date is in the future. Useful for displaying “Coming Soon” or “Upcoming Releases” sections in your frontend app.
+
+---
+
+### **URL**
+
+```
+GET /api/films/coming-soon
+```
+
+---
+
+### **Success Response**
+
+**Status:** `200 OK`
+**Content type:** `application/json`
+
+```json
+{
+  "coming_soon": [
+    {
+      "title": "Example Film",
+      "thumbnail_url": "https://image.tmdb.org/t/p/w500/abc123.jpg",
+      "runtime": 120,
+      "release_year": 2027
+    }
+  ],
+  "metadata": {
+    "amount": 1
+  }
+}
+```
+
+**Fields:**
+
+| Field             | Type   | Description                                   |
+| ----------------- | ------ | --------------------------------------------- |
+| `title`           | string | The film title                                |
+| `thumbnail_url`   | string | URL to the film’s poster/thumbnail image      |
+| `runtime`         | int    | Film duration in minutes                      |
+| `release_year`    | int    | The year the film is scheduled to be released |
+| `metadata.amount` | int    | The number of coming soon films returned      |
+
+---
+
+### **Error Responses**
+
+#### **500 – Internal Server Error**
+
+Returned if the database query fails.
+
+Response example:
+
+```json
+{
+  "error": "internal db error"
+}
+```
+
+---
+
+### **Notes**
+
+* No query parameters are supported currently — this endpoint always returns *the next up to 20 upcoming films*.
+* It helps frontend quickly populate an upcoming movies section without having to filter and sort on the client.
+* Recommended for use wherever you want users to browse titles that haven’t released yet.([Devzery Latest][1])
+
+---
