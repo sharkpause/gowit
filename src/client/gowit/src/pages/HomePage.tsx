@@ -7,7 +7,7 @@ import MovieCard from "../components/MovieCard";
 import TrailerCard from "../components/TrailerCard";
 import Footer from "../components/Footer";
 import { serverApi } from "../api";
-import type { MovieType } from "../type";
+import type { ComingMovie, MovieType } from "../type";
 import { Link, useLocation } from "react-router";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
@@ -19,14 +19,16 @@ import Navbar from "../components/Navbar";
 export default function HomePage() {
   const [topMovie, setTopMovie] = useState<MovieType[]>([]);
   const [movieFeatured, setMovieFeatured] = useState<MovieType[]>([]);
-  const [comingMovie, setComingMovie] = useState<MovieType[]>([]);
   const [index, setIndex] = useState<number>(0);
   const [visibleFeatured, setVisibleFeatured] = useState(0);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
+  const [isBeginningCS, setIsBeginningCS] = useState(true);
+  const [isEndCS, setIsEndCS] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [movieComingSoon, setMovieComingSoon] = useState<ComingMovie[]>([]);
 
   const location = useLocation();
 
@@ -50,6 +52,20 @@ export default function HomePage() {
     setIsEnd(swiper.isEnd);
   };
 
+  const syncEdgesCS = (swiper: SwiperType) => {
+    setIsBeginningCS(swiper.isBeginning);
+    setIsEndCS(swiper.isEnd);
+  };
+
+  async function fetchMovieComingSoon() {
+    try {
+      const response = await serverApi.get("/api/films/coming-soon");
+      setMovieComingSoon(response.data.coming_soon);
+    } catch (error) {
+      console.log("Error fetching featured movies:", error);
+    }
+  }
+
   async function fetchFeaturedMovies() {
     // Simulate fetching featured movies\
     try {
@@ -57,15 +73,6 @@ export default function HomePage() {
       setMovieFeatured(response.data.films);
     } catch (error) {
       console.log("Error fetching featured movies:", error);
-    }
-  }
-
-  async function fetchComingMovies() {
-    try {
-      const response = await serverApi.get("/api/films?");
-      setComingMovie(response.data.films);
-    } catch (error) {
-      console.log("Error fetching coming movies:", error);
     }
   }
 
@@ -83,6 +90,7 @@ export default function HomePage() {
   useEffect(() => {
     fetchFeaturedMovies();
     fetchTopMovie();
+    fetchMovieComingSoon();
   }, []);
 
   useEffect(() => {
@@ -290,7 +298,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="px-4 md:px-8 lg:px-32 h-full pt-24 pb-16 z-10  ">
+        <div className="px-4 md:px-8 lg:px-32 h-full pt-24 pb-16 z-10">
           <h1
             className="text-[#F5F2F2] text-4xl font-bold "
             style={{
@@ -302,15 +310,56 @@ export default function HomePage() {
           <p className="text-[#F5F2F2] mt-2 mb-12 font-light">
             Trailers For Upcoming Releases
           </p>
-          <div>
-            <TrailerCard
-              image_url={
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLVVf6K62C8N59BIawk68Y-tKk-Ask_4H9lA&s"
-              }
-              duration={100}
-              date={"2025-12-25"}
-              title={"Title"}
-            />
+          <div className="flex gap-8 relative">
+            <button
+              className={[
+                "prev-btn-cs absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isBeginningCS
+                  ? "opacity-0 pointer-events-none"
+                  : "hover:scale-110",
+              ].join(" ")}
+            >
+              <ArrowLeft className="text-white w-8 h-8" />
+            </button>
+            <button
+              className={[
+                "next-btn-cs absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isEndCS ? "opacity-0 pointer-events-none" : "hover:scale-110",
+              ].join(" ")}
+            >
+              <ArrowRight className="text-white w-8 h-8" />
+            </button>
+            <Swiper
+              modules={[Navigation]}
+              spaceBetween={48}
+              slidesPerView={1.2}
+              navigation={{ prevEl: ".prev-btn-cs", nextEl: ".next-btn-cs" }}
+              breakpoints={{
+                640: { slidesPerView: 2.2 },
+                1024: { slidesPerView: 4 },
+              }}
+              loop={false}
+              onSwiper={syncEdgesCS}
+              onSlideChange={syncEdgesCS}
+              observer
+              observeParents
+              updateOnWindowResize
+              onResize={syncEdgesCS}
+            >
+              {movieComingSoon?.map((el, idx) => {
+                return (
+                  <SwiperSlide key={idx}>
+                    <TrailerCard
+                      image_url={el.thumbnail_url}
+                      duration={el.runtime}
+                      date={el.release_date}
+                      title={el.title}
+                      trailer_url="https://youtu.be/wkFACDYhTio?si=FyxfdBrwUs_i9Iny"
+                    />
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
           </div>
         </div>
 

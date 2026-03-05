@@ -12,7 +12,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileType>();
   const [isEdit, setIsEdit] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+
   const [picture, setPicture] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ export default function ProfilePage() {
       setLoading(true);
       const response = await serverApi.patch("/api/updateuser", {
         name,
-        email,
+
         profile_picture_url: picture,
       });
 
@@ -118,7 +118,7 @@ export default function ProfilePage() {
     try {
       const response = await serverApi.get("/api/userprofile");
       setName(response.data.name);
-      setEmail(response.data.email);
+
       setPicture(response.data.profile);
       setProfile(response.data);
     } catch (error) {
@@ -241,14 +241,11 @@ export default function ProfilePage() {
             </label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={profile?.email}
+              onChange={() => {}}
+              readOnly
               disabled={!isEdit}
-              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors ${
-                isEdit
-                  ? "text-[#F5F2F2] border-white/30 focus:border-white/60 focus:outline-none cursor-text"
-                  : "text-gray-500 border-white/10 cursor-not-allowed opacity-60"
-              }`}
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60 outline-none`}
             />
           </div>
 
@@ -260,7 +257,8 @@ export default function ProfilePage() {
               type="date"
               value={toDateInputValue(profile?.created)}
               onChange={() => {}}
-              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60`}
+              readOnly
+              className={`w-full bg-[#1C1E22] px-4 py-3 rounded-lg border transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60 outline-none`}
             />
           </div>
 
