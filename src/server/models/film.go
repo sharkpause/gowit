@@ -31,4 +31,5 @@ type Film struct {
 	ProductionCompanies   []string   	`json:"production_companies"`
 	ProductionCountries   []string   	`json:"production_countries"`
 	Casts                 []string   	`json:"casts"`
+	ThumbnailURL		  *string		`json:"thumbnail_url"`
 }
