@@ -264,7 +264,6 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 	return func(context *gin.Context){
 	type users struct{
 		Name *string `json:"name"`
-		Email *string `json:"email"`
 		Profile_picture_url *string `json:"profile_picture_url"`
 		}
 	userId,exists := context.Get("user_id")
@@ -277,7 +276,6 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 		context.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid Request Body",
 			})
-		fmt.Println(err)	
 		return
 	}
 	args := []interface{}{}
@@ -287,26 +285,22 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 		args = append(args, *user.Name)
 		field = append(field, " name = ?")
 	}
-	if user.Email != nil{
-		args = append(args,*user.Email)
-		field = append(field, " email = ?")
-	}
 	if user.Profile_picture_url != nil{
 		args = append(args, *user.Profile_picture_url)
 		field = append(field, " profile_picture_url = ?")
 	}
 	if len(args) == 0 {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "No provided field, so no update occured",})
+		return
 	}
 	query += strings.Join(field, ", ") + " WHERE id = ?"
 	args = append(args, userId)
 	_,err := database.Exec(query,args...)
-	fmt.Println(err)
 	if err != nil{
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update",})
 		return
 	}
-	context.JSON(200, gin.H{"message": "Successfulll "},)
+	context.JSON(200, gin.H{"message": "Successfulll"},)
 	}
 }
 
