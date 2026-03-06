@@ -387,21 +387,19 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 		id, _ := res.LastInsertId()
 		userID = uint64(id)
 
-        // 5. Generate your JWT or session token
-        sessionToken, tokenErr := auth.GenerateJWT(userID) // YOU implement this
+        sessionToken, tokenErr := auth.GenerateJWT(userID)
         if tokenErr != nil {
             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate JWT"})
             return
         }
 
-        // 6. Set HttpOnly cookie
         requestContext.SetCookie(
             "token",
             sessionToken,
-            3600*24,      // expiration
+            3600*24,
             "/",
             "localhost",  // change for production domain
-            false,        // Set to true if HTTPS
+            true,        // Set to true if HTTPS
             true,         // HttpOnly
         )
 

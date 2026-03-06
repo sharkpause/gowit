@@ -23,6 +23,7 @@ type Film struct {
 	ReleaseYear           *int64     	`json:"release_year"`
 	PosterImageURL        *string    	`json:"poster_image_url"`
 	TrailerURL            *string    	`json:"trailer_url"`
+	TrailerDuration		  *uint16		`json:"trailer_duration"`
 	AverageRating         *float64   	`json:"average_rating"`
 	Popularity            uint8   		`json:"popularity"`
 	Runtime               *int64     	`json:"runtime"`
