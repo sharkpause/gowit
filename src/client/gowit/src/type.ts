@@ -34,3 +34,10 @@ export type ProfileType = {
   created: string;
   favorite_count: number;
 };
+
+export type ComingMovie = {
+  title: string;
+  thumbnail_url: string;
+  runtime: number;
+  release_date: string;
+};

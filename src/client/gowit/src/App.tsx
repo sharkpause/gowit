@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import FavoritePage from "./pages/FavoritePage";
 import DetailPage from "./pages/DetailPage";
 import ProfilePage from "./pages/ProfilePage";
+import SearchPage from "./pages/SearchPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<HomePage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/movies/:id" element={<DetailPage />} />
           <Route path="/" element={<Layout />}>
             <Route path="watchlist" element={<FavoritePage />} />

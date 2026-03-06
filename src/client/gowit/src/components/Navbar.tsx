@@ -2,13 +2,29 @@ import { Search, Plus, Menu, X, CircleUserRound } from "lucide-react";
 import { Link } from "react-router";
 import { useEffect, useState } from "react";
 import { serverApi } from "../api";
+import type { MovieType } from "../type";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [searchMovie, setSearchMovie] = useState<MovieType[]>([]);
   const [mobileSearch, setMobileSearch] = useState("");
   const [id, setId] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const fetchMovieSearch = async () => {
+    try {
+      console.log(search);
+
+      const response = await serverApi.get(
+        "/api/films?search=" + search + "&limit=5",
+      );
+      setSearchMovie(response.data.films);
+    } catch (error) {
+      console.log("Error at Fetch Movie Search:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -23,7 +39,8 @@ export default function Navbar() {
     };
 
     fetchUser();
-  }, []);
+    fetchMovieSearch();
+  }, [search]);
 
   if (loading) {
     return (
@@ -91,24 +108,30 @@ export default function Navbar() {
             />
             {search ? (
               <div className="absolute top-full mt-2 w-full bg-[#1C1E22] rounded-lg shadow-2xl border border-white/10 max-h-96 overflow-y-auto z-50">
-                <div className="p-2">
-                  <a
-                    href="/movie/1"
-                    className="flex items-center gap-3 p-3 hover:bg-white/10 rounded-lg transition-colors cursor-pointer group"
-                  >
-                    <img
-                      src="https://via.placeholder.com/60x90"
-                      alt="Movie"
-                      className="w-12 h-16 object-cover rounded shadow-md"
-                    />
-                    <div className="flex-1">
-                      <h4 className="text-white font-medium group-hover:text-[#E50914] transition-colors">
-                        Movie Title
-                      </h4>
-                      <p className="text-gray-400 text-sm">2024 • ⭐ 8.5</p>
+                {searchMovie.map((el) => {
+                  return (
+                    <div className="p-2" key={el.id}>
+                      <Link
+                        to={`/movies/${el.id}`}
+                        className="flex items-center gap-3 p-3 hover:bg-white/10 rounded-lg transition-colors cursor-pointer group"
+                      >
+                        <img
+                          src={el.poster_image_url}
+                          alt="Movie"
+                          className="w-12 h-16 object-cover rounded shadow-md"
+                        />
+                        <div className="flex-1">
+                          <h4 className="text-white font-medium group-hover:text-[#E50914] transition-colors">
+                            {el.title}
+                          </h4>
+                          <p className="text-gray-400 text-sm">
+                            {el.release_year} • ⭐ {el.release_year}
+                          </p>
+                        </div>
+                      </Link>
                     </div>
-                  </a>
-                </div>
+                  );
+                })}
 
                 {/* No Results State (optional) */}
                 {/* <div className="p-6 text-center">
@@ -168,7 +191,7 @@ export default function Navbar() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden bg-black/98 backdrop-blur-lg border-t border-white/10"> 
+        <div className="md:hidden bg-black/98 backdrop-blur-lg border-t border-white/10">
           <div className="px-4 py-3 border-b border-white/10">
             <div className="relative">
               <input

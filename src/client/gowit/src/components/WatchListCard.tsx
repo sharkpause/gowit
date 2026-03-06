@@ -8,6 +8,7 @@ export default function WatchListCard({
   description,
   year,
   minute,
+  notes,
 }: {
   poster_url: string;
   rating: number;
@@ -15,9 +16,10 @@ export default function WatchListCard({
   description: string;
   year: number;
   minute: number;
+  notes: string;
 }) {
   const [showNote, setShowNote] = useState(false);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(notes);
 
   return (
     <>

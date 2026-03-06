@@ -4,12 +4,25 @@ import type { MovieType } from "../type";
 import { serverApi } from "../api";
 import { errorAlert } from "../helper/errorAlert";
 import Swal from "sweetalert2";
-
 import axios from "axios";
 import { capitalizeEachWord } from "../helper/helper";
+import Navbar from "../components/Navbar";
+
+type CommentType = {
+  username: string;
+  comment: string;
+  date: string;
+  likes: number;
+  dislikes: number;
+  userVote?: "like" | "dislike" | null;
+};
 
 export default function DetailPage() {
   const [detailMovie, setDetailMovie] = useState<MovieType>();
+  const [comments, setComments] = useState<CommentType[]>([]);
+  const [username, setUsername] = useState("");
+  const [commentText, setCommentText] = useState("");
+
   let { id } = useParams();
   const navigate = useNavigate();
 
@@ -24,32 +37,60 @@ export default function DetailPage() {
 
   const addMovieToFavorites = async () => {
     try {
-      const response = await serverApi.post("/api/favorites", {
+      await serverApi.post("/api/favorites", {
         film_id: Number(id),
       });
 
       Swal.fire({
         title: `${detailMovie?.title} Added Successful!"`,
-
         icon: "success",
-        buttonsStyling: false,
         background: "#0F1115",
         color: "#F5F2F2",
-        customClass: {
-          title: "text-white",
-          confirmButton:
-            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
-        },
       });
 
       navigate("/watchlist");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
-      } else {
-        console.log("Error at Detail Page: ", error);
       }
     }
+  };
+
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!username || !commentText) return;
+
+    const newComment: CommentType = {
+      username,
+      comment: commentText,
+      date: new Date().toLocaleDateString(),
+      likes: 0,
+      dislikes: 0,
+      userVote: null,
+    };
+
+    setComments([newComment, ...comments]);
+    setUsername("");
+    setCommentText("");
+  };
+
+  const handleVote = (index: number, type: "like" | "dislike") => {
+    const updatedComments = [...comments];
+
+    const comment = updatedComments[index];
+
+    if (comment.userVote) return; // anti double vote
+
+    if (type === "like") {
+      comment.likes += 1;
+      comment.userVote = "like";
+    } else {
+      comment.dislikes += 1;
+      comment.userVote = "dislike";
+    }
+
+    setComments(updatedComments);
   };
 
   useEffect(() => {
@@ -58,90 +99,119 @@ export default function DetailPage() {
   }, []);
 
   return (
-    <div className="bg-[#0F1115]">
-      <div className="max-w-6xl mx-auto px-6 py-10 ">
-        <div className="bg-[#0B0C0D] border border-gray-800 rounded-lg p-8 shadow-xl mt-12">
-          <h2 className="text-white mb-6 font-bold text-3xl">
-            {detailMovie?.title}
-          </h2>
-          <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-2xl bg-black">
-            <iframe
-              className="w-full h-full"
-              src={detailMovie?.trailer_url}
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            ></iframe>
-          </div>
-          <div className="mt-6 bg-black rounded-md p-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="max-w-5xl mx-auto grid md:grid-cols-[280px_1fr] gap-5">
+    <>
+      <Navbar />
+      <div className="bg-[#0F1115] min-h-screen">
+        <div className="max-w-6xl mx-auto px-6 py-10 ">
+          <div className="bg-[#0B0C0D] border border-gray-800 rounded-lg p-8 shadow-xl mt-12">
+            <h2 className="text-white mb-6 font-bold text-3xl">
+              {detailMovie?.title}
+            </h2>
+
+            <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-2xl bg-black">
+              <iframe
+                className="w-full h-full"
+                src={detailMovie?.trailer_url}
+              ></iframe>
+            </div>
+
+            <div className="mt-6 bg-black rounded-md p-6">
+              {/* Movie Info */}
+              <div className="grid md:grid-cols-3 gap-6">
                 <img
                   src={detailMovie?.poster_image_url}
                   className="rounded-lg shadow-lg"
                   alt="Poster"
                 />
-              </div>
-              <div className="md:col-span-2 space-y-4 .md:-ml-3">
-                <h1 className="text-3xl font-bold text-white">
-                  {" "}
-                  {detailMovie?.title}
-                </h1>
-                <div className="mt-4 items-center text-xl py-1 rounded-md shadow-sm">
-                  <span className="text-yellow-400 text-lg">⭐</span>
-                  <span className="text-white font-semibold ml-1">
-                    {detailMovie?.average_rating}
-                  </span>
-                  <span className="text-gray-400 text-sm">/10</span>
-                </div>
-                <p className="text-gray-300 text-justify">
-                  {detailMovie?.description}
-                </p>
-                <div className="grid grid-cols-2 gap-4 text-sm text-gray-400 pt-4">
-                  <p>
-                    <span className="text-white font-semibold">Released:</span>{" "}
-                    {detailMovie?.release_year}
-                  </p>
-                  <p>
-                    <span className="text-white font-semibold">Duration:</span>{" "}
-                    {detailMovie?.runtime} min
-                  </p>
-                  <p>
-                    <span className="text-white font-semibold">Genre:</span>{" "}
-                    {detailMovie?.genres.join(" ")}
-                  </p>
-                  <p>
-                    <span className="text-white font-semibold">Country:</span>{" "}
-                    {detailMovie?.production_countries.join(" ")}
-                  </p>
-                  <p>
-                    <span className="text-white font-semibold">
-                      Production:
-                    </span>{" "}
-                    {detailMovie?.production_companies.join(" ")}
-                  </p>
-                  <p>
-                    <span className="text-white font-semibold">Casts:</span>{" "}
-                    {detailMovie?.casts.join(" ")}
+
+                <div className="md:col-span-2 space-y-4">
+                  <h1 className="text-3xl font-bold text-white">
+                    {detailMovie?.title}
+                  </h1>
+
+                  <p className="text-gray-300">
+                    {detailMovie?.description}
                   </p>
                 </div>
               </div>
-            </div>
-            <div className="flex gap-4 ml-2 mt-2">
-              <button
-                onClick={addMovieToFavorites}
-                className="bg-[#E50914] hover:bg-red-800 text-white px-5 py-3 rounded-lg transition flex items-center gap-2 font-bold"
-              >
-                <img
-                  src="../watchlisticon.png"
-                  alt="Watchlist"
-                  className="w-4 h-4"
-                />
-                Add to Watchlist
-              </button>
+
+              <div className="flex gap-4 mt-4">
+                <button
+                  onClick={addMovieToFavorites}
+                  className="bg-[#E50914] hover:bg-red-800 text-white px-5 py-3 rounded-lg font-bold"
+                >
+                  Add to Watchlist
+                </button>
+              </div>
+
+              {/* ================= COMMENT SECTION ================= */}
+
+              <div className="mt-10 border-t border-gray-700 pt-6">
+                <h3 className="text-2xl text-white mb-4 font-semibold">
+                  Comments ({comments.length})
+                </h3>
+
+                <form onSubmit={handleAddComment} className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full p-3 rounded bg-gray-800 text-white"
+                  />
+
+                  <textarea
+                    placeholder="Write your comment..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    className="w-full p-3 rounded bg-gray-800 text-white"
+                  />
+
+                  <button className="bg-[#E50914] px-6 py-2 rounded text-white font-semibold">
+                    Post Comment
+                  </button>
+                </form>
+
+                <div className="mt-6 space-y-4">
+                  {comments.map((c, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-900 p-4 rounded border border-gray-700"
+                    >
+                      <div className="flex justify-between">
+                        <h4 className="text-red-400 font-semibold">
+                          {c.username}
+                        </h4>
+                        <span className="text-gray-400 text-sm">
+                          {c.date}
+                        </span>
+                      </div>
+
+                      <p className="text-gray-300 mt-2">{c.comment}</p>
+
+                      <div className="flex gap-6 mt-3 text-gray-400">
+                        <button
+                          onClick={() => handleVote(index, "like")}
+                          className="hover:text-white"
+                        >
+                          👍 {c.likes}
+                        </button>
+
+                        <button
+                          onClick={() => handleVote(index, "dislike")}
+                          className="hover:text-white"
+                        >
+                          👎 {c.dislikes}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
