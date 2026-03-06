@@ -264,7 +264,6 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 	return func(context *gin.Context){
 	type users struct{
 		Name *string `json:"name"`
-		Email *string `json:"email"`
 		Profile_picture_url *string `json:"profile_picture_url"`
 		}
 	userId,exists := context.Get("user_id")
@@ -277,7 +276,6 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 		context.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid Request Body",
 			})
-		fmt.Println(err)	
 		return
 	}
 	args := []interface{}{}
@@ -287,26 +285,22 @@ func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
 		args = append(args, *user.Name)
 		field = append(field, " name = ?")
 	}
-	if user.Email != nil{
-		args = append(args,*user.Email)
-		field = append(field, " email = ?")
-	}
 	if user.Profile_picture_url != nil{
 		args = append(args, *user.Profile_picture_url)
 		field = append(field, " profile_picture_url = ?")
 	}
 	if len(args) == 0 {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "No provided field, so no update occured",})
+		return
 	}
 	query += strings.Join(field, ", ") + " WHERE id = ?"
 	args = append(args, userId)
 	_,err := database.Exec(query,args...)
-	fmt.Println(err)
 	if err != nil{
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update",})
 		return
 	}
-	context.JSON(200, gin.H{"message": "Successfulll "},)
+	context.JSON(200, gin.H{"message": "Successfulll"},)
 	}
 }
 
@@ -329,8 +323,6 @@ func GoogleLoginHandler(context *gin.Context) {
 
 func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
     return func(requestContext *gin.Context) {
-        // 1. Get query params
-        // state := requestContext.Query("state")
         code := requestContext.Query("code")
 
         if code == "" {
@@ -340,14 +332,12 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 
 		googleOAuthConfig := NewGoogleOAuthConfig()
 
-        // 2. Exchange code for token
         token, err := googleOAuthConfig.Exchange(context.Background(), code)
         if err != nil {
             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "token exchange failed"})
             return
         }
 
-        // 3. Use token to call Google’s userinfo endpoint
         client := googleOAuthConfig.Client(context.Background(), token)
         resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
         if err != nil {
@@ -375,74 +365,27 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 			userInfo.ID,
 		).Scan(&userID)
 
+		res, err := database.Exec(
+			`
+			INSERT INTO users (name, email, google_id, profile_picture_url)
+			VALUES (?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+				google_id = VALUES(google_id),
+				name = VALUES(name),
+				profile_picture_url = VALUES(profile_picture_url)
+			`, 
+			userInfo.Name,
+			userInfo.Email,
+			userInfo.ID,
+			userInfo.Picture,
+		)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				err = database.QueryRow(
-					"SELECT id FROM users WHERE email = ?",
-					userInfo.Email,
-				).Scan(&userID)
-
-				if err != nil {
-					if err == sql.ErrNoRows {
-						// user doesn't exist
-						res, insertErr := database.Exec(
-							"INSERT INTO users (name, email, google_id, profile_picture_url) VALUES (?, ?, ?, ?)",
-							userInfo.Name, userInfo.Email, userInfo.ID, userInfo.Picture,
-						)
-						if insertErr != nil {
-							requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "insert error"})
-							fmt.Println(insertErr)
-							return
-						}
-						newID, _ := res.LastInsertId()
-						userID = uint64(newID)
-					} else {
-						requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "internal db error"})
-						fmt.Println((err))
-						return
-					}
-				} else {
-					_, updateErr := database.Exec(
-						"UPDATE users SET google_id = ? WHERE id = ?",
-						userInfo.ID, userID,
-					)
-					if updateErr != nil {
-						requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert google id"})
-						fmt.Println(updateErr)
-						return
-					}
-				}
-			} else {
-				requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "internal db error"})
-				fmt.Println(err)
-				return
-			}
+			requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			fmt.Println(err)
+			return
 		}
-
-		// continue — userID now contains correct id
-
-        if err != nil {
-            if err == sql.ErrNoRows {
-                // Insert new user
-                res, insertErr := database.Exec(
-                    "INSERT INTO users (name, email, google_id, profile_picture_url) VALUES (?, ?, ?, ?)",
-                    userInfo.Name,
-                    userInfo.Email,
-                    userInfo.ID,
-                    userInfo.Picture,
-                )
-                if insertErr != nil {
-                    requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert user"})
-					fmt.Println(insertErr)
-                    return
-                }
-                id, _ := res.LastInsertId()
-                userID = uint64(id)
-            } else {
-                requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "database query error"})
-                return
-            }
-        }
+		id, _ := res.LastInsertId()
+		userID = uint64(id)
 
         // 5. Generate your JWT or session token
         sessionToken, tokenErr := auth.GenerateJWT(userID) // YOU implement this

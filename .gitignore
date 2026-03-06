@@ -32,3 +32,4 @@ go.work.sum
 .vscode/
 src/server/auth/authtester.go
 src/server/setup/scripts/__pycache__/
+src/client/gowit/public/media

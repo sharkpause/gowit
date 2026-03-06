@@ -551,7 +551,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 func GetComingSoon(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		query := `
-			SELECT title, thumbnail_url, runtime, release_date
+			SELECT title, thumbnail_url, runtime, release_date, trailer_url
 			FROM films
 			WHERE release_date > CURDATE()
 			ORDER BY release_date DESC
@@ -573,6 +573,7 @@ func GetComingSoon(database *sql.DB) func(*gin.Context) {
 				&film.ThumbnailURL,
 				&film.Runtime,
 				&film.ReleaseDate,
+				&film.TrailerURL,
 			)
 
 			if err != nil {
@@ -590,5 +591,27 @@ func GetComingSoon(database *sql.DB) func(*gin.Context) {
 				"amount": len(comingSoons),
 			},
 		})
+	}
+}
+func FavoriteListChheck(database *sql.DB)func(*gin.Context){
+	return func(context *gin.Context){
+		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid film id"})
+			return
+		}
+		var isFavorite bool
+		userId,exists := context.Get("user_id")
+		if !exists {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized User",})
+	}
+		query := "SELECT IF(EXISTS(SELECT 1 FROM favorites WHERE user_id= ? AND film_id = ?), TRUE,FALSE) AS is_favorite"
+		err = database.QueryRow(query,userId,filmID).Scan(&isFavorite)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"message":"Internal Server Error"})
+			return
+		}
+		fmt.Println(isFavorite)
+		context.JSON(http.StatusOK, gin.H{"isFavorite": isFavorite,}) // hardcode front end kalau belum log in otomatis false please
 	}
 }

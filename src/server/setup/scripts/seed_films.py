@@ -2,7 +2,78 @@ import csv, mysql.connector, os, requests, json
 from dotenv import load_dotenv
 from datetime import date
 
+from pathlib import Path
+
+import yt_dlp
+
+import subprocess
+
 load_dotenv()
+
+PUBLIC_URL='../../../client/gowit/public/'
+
+POSTER_DIR    = PUBLIC_URL + "media/posters"
+THUMBNAIL_DIR     = PUBLIC_URL + "media/thumbnails"
+TRAILER_DIR   = PUBLIC_URL + "media/trailers"
+
+def convert_folder_to_webp(
+    folder_path: str,
+    quality: int = 90,
+    delete_originals: bool = True,
+    include_subdirs: bool = True,
+):
+    cmd = ["webpall", "--dir", folder_path, "--quality", str(quality)]
+    if delete_originals:
+        cmd.append("--delete")
+    if include_subdirs:
+        cmd.append("--subdirs")
+
+    try:
+        print(f"Running: {' '.join(cmd)}")
+        result = subprocess.run(cmd, check=True)
+        print(f"Converted images in {folder_path} to WebP")
+    except subprocess.CalledProcessError as err:
+        print(f"webpall error for {folder_path}: {err}")
+
+def download_youtube_video(url: str, output_path: str):
+    if Path(output_path).is_file():
+        print(f"Skipping video (already exists): {output_path}")
+        return
+
+    ydl_opts = {
+        "format": "bestvideo+bestaudio/best",
+        "outtmpl": output_path,
+        "merge_output_format": "mp4"
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            ydl.download([url])
+            print(f"Downloaded YouTube video to {output_path}")
+        except Exception as e:
+            print(f"Failed to download YouTube video {url}: {e}")
+
+def download_file(url: str, local_path: str):
+    path_obj = Path(local_path)
+
+    if path_obj.is_file():
+        print(f"Skipping (already exists): {local_path}")
+        return
+
+    try:
+        path_obj.parent.mkdir(parents=True, exist_ok=True)
+
+        response = requests.get(url, stream=True, timeout=15)
+        response.raise_for_status()
+
+        with open(local_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        print(f"Saved: {local_path}")
+
+    except Exception as e:
+        print(f"Failed to download {url}: {e}")
 
 def seed_films(connection=None, movie_csv_path="movies.csv", limit=5):
     # own_connection here is needed incase seed_films is ran as a standalone script
@@ -58,12 +129,29 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=5):
                 videos_resp.raise_for_status()
                 videos = videos_resp.json().get("results", [])
 
-                trailer_url = None
-                thumbnail_url = None
+                trailer_download_url = None
+                thumbnail_download_url = None
                 for video in videos:
                     if video.get("site") == "YouTube" and video.get("type") == "Trailer":
-                        trailer_url = f"https://www.youtube.com/embed/{video.get('key')}"
-                        thumbnail_url = f'https://img.youtube.com/vi/{video.get('key')}/hqdefault.jpg'
+                        trailer_download_url = f"https://www.youtube.com/watch?v={video.get('key')}"
+                        thumbnail_download_url = f'https://img.youtube.com/vi/{video.get('key')}/hqdefault.jpg'
+
+                        if trailer_download_url:
+                            trailer_filename = f'{video.get('key')}.mp4'
+                            trailer_local_path = f'{TRAILER_DIR}/{trailer_filename}'
+                            download_youtube_video(trailer_download_url, trailer_local_path)
+
+                            trailer_url = '/media/trailers/' + trailer_filename
+
+                        if thumbnail_download_url:
+                            thumbnail_filename = f"{movie_id}"
+                            thumbnail_local_path = f"{THUMBNAIL_DIR}/{thumbnail_filename + '.jpeg'}"
+                            download_file(thumbnail_download_url, thumbnail_local_path)
+
+                            thumbnail_url = "/media/thumbnails/" + thumbnail_filename + ".webp"
+
+                            convert_folder_to_webp(THUMBNAIL_DIR)
+                        
                         break
 
                 credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
@@ -82,7 +170,17 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=5):
                 popularity = round(details.get("popularity", 0))
                 vote_avg = details.get("vote_average") if details.get("vote_average") is not None else None
                 vote_count = details.get("vote_count") if details.get("vote_count") is not None else None
-                poster_url = f"https://image.tmdb.org/t/p/w500{details.get('poster_path')}" if details.get("poster_path") else None
+
+                poster_download_url = f"https://image.tmdb.org/t/p/w500{details.get('poster_path')}" if details.get("poster_path") else None
+                if poster_download_url:
+                    poster_filename = f"{movie_id}"
+                    poster_local_path = f"{POSTER_DIR}/{poster_filename + '.jpeg'}"
+                    download_file(poster_download_url, poster_local_path)
+
+                    poster_url = "/media/posters/" + poster_filename + '.webp'
+
+                    convert_folder_to_webp(POSTER_DIR)
+                
                 runtime = details.get("runtime")
 
                 existing_film_id = None
