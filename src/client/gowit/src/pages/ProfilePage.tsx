@@ -24,29 +24,23 @@ export default function ProfilePage() {
       if (!file) return;
 
       const allowedTypes = ["image/jpeg", "image/png"];
-
       if (!allowedTypes.includes(file.type)) {
         errorAlert("Only JPG and PNG files are allowed.");
         e.target.value = "";
         return;
       }
 
-      const data = new FormData();
-      data.append("file", file);
-      data.append("upload_preset", import.meta.env.VITE_UPLOAD_PRESET);
-      data.append("cloud_name", import.meta.env.VITE_CLOUD_NAME);
+      const formData = new FormData();
+      formData.append("profile_picture", file);
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: data,
+      const res = await serverApi.patch("/api/updateuser", formData, {
+        // **no manual Content-Type!**
+        headers: {
+          "Accept": "application/json",
         },
-      );
+      });
 
-      const uploadedImageUrl = await res.json();
-
-      setPicture(uploadedImageUrl.url);
+      setPicture(res.data.url);
     } catch (error) {
       console.log("Error at Profile Picture: ", error);
     } finally {

@@ -611,6 +611,7 @@ func GetComingSoon(database *sql.DB) func(*gin.Context) {
 		})
 	}
 }
+
 func FavoriteListCheck(database *sql.DB)func(*gin.Context){
 	return func(context *gin.Context){
 		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
