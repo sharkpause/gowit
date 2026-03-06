@@ -1,4 +1,4 @@
-import { Heart, X, Download, Upload } from "lucide-react";
+import { Heart, X, Download, Upload, Binary } from "lucide-react";
 import { Link } from "react-router";
 
 import type { WatchListType } from "../type";
@@ -14,6 +14,8 @@ import { capitalizeEachWord } from "../helper/helper";
 
 export default function FavoritePage() {
   const [favorite, setFavorite] = useState<WatchListType[]>([]);
+  const [isImport, setIsImport] = useState(false);
+  const [fileName, setFileName] = useState("");
 
   const fetchFavorite = async () => {
     try {
@@ -54,6 +56,24 @@ export default function FavoritePage() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const reader = new FileReader();
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+    reader.readAsBinaryString(file);
+    reader.onload = (e) => {
+      const data = e.target?.result;
+      const workbook = XLSX.read(data, { type: "binary" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const parsedData = XLSX.utils.sheet_to_json(sheet);
+      console.log(parsedData);
+    };
+
+    setFileName(file.name);
+  };
+
   const download = () => {
     const formattedData = favorite.map((el) => {
       return {
@@ -63,6 +83,7 @@ export default function FavoritePage() {
         "Average Rating": el.average_rating,
         "Release Year": el.release_year,
         "Duration (Minutes)": el.runtime,
+        Note: el.notes,
       };
     });
 
@@ -130,7 +151,10 @@ export default function FavoritePage() {
             Export
           </button>
 
-          <button className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E50914] focus:outline-none transition-colors flex items-center gap-2">
+          <button
+            onClick={() => setIsImport(true)}
+            className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E50914] focus:outline-none transition-colors flex items-center gap-2"
+          >
             <Upload className="w-4 h-4" />
             Import
           </button>
@@ -157,6 +181,7 @@ export default function FavoritePage() {
                   poster_url={el.poster_image_url}
                   year={el.release_year}
                   minute={el.runtime}
+                  notes={el.notes}
                 />
               </div>
             );
@@ -176,6 +201,53 @@ export default function FavoritePage() {
             Explore Movies
           </Link>
         </div>
+      )}
+
+      {isImport ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 "
+          onClick={() => setIsImport(false)}
+        >
+          <div
+            className="relative bg-[#1C1E22] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-center">
+              <label className="flex items-center justify-center w-full px-4 py-3 bg-[#1C1E22] text-[#F5F2F2] border border-white/20 rounded-xl cursor-pointer hover:border-[#E50914] transition">
+                <span className="font-medium">Choose Excel File</span>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
+            </div>
+
+            <div className="flex justify-center gap-3 mt-4">
+              <button
+                onClick={() => setIsImport(false)}
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setIsImport(false)}
+                className="px-5 py-2 text-sm bg-[#E50914] hover:bg-[#b20710] text-white font-semibold rounded-lg transition-colors"
+              >
+                Download Template
+              </button>
+              <button
+                onClick={() => setIsImport(false)}
+                className="px-5 py-2 text-sm bg-[#E50914] hover:bg-[#b20710] text-white font-semibold rounded-lg transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
       )}
     </div>
   );
