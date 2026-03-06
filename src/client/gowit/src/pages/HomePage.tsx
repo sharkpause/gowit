@@ -158,7 +158,7 @@ export default function HomePage() {
           <div className="flex gap-4 mt-8">
             <a
               href="#movies"
-              className="px-8 py-3  bg-[#E50914] text-white font-semibold rounded-full hover:bg-[#E50914]/90 transition-all shadow-lg shadow-[#E50914]/30"
+              className="px-8 py-3  bg-[#E8630A] text-white font-semibold rounded-full hover:bg-[#C75409] transition-all shadow-lg shadow-[#E8630A]/30"
             >
               Explore Movies
             </a>
@@ -200,7 +200,7 @@ export default function HomePage() {
                           key={el.id}
                           src={el.poster_image_url}
                           alt="Movie Poster"
-                          className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-red-500/30 hover:brightness-110 "
+                          className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110 "
                         />
                       </Link>
                     );
@@ -462,7 +462,7 @@ export default function HomePage() {
                   <div className="flex justify-end pt-3">
                     <button
                       type="submit"
-                      className="w-full md:w-auto px-8 py-2 bg-[#E50914] text-white font-bold text-lg rounded-xl hover:bg-[#E50914]/90 transition-all shadow-xl shadow-[#E50914]/40 hover:shadow-2xl hover:shadow-[#E50914]/50 hover:scale-105"
+                      className="w-full md:w-auto px-8 py-2 bg-[#E8630A] text-white font-bold text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105"
                     >
                       Submit
                     </button>

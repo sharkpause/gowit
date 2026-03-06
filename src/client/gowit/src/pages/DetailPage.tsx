@@ -39,7 +39,7 @@ export default function DetailPage() {
         customClass: {
           title: "text-white",
           confirmButton:
-            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
         },
       });
 
@@ -136,7 +136,7 @@ export default function DetailPage() {
               <div className="flex gap-4 ml-2 mt-2">
                 <button
                   onClick={addMovieToFavorites}
-                  className="bg-[#E50914] hover:bg-red-800 text-white px-5 py-3 rounded-lg transition flex items-center gap-2 font-bold"
+                  className="bg-[#E8630A] hover:bg-[#C75409] text-white px-5 py-3 rounded-lg transition flex items-center gap-2 font-bold"
                 >
                   <img
                     src="../watchlisticon.png"

@@ -42,7 +42,7 @@ export default function FavoritePage() {
         customClass: {
           title: "text-white",
           confirmButton:
-            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
         },
       });
 
@@ -120,7 +120,7 @@ export default function FavoritePage() {
             <label className="text-[#F5F2F2] text-sm font-medium">
               Sort by:
             </label>
-            <select className="bg-[#1C1E22]  text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E50914] transition-colors cursor-pointer">
+            <select className="bg-[#1C1E22]  text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer">
               <option value="title">Title</option>
               <option value="average_rating">Rating</option>
               <option value="release_year">Year</option>
@@ -131,7 +131,7 @@ export default function FavoritePage() {
 
           <div className="flex items-center gap-2">
             <label className="text-[#F5F2F2] text-sm font-medium">Order:</label>
-            <select className="bg-[#1C1E22] text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E50914] transition-colors cursor-pointer">
+            <select className="bg-[#1C1E22] text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer">
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </select>
@@ -139,13 +139,13 @@ export default function FavoritePage() {
 
           <input
             type="text"
-            className="flex-1 text-[#F5F2F2] text-sm font-medium px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E50914] transition-colors cursor-pointer"
+            className="flex-1 text-[#F5F2F2] text-sm font-medium px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             placeholder="Search"
           />
 
           <button
             onClick={download}
-            className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E50914] focus:outline-none transition-colors flex items-center gap-2"
+            className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
             Export
@@ -153,7 +153,7 @@ export default function FavoritePage() {
 
           <button
             onClick={() => setIsImport(true)}
-            className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E50914] focus:outline-none transition-colors flex items-center gap-2"
+            className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-2"
           >
             <Upload className="w-4 h-4" />
             Import
@@ -196,7 +196,7 @@ export default function FavoritePage() {
           </p>
           <Link
             to="/"
-            className="mt-2 bg-[#E50914] rounded-lg p-3 hover:bg-[#E50914]/90 transition-all shadow-md shadow-[#E50914]/40 hover:shadow-[#E50914]/50 hover:scale-105"
+            className="mt-2 bg-[#E8630A] rounded-lg p-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105"
           >
             Explore Movies
           </Link>
@@ -213,7 +213,7 @@ export default function FavoritePage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-center">
-              <label className="flex items-center justify-center w-full px-4 py-3 bg-[#1C1E22] text-[#F5F2F2] border border-white/20 rounded-xl cursor-pointer hover:border-[#E50914] transition">
+              <label className="flex items-center justify-center w-full px-4 py-3 bg-[#1C1E22] text-[#F5F2F2] border border-white/20 rounded-xl cursor-pointer hover:border-[#E8630A] transition">
                 <span className="font-medium">Choose Excel File</span>
                 <input
                   type="file"
@@ -233,13 +233,13 @@ export default function FavoritePage() {
               </button>
               <button
                 onClick={() => setIsImport(false)}
-                className="px-5 py-2 text-sm bg-[#E50914] hover:bg-[#b20710] text-white font-semibold rounded-lg transition-colors"
+                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
               >
                 Download Template
               </button>
               <button
                 onClick={() => setIsImport(false)}
-                className="px-5 py-2 text-sm bg-[#E50914] hover:bg-[#b20710] text-white font-semibold rounded-lg transition-colors"
+                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
               >
                 Submit
               </button>

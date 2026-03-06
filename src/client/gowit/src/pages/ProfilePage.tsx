@@ -73,7 +73,7 @@ export default function ProfilePage() {
         customClass: {
           title: "text-white",
           confirmButton:
-            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
         },
       });
 
@@ -104,7 +104,7 @@ export default function ProfilePage() {
         customClass: {
           title: "text-white",
           confirmButton:
-            "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
         },
       });
 
@@ -202,7 +202,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => setIsEdit(true)}
-              className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
+              className="py-3 px-3 bg-[#E8630A] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E8630A]/90 shadow-md shadow-[#E8630A]/30 cursor-pointer"
             >
               Edit Profile
             </button>
@@ -211,7 +211,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={logout}
-            className="py-3 px-3 bg-[#E50914] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E50914]/90 shadow-md shadow-[#E50914]/30 cursor-pointer"
+            className="py-3 px-3 bg-[#E8630A] text-[#F5F2F2] font-semibold rounded-xl hover:bg-[#E8630A]/90 shadow-md shadow-[#E8630A]/30 cursor-pointer"
           >
             Logout
           </button>
@@ -263,7 +263,7 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <div className="bg-gradient-to-r from-[#E50914]/10 via-[#E50914]/5 to-transparent p-6 rounded-xl border border-[#E50914]/20">
+            <div className="bg-gradient-to-r from-[#E8630A]/10 via-[#E8630A]/5 to-transparent p-6 rounded-xl border border-[#E8630A]/20">
               <div className="flex justify-between items-center">
                 <div className="flex flex-col">
                   <div>
@@ -278,9 +278,9 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <div className="bg-[#E50914]/20 p-4 rounded-full  ">
+                  <div className="bg-[#E8630A]/20 p-4 rounded-full  ">
                     <svg
-                      className="w-8 h-8 text-[#E50914]"
+                      className="w-8 h-8 text-[#E8630A]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

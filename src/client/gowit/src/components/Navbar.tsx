@@ -121,7 +121,7 @@ export default function Navbar() {
                           className="w-12 h-16 object-cover rounded shadow-md"
                         />
                         <div className="flex-1">
-                          <h4 className="text-white font-medium group-hover:text-[#E50914] transition-colors">
+                          <h4 className="text-white font-medium group-hover:text-[#E8630A] transition-colors">
                             {el.title}
                           </h4>
                           <p className="text-gray-400 text-sm">
@@ -141,7 +141,7 @@ export default function Navbar() {
                 <div className="border-t border-white/10 p-3">
                   <a
                     href={`/search?q=${search}`}
-                    className="block text-center text-[#E50914] hover:text-[#E50914]/80 font-medium transition-colors"
+                    className="block text-center text-[#E8630A] hover:text-[#E8630A]/80 font-medium transition-colors"
                   >
                     View all results for "{search}"
                   </a>
@@ -223,7 +223,7 @@ export default function Navbar() {
                     className="w-10 h-14 object-cover rounded shadow-md"
                   />
                   <div className="flex-1">
-                    <h4 className="text-white text-sm font-medium group-hover:text-[#E50914] transition-colors">
+                    <h4 className="text-white text-sm font-medium group-hover:text-[#E8630A] transition-colors">
                       Movie Title
                     </h4>
                     <p className="text-gray-400 text-xs">2024 • ⭐ 8.5</p>
@@ -234,7 +234,7 @@ export default function Navbar() {
               <div className="border-t border-white/10 p-2">
                 <a
                   href={`/search?q=${mobileSearch}`}
-                  className="block text-center text-[#E50914] hover:text-[#E50914]/80 text-sm font-medium transition-colors py-2"
+                  className="block text-center text-[#E8630A] hover:text-[#E8630A]/80 text-sm font-medium transition-colors py-2"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     setMobileSearch("");

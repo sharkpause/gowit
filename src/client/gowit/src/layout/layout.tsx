@@ -26,7 +26,7 @@ export default function Layout() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0F1115]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-[#E8630A] border-t-transparent rounded-full animate-spin" />
           <span className="text-gray-400 text-sm tracking-widest uppercase">
             Loading...
           </span>

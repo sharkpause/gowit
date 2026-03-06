@@ -66,7 +66,7 @@ export default function WatchListCard({
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-[#F5F2F2]">
-                <NotebookPen size={18} className="text-[#E50914]" />
+                <NotebookPen size={18} className="text-[#E8630A]" />
                 <h3 className="font-semibold text-lg">My Note</h3>
               </div>
               <button
@@ -99,7 +99,7 @@ export default function WatchListCard({
               </button>
               <button
                 onClick={() => setShowNote(false)}
-                className="px-5 py-2 text-sm bg-[#E50914] hover:bg-[#b20710] text-white font-semibold rounded-lg transition-colors"
+                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
               >
                 Save Note
               </button>
