@@ -544,6 +544,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 				&favorite.PosterImageURL,
 				&favorite.AverageRating,
 				&releaseDate,
+				&favorite.ReleaseDate,
 				&favorite.Runtime,
 			)
 
