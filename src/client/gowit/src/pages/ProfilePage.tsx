@@ -129,8 +129,7 @@ export default function ProfilePage() {
       <div
         className="h-[50vh] relative"
         style={{
-          backgroundImage:
-            "url('https://res.cloudinary.com/degghm3hf/image/upload/v1771748577/does-anyone-know-how-to-create-the-netflix-colored-lines-v0-zp69f0bdm13e1_qg1oay.webp')",
+          backgroundImage: "url('/backgroundProfile.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
