@@ -514,7 +514,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 				film.description,
 				film.poster_image_url,
 				film.average_rating,
-				film.release_year,
+				film.release_date,
 				film.runtime
 			FROM favorites favorite
 			JOIN films film
@@ -531,6 +531,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 		defer rows.Close()
 
 		var favorites []models.Favorite
+		var releaseDate *time.Time
 
 		for rows.Next() {
 			var favorite models.Favorite
@@ -542,10 +543,12 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 				&favorite.Description,
 				&favorite.PosterImageURL,
 				&favorite.AverageRating,
-				&favorite.ReleaseYear,
+				&releaseDate,
 				&favorite.Runtime,
 			)
 
+			releaseYear := int64(releaseDate.Year())
+			favorite.ReleaseYear = &releaseYear
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
