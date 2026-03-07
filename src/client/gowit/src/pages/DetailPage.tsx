@@ -22,6 +22,7 @@ export default function DetailPage() {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [username, setUsername] = useState("");
   const [commentText, setCommentText] = useState("");
+  const [isFavorited, setIsFavorited] = useState(false);
 
   let { id } = useParams();
   const navigate = useNavigate();
@@ -32,6 +33,16 @@ export default function DetailPage() {
       setDetailMovie(response.data);
     } catch (error) {
       console.log("Error at Detail Page ", error);
+    }
+  };
+
+  const checkFavoriteMovie = async () => {
+    try {
+      const response = await serverApi.get("/api/favorites/" + id);
+      setIsFavorited(response.data.isFavorite);
+      console.log(response.data.isFavorite);
+    } catch (error) {
+      console.log("Error at CheckFavoriteMovie function:", error);
     }
   };
 
@@ -46,6 +57,12 @@ export default function DetailPage() {
         icon: "success",
         background: "#0F1115",
         color: "#F5F2F2",
+        buttonsStyling: false,
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
       });
 
       navigate("/watchlist");
@@ -95,8 +112,9 @@ export default function DetailPage() {
 
   useEffect(() => {
     fetchMovie();
+    checkFavoriteMovie();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, []);
+  }, [id]);
 
   return (
     <>
@@ -129,18 +147,17 @@ export default function DetailPage() {
                     {detailMovie?.title}
                   </h1>
 
-                  <p className="text-gray-300">
-                    {detailMovie?.description}
-                  </p>
+                  <p className="text-gray-300">{detailMovie?.description}</p>
                 </div>
               </div>
 
               <div className="flex gap-4 mt-4">
                 <button
                   onClick={addMovieToFavorites}
-                  className="bg-[#E50914] hover:bg-red-800 text-white px-5 py-3 rounded-lg font-bold"
+                  className={` ${isFavorited ? "bg-[#E8630A]/60 hover:bg-[#E8630A]/50 text-white/60 cursor-not-allowed" : "bg-[#E8630A] hover:bg-[#C75409] text-white cursor-pointer"} text-white px-5 py-3 rounded-lg transition flex items-center gap-2 font-bold`}
+                  disabled={isFavorited}
                 >
-                  Add to Watchlist
+                  {isFavorited ? "Added to Watchlist" : "Add to Watchlist"}
                 </button>
               </div>
 
@@ -167,7 +184,7 @@ export default function DetailPage() {
                     className="w-full p-3 rounded bg-gray-800 text-white"
                   />
 
-                  <button className="bg-[#E50914] px-6 py-2 rounded text-white font-semibold">
+                  <button className="bg-[#E8630A] hover:bg-[#C75409] px-6 py-2 rounded text-white font-semibold transition">
                     Post Comment
                   </button>
                 </form>
@@ -179,12 +196,10 @@ export default function DetailPage() {
                       className="bg-gray-900 p-4 rounded border border-gray-700"
                     >
                       <div className="flex justify-between">
-                        <h4 className="text-red-400 font-semibold">
+                        <h4 className="text-orange-400 font-semibold">
                           {c.username}
                         </h4>
-                        <span className="text-gray-400 text-sm">
-                          {c.date}
-                        </span>
+                        <span className="text-gray-400 text-sm">{c.date}</span>
                       </div>
 
                       <p className="text-gray-300 mt-2">{c.comment}</p>

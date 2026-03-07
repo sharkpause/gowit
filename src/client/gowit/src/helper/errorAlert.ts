@@ -10,7 +10,7 @@ export function errorAlert(title: string) {
     customClass: {
       title: "text-white",
       confirmButton:
-        "px-4 py-2 rounded-lg bg-[#E50914] text-white hover:bg-[#b20710] focus:outline-none",
+        "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
     },
   });
 }
