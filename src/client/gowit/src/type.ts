@@ -22,7 +22,7 @@ export type WatchListType = {
   title: string;
   description: string;
   poster_image_url: string;
-  release_year: number;
+  release_date: string;
   average_rating: number;
   runtime: number;
 };
@@ -40,4 +40,6 @@ export type ComingMovie = {
   thumbnail_url: string;
   runtime: number;
   release_date: string;
+  trailer_url: string;
+  trailer_duration: number;
 };

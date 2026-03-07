@@ -139,12 +139,12 @@ export default function Navbar() {
                 </div> */}
 
                 <div className="border-t border-white/10 p-3">
-                  <a
-                    href={`/search?q=${search}`}
+                  <Link
+                    to={`/search?query=${search}`}
                     className="block text-center text-[#E8630A] hover:text-[#E8630A]/80 font-medium transition-colors"
                   >
                     View all results for "{search}"
-                  </a>
+                  </Link>
                 </div>
               </div>
             ) : (
@@ -232,8 +232,8 @@ export default function Navbar() {
               </div>
 
               <div className="border-t border-white/10 p-2">
-                <a
-                  href={`/search?q=${mobileSearch}`}
+                <Link
+                  to={`/search?query=${mobileSearch}`}
                   className="block text-center text-[#E8630A] hover:text-[#E8630A]/80 text-sm font-medium transition-colors py-2"
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -241,7 +241,7 @@ export default function Navbar() {
                   }}
                 >
                   View all results →
-                </a>
+                </Link>
               </div>
             </div>
           ) : null}

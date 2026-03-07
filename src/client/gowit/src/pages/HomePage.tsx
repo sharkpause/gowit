@@ -351,10 +351,10 @@ export default function HomePage() {
                   <SwiperSlide key={idx}>
                     <TrailerCard
                       image_url={el.thumbnail_url}
-                      duration={el.runtime}
+                      duration={el.trailer_duration}
                       date={el.release_date}
                       title={el.title}
-                      trailer_url="https://youtu.be/wkFACDYhTio?si=FyxfdBrwUs_i9Iny"
+                      trailer_url={el.trailer_url}
                     />
                   </SwiperSlide>
                 );

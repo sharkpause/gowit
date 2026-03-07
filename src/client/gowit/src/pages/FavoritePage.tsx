@@ -81,7 +81,7 @@ export default function FavoritePage() {
         Description: el.description,
         "Poster URL": el.poster_image_url,
         "Average Rating": el.average_rating,
-        "Release Year": el.release_year,
+        "Release Date": el.release_date,
         "Duration (Minutes)": el.runtime,
         Note: el.notes,
       };
@@ -103,6 +103,14 @@ export default function FavoritePage() {
 
     XLSX.writeFile(workbook, "my-watchlist.xlsx", {
       compression: true,
+    });
+  };
+
+  const formatYear = (dateString: string) => {
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
     });
   };
 
@@ -170,16 +178,17 @@ export default function FavoritePage() {
               <div className="relative flex-shrink-0" key={el.id}>
                 <button
                   onClick={() => deleteFavorite(el.film_id)}
-                  className="absolute top-2 right-2 z-10 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 transition-all shadow-lg hover:scale-110 cursor-pointer"
+                  className="absolute top-2 right-2 z-10 bg-[#E8630A] hover:bg-[#C75409] text-white rounded-full p-2 transition-all shadow-lg hover:scale-110 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
                 <WatchListCard
+                  id={el.id}
                   title={el.title}
                   rating={el.average_rating}
                   description={el.description}
                   poster_url={el.poster_image_url}
-                  year={el.release_year}
+                  year={Number(formatYear(el.release_date))}
                   minute={el.runtime}
                   notes={el.notes}
                 />

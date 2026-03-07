@@ -1,7 +1,10 @@
 import { Dot, NotebookPen, Star, X } from "lucide-react";
 import { useState } from "react";
+import { serverApi } from "../api";
+import Swal from "sweetalert2";
 
 export default function WatchListCard({
+  id,
   poster_url,
   rating,
   title,
@@ -10,6 +13,7 @@ export default function WatchListCard({
   minute,
   notes,
 }: {
+  id: number;
   poster_url: string;
   rating: number;
   title: string;
@@ -20,6 +24,28 @@ export default function WatchListCard({
 }) {
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState(notes);
+  const updateNote = async () => {
+    try {
+      const response = await serverApi.patch("/api/favorites/" + id, {
+        notes: note,
+      });
+      Swal.fire({
+        title: "Note Updated Successful!",
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
+      });
+      setShowNote(false);
+    } catch (error) {
+      console.log("Error at Watch List Card: ", error);
+    }
+  };
 
   return (
     <>
@@ -98,7 +124,7 @@ export default function WatchListCard({
                 Cancel
               </button>
               <button
-                onClick={() => setShowNote(false)}
+                onClick={updateNote}
                 className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
               >
                 Save Note
