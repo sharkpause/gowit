@@ -514,7 +514,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 				film.description,
 				film.poster_image_url,
 				film.average_rating,
-				film.release_year,
+				film.release_date,
 				film.runtime
 			FROM favorites favorite
 			JOIN films film
@@ -542,7 +542,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 				&favorite.Description,
 				&favorite.PosterImageURL,
 				&favorite.AverageRating,
-				&favorite.ReleaseYear,
+				&favorite.ReleaseDate,
 				&favorite.Runtime,
 			)
 
