@@ -29,6 +29,7 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	var film models.Film
 
 	var description, posterURL, trailerURL, tagline *string
+	var trailerDuration *uint16
 	var releaseDate *time.Time
 	var runtime *int64
 	var averageRating *float64
@@ -41,6 +42,7 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 		&releaseDate,
 		&posterURL,
 		&trailerURL,
+		&trailerDuration,
 		&averageRating,
 		&popularity,
 		&runtime,
@@ -60,6 +62,7 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	film.Popularity = popularity
 	film.Runtime = runtime
 	film.Tagline = tagline
+	film.TrailerDuration = trailerDuration
 
 	genres := []string{}
 	rows, err := database.Query(`
@@ -237,7 +240,13 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		offset := (page - 1) * limit
 
 		queryString := fmt.Sprintf(
-			`SELECT id, title, description, release_date, poster_image_url, trailer_url, average_rating, popularity, runtime, tagline FROM films
+			`SELECT
+				f.id, f.title, f.description,
+				f.release_date, f.poster_image_url, t.trailer_url, t.trailer_duration,
+				f.average_rating, f.popularity, f.runtime, f.tagline
+			FROM films AS f
+			LEFT JOIN trailers AS t
+				ON f.trailer_id = t.id
 			%s
 			ORDER BY %s %s
 			LIMIT ? OFFSET ?`,
@@ -279,11 +288,17 @@ func GetFilmByID(database *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		row := database.QueryRow(`
-			SELECT id, title, description, release_date, poster_image_url, trailer_url,
-			       average_rating, popularity, runtime, tagline
-			FROM films
-			WHERE id = ?`, filmID)
+		row := database.QueryRow(
+			`SELECT
+				f.id, f.title, f.description,
+				f.release_date, f.poster_image_url, t.trailer_url, t.trailer_duration,
+				f.average_rating, f.popularity, f.runtime, f.tagline
+			FROM films AS f
+			LEFT JOIN trailers AS t
+				ON f.trailer_id = t.id
+			WHERE f.id = ?`,
+				
+			filmID)
 
 		film, err := scanFilm(database, row)
 		if err == sql.ErrNoRows {
@@ -551,10 +566,12 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 func GetComingSoon(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		query := `
-			SELECT title, thumbnail_url, runtime, release_date, trailer_url
-			FROM films
-			WHERE release_date > CURDATE()
-			ORDER BY release_date DESC
+			SELECT f.title, f.thumbnail_url, f.runtime, f.release_date, t.trailer_url, t.trailer_duration
+			FROM films AS f
+			LEFT JOIN trailers AS t
+				ON f.trailer_id = t.id
+			WHERE f.release_date > CURDATE()
+			ORDER BY f.release_date DESC
 			LIMIT 20;
 		`
 
@@ -574,6 +591,7 @@ func GetComingSoon(database *sql.DB) func(*gin.Context) {
 				&film.Runtime,
 				&film.ReleaseDate,
 				&film.TrailerURL,
+				&film.TrailerDuration,
 			)
 
 			if err != nil {
@@ -593,7 +611,8 @@ func GetComingSoon(database *sql.DB) func(*gin.Context) {
 		})
 	}
 }
-func FavoriteListChheck(database *sql.DB)func(*gin.Context){
+
+func FavoriteListCheck(database *sql.DB)func(*gin.Context){
 	return func(context *gin.Context){
 		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
 		if err != nil {

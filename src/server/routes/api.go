@@ -59,7 +59,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.POST("/logout", handlers.LogoutUser)
 			protected.GET("/userprofile", handlers.GetUserDetail(database))
 			protected.PATCH("/updateuser", handlers.UpdateUserDetail(database))
-			protected.GET("/favorites/:id", handlers.FavoriteListChheck(database)) // please think a better naming, i have no idea
+			protected.GET("/favorites/:id", handlers.FavoriteListCheck(database)) // please think a better naming, i have no idea
 		}
 		
 		api.Use(auth.Middleware())

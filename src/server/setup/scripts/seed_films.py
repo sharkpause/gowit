@@ -35,23 +35,33 @@ def convert_folder_to_webp(
     except subprocess.CalledProcessError as err:
         print(f"webpall error for {folder_path}: {err}")
 
-def download_youtube_video(url: str, output_path: str):
+def download_youtube_video(url: str, output_path: str) -> int | None:
     if Path(output_path).is_file():
         print(f"Skipping video (already exists): {output_path}")
-        return
+        
+        with yt_dlp.YoutubeDL({"quiet": True}) as ydl:
+            try:
+                info = ydl.extract_info(url, download=False)
+                return info.get("duration")
+            except Exception as e:
+                print(f"Failed to get video info for {url}: {e}")
+                return None
 
     ydl_opts = {
         "format": "bestvideo+bestaudio/best",
         "outtmpl": output_path,
-        "merge_output_format": "mp4"
+        "merge_output_format": "mp4",
+        "quiet": True,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
-            ydl.download([url])
+            info = ydl.extract_info(url, download=True)  # This returns info dict
             print(f"Downloaded YouTube video to {output_path}")
+            return info.get("duration")
         except Exception as e:
             print(f"Failed to download YouTube video {url}: {e}")
+            return None
 
 def download_file(url: str, local_path: str):
     path_obj = Path(local_path)
@@ -95,7 +105,7 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=5):
     INSERT INTO films
     (title, description, popularity,
     average_rating, rating_count, poster_image_url,
-    trailer_url, runtime, tagline, thumbnail_url, release_date)
+    trailer_id, runtime, tagline, thumbnail_url, release_date)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
@@ -139,9 +149,16 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=5):
                         if trailer_download_url:
                             trailer_filename = f'{video.get('key')}.mp4'
                             trailer_local_path = f'{TRAILER_DIR}/{trailer_filename}'
-                            download_youtube_video(trailer_download_url, trailer_local_path)
+                            trailer_duration = download_youtube_video(trailer_download_url, trailer_local_path)
 
                             trailer_url = '/media/trailers/' + trailer_filename
+
+                            cursor.execute(
+                                'INSERT INTO trailers (trailer_url, trailer_duration) VALUES (%s, %s)',
+                                (trailer_url, trailer_duration)
+                            )
+
+                            trailer_id = cursor.lastrowid
 
                         if thumbnail_download_url:
                             thumbnail_filename = f"{movie_id}"
@@ -207,7 +224,7 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=5):
                                 0,
                                 0,
                                 poster_url,
-                                trailer_url,
+                                trailer_id,
                                 runtime,
                                 tagline,
                                 thumbnail_url,

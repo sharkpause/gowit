@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -18,6 +19,11 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+
+	"github.com/chai2010/webp"
+    "image"
+    _ "image/jpeg"
+    _ "image/png"
 )
 
 type registerRequest struct {
@@ -260,47 +266,94 @@ func GetUserDetail(database *sql.DB) gin.HandlerFunc{
 	
 }
 
-func UpdateUserDetail(database *sql.DB) gin.HandlerFunc{
-	return func(context *gin.Context){
-	type users struct{
-		Name *string `json:"name"`
-		Profile_picture_url *string `json:"profile_picture_url"`
+func UpdateUserDetail(database *sql.DB) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		userIDVal, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized user"})
+			return
 		}
-	userId,exists := context.Get("user_id")
-	if !exists {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized User",})
-	}
-	userId=userId.(uint64)
-	var user users
-	if err := context.ShouldBindJSON(&user); err != nil{
-		context.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid Request Body",
-			})
-		return
-	}
-	args := []interface{}{}
-	field := []string{}
-	query := "UPDATE users SET "
-	if user.Name != nil {
-		args = append(args, *user.Name)
-		field = append(field, " name = ?")
-	}
-	if user.Profile_picture_url != nil{
-		args = append(args, *user.Profile_picture_url)
-		field = append(field, " profile_picture_url = ?")
-	}
-	if len(args) == 0 {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "No provided field, so no update occured",})
-		return
-	}
-	query += strings.Join(field, ", ") + " WHERE id = ?"
-	args = append(args, userId)
-	_,err := database.Exec(query,args...)
-	if err != nil{
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update",})
-		return
-	}
-	context.JSON(200, gin.H{"message": "Successfulll"},)
+		userID := userIDVal.(uint64)
+
+		type users struct {
+			Name *string `form:"name"`
+		}
+
+		var user users
+		if err := context.ShouldBind(&user); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
+			return
+		}
+
+		args := []interface{}{}
+		fields := []string{}
+		query := "UPDATE users SET "
+
+		if user.Name != nil {
+			args = append(args, *user.Name)
+			fields = append(fields, "name = ?")
+		}
+
+		var relativeURL string
+
+		file, err := context.FormFile("profile_picture")
+		if err == nil {
+			src, err := file.Open()
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"message": "Failed to open uploaded file"})
+				return
+			}
+			defer src.Close()
+
+			img, _, err := image.Decode(src)
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"message": "Invalid image file"})
+				return
+			}
+
+			outputDir := "../client/gowit/public/media/profile_pictures"
+			if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create directories"})
+				return
+			}
+
+			fileName := fmt.Sprintf("%d_%s.webp", userID, strings.TrimSuffix(file.Filename, path.Ext(file.Filename)))
+			outputPath := path.Join(outputDir, fileName)
+			outFile, err := os.Create(outputPath)
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to save file"})
+				return
+			}
+			defer outFile.Close()
+
+			if err := webp.Encode(outFile, img, &webp.Options{Lossless: false}); err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to encode webp"})
+				return
+			}
+
+			// Add to update query
+			relativeURL = "/media/profile_pictures/" + fileName
+			args = append(args, relativeURL)
+			fields = append(fields, "profile_picture_url = ?")
+		}
+
+		if len(fields) == 0 {
+			context.JSON(http.StatusBadRequest, gin.H{"message": "No fields provided for update"})
+			return
+		}
+
+		query += strings.Join(fields, ", ") + " WHERE id = ?"
+		args = append(args, userID)
+
+		if _, err := database.Exec(query, args...); err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"message": "Database update failed"})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"message": "Update successful",
+			"url": relativeURL,
+		})
 	}
 }
 
@@ -387,21 +440,19 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 		id, _ := res.LastInsertId()
 		userID = uint64(id)
 
-        // 5. Generate your JWT or session token
-        sessionToken, tokenErr := auth.GenerateJWT(userID) // YOU implement this
+        sessionToken, tokenErr := auth.GenerateJWT(userID)
         if tokenErr != nil {
             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate JWT"})
             return
         }
 
-        // 6. Set HttpOnly cookie
         requestContext.SetCookie(
             "token",
             sessionToken,
-            3600*24,      // expiration
+            3600*24,
             "/",
             "localhost",  // change for production domain
-            false,        // Set to true if HTTPS
+            true,        // Set to true if HTTPS
             true,         // HttpOnly
         )
 
