@@ -227,9 +227,9 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		}
 
 		if searchParam := context.Query("search"); searchParam != "" {
-			conditions = append(conditions, "(title LIKE ? OR description LIKE ?)")
+			conditions = append(conditions, "(title LIKE ?)")
 			likePattern := "%" + searchParam + "%"
-			args = append(args, likePattern, likePattern)
+			args = append(args, likePattern)
 		}
 
 		where := ""
