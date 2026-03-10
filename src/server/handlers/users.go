@@ -211,7 +211,7 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 			return
 		}
 
-		context.SetCookie("token", token, 3600*24*30, "/", "", true, true)
+		context.SetCookie("token", token, 3600*24*30, "/", "", false, true)
 		context.JSON(http.StatusOK, gin.H{
 			"message": "login successful",
 		})
@@ -431,8 +431,9 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 			INSERT INTO users (name, email, google_id)
 			VALUES (?, ?, ?)
 			ON DUPLICATE KEY UPDATE
+				name = VALUES(name),
 				google_id = VALUES(google_id),
-				name = VALUES(name)
+				id = LAST_INSERT_ID(id)
 			`, 
 			userInfo.Name,
 			userInfo.Email,
@@ -444,6 +445,7 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 			return
 		}
 		id, _ := res.LastInsertId()
+		fmt.Println(id)
 		userID = uint64(id)
 
         sessionToken, tokenErr := auth.GenerateJWT(userID)
@@ -458,7 +460,7 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
             3600*24,
             "/",
             "localhost",  // change for production domain
-            true,        // Set to true if HTTPS
+            false,        // Set to true if HTTPS
             true,         // HttpOnly
         )
 
