@@ -173,10 +173,17 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 			).Scan(&userID, &passwordHash)
 		
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": "internal db error",
+			context.JSON(http.StatusNotFound, gin.H{
+				"error": "user not found",
 			})
-
+			fmt.Println(err)
+			
+			return
+		} else if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("db error: %s", err),
+			})
+			
 			return
 		}
 		
