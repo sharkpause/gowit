@@ -531,7 +531,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 		defer rows.Close()
 
 		var favorites []models.Favorite
-		var releaseDate *time.Time
+		var releaseDate sql.NullTime
 
 		for rows.Next() {
 			var favorite models.Favorite
@@ -544,12 +544,16 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 				&favorite.PosterImageURL,
 				&favorite.AverageRating,
 				&releaseDate,
-				&favorite.ReleaseDate,
 				&favorite.Runtime,
 			)
 
-			releaseYear := int64(releaseDate.Year())
-			favorite.ReleaseYear = &releaseYear
+			if releaseDate.Valid {
+				releaseYear := int64(releaseDate.Time.Year())
+				favorite.ReleaseYear = &releaseYear
+			} else {
+				favorite.ReleaseYear = nil
+			}
+
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
