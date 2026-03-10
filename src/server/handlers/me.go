@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -18,52 +19,59 @@ type UserResponse struct {
 
 func MeHandler(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
-	tokenStr, err := context.Cookie("token")
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
+		tokenStr, err := context.Cookie("token")
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			fmt.Println("\n")
+			fmt.Println(err)
+			fmt.Println("\n")
+			return
+		}
 
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
+		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("JWT_SECRET")), nil
+		})
 
-	if err != nil || !token.Valid {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	userIDFloat, ok := claims["user_id"].(float64)
-	if !ok {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	userID := int(userIDFloat)
-
-	var user UserResponse
-
-	err = database.QueryRow(`
-		SELECT id, email, name, profile_picture_url
-		FROM users
-		WHERE id = ?
-	`, userID).Scan(&user.ID, &user.Email, &user.Name, &user.ProfilePictureURL)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
+		if err != nil || !token.Valid {
 			context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
-		return
-	}
 
-	context.JSON(http.StatusOK, user)
-}
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+
+		userIDFloat, ok := claims["user_id"].(float64)
+		if !ok {
+			context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+
+		userID := int(userIDFloat)
+
+		var user UserResponse
+
+		err = database.QueryRow(`
+			SELECT id, email, name, profile_picture_url
+			FROM users
+			WHERE id = ?
+		`, userID).Scan(&user.ID, &user.Email, &user.Name, &user.ProfilePictureURL)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				context.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+				fmt.Println("\n")
+				fmt.Println(err)
+				fmt.Println(userID)
+				fmt.Println("\n")
+				return
+			}
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+			return
+		}
+
+		context.JSON(http.StatusOK, user)
+	}
 }
