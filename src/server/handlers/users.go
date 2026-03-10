@@ -37,6 +37,13 @@ type loginRequest struct {
 	Password	string `json:"password"`
 }
 
+type UserInfo struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	VerifiedEmail bool   `json:"verified_email"`
+	Name          string `json:"name"`
+}
+
 func RegisterUser(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		var request registerRequest
@@ -399,13 +406,7 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
         }
         defer resp.Body.Close()
 
-        var userInfo struct {
-            ID            string `json:"id"`
-            Email         string `json:"email"`
-            VerifiedEmail bool   `json:"verified_email"`
-            Name          string `json:"name"`
-            Picture       string `json:"picture"`
-        }
+		var userInfo UserInfo
 
         if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
             requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "failed to parse user info"})
@@ -420,17 +421,15 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 
 		res, err := database.Exec(
 			`
-			INSERT INTO users (name, email, google_id, profile_picture_url)
-			VALUES (?, ?, ?, ?)
+			INSERT INTO users (name, email, google_id)
+			VALUES (?, ?, ?)
 			ON DUPLICATE KEY UPDATE
 				google_id = VALUES(google_id),
-				name = VALUES(name),
-				profile_picture_url = VALUES(profile_picture_url)
+				name = VALUES(name)
 			`, 
 			userInfo.Name,
 			userInfo.Email,
 			userInfo.ID,
-			userInfo.Picture,
 		)
 		if err != nil {
 			requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})

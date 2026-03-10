@@ -227,9 +227,9 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 		}
 
 		if searchParam := context.Query("search"); searchParam != "" {
-			conditions = append(conditions, "(title LIKE ? OR description LIKE ?)")
+			conditions = append(conditions, "(title LIKE ?)")
 			likePattern := "%" + searchParam + "%"
-			args = append(args, likePattern, likePattern)
+			args = append(args, likePattern)
 		}
 
 		where := ""
@@ -531,6 +531,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 		defer rows.Close()
 
 		var favorites []models.Favorite
+		var releaseDate *time.Time
 
 		for rows.Next() {
 			var favorite models.Favorite
@@ -542,10 +543,13 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 				&favorite.Description,
 				&favorite.PosterImageURL,
 				&favorite.AverageRating,
+				&releaseDate,
 				&favorite.ReleaseDate,
 				&favorite.Runtime,
 			)
 
+			releaseYear := int64(releaseDate.Year())
+			favorite.ReleaseYear = &releaseYear
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return

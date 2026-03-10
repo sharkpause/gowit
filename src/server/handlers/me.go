@@ -10,9 +10,10 @@ import (
 )
 
 type UserResponse struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	ID    			   int    	`json:"id"`
+	Email 			   string 	`json:"email"`
+	Name  			   string 	`json:"name"`
+	ProfilePictureURL *string	`json:"profile_picture_url"`
 }
 
 func MeHandler(database *sql.DB) func(*gin.Context) {
@@ -49,10 +50,10 @@ func MeHandler(database *sql.DB) func(*gin.Context) {
 	var user UserResponse
 
 	err = database.QueryRow(`
-		SELECT id, email, name
+		SELECT id, email, name, profile_picture_url
 		FROM users
 		WHERE id = ?
-	`, userID).Scan(&user.ID, &user.Email, &user.Name)
+	`, userID).Scan(&user.ID, &user.Email, &user.Name, &user.ProfilePictureURL)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
