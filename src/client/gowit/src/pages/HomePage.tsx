@@ -60,6 +60,8 @@ export default function HomePage() {
   async function fetchMovieComingSoon() {
     try {
       const response = await serverApi.get("/api/films/coming-soon");
+      console.log(response.data.coming_soon);
+
       setMovieComingSoon(response.data.coming_soon);
     } catch (error) {
       console.log("Error fetching featured movies:", error);

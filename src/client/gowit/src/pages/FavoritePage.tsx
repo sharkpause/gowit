@@ -173,7 +173,7 @@ export default function FavoritePage() {
 
       {favorite.length > 0 ? (
         <div className="min-h-screen flex flex-wrap gap-16 justify-center">
-          {favorite.map((el, idx: number) => {
+          {favorite.map((el) => {
             return (
               <div className="relative flex-shrink-0" key={el.id}>
                 <button
@@ -183,7 +183,7 @@ export default function FavoritePage() {
                   <X className="w-4 h-4" />
                 </button>
                 <WatchListCard
-                  id={el.id}
+                  id={el.film_id}
                   title={el.title}
                   rating={el.average_rating}
                   description={el.description}
