@@ -12,7 +12,7 @@ import (
 type ContactRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Question string `json:"question" binding:"required,min=10,max=200"` //please frontend limit question to x-amount of character
+	Question string `json:"question" binding:"required,min=1	,max=200"` //please frontend limit question to x-amount of character
 }
 func Sendmail() gin.HandlerFunc{
 	return func(context *gin.Context){

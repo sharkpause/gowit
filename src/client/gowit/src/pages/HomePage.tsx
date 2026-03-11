@@ -15,6 +15,9 @@ import { Navigation, Pagination } from "swiper/modules";
 
 import "swiper/swiper-bundle.css";
 import Navbar from "../components/Navbar";
+import Swal from "sweetalert2";
+import { errorAlert } from "../helper/errorAlert";
+import { capitalizeEachWord } from "../helper/helper";
 
 export default function HomePage() {
   const [topMovie, setTopMovie] = useState<MovieType[]>([]);
@@ -28,6 +31,7 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [loadingMail, setLoadingMail] = useState(false);
   const [movieComingSoon, setMovieComingSoon] = useState<ComingMovie[]>([]);
 
   const location = useLocation();
@@ -65,6 +69,41 @@ export default function HomePage() {
       setMovieComingSoon(response.data.coming_soon);
     } catch (error) {
       console.log("Error fetching featured movies:", error);
+    }
+  }
+
+  async function postMail(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    try {
+      setLoadingMail(true);
+      console.log(message);
+
+      const response = await serverApi.post("/api/contact", {
+        name,
+        email,
+        question: message,
+      });
+
+      Swal.fire({
+        title: "Question Sent Successfully!",
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else {
+        console.log("Error at postMail Function: ", error);
+      }
+    } finally {
+      setLoadingMail(false);
     }
   }
 
@@ -430,7 +469,7 @@ export default function HomePage() {
                   Question...?
                 </h2>
 
-                <form className="space-y-5">
+                <form onSubmit={postMail} className="space-y-5">
                   <div>
                     <input
                       type="text"
@@ -464,9 +503,17 @@ export default function HomePage() {
                   <div className="flex justify-end pt-3">
                     <button
                       type="submit"
-                      className="w-full md:w-auto px-8 py-2 bg-[#E8630A] text-white font-bold text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105"
+                      disabled={loadingMail}
+                      className="w-full md:w-auto px-8 py-2 bg-[#E8630A] text-white font-bold text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                     >
-                      Submit
+                      {loadingMail ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        "Submit"
+                      )}
                     </button>
                   </div>
                 </form>

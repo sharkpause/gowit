@@ -9,7 +9,7 @@ export default function Navbar() {
   const [search, setSearch] = useState("");
   const [searchMovie, setSearchMovie] = useState<MovieType[]>([]);
   const [mobileSearch, setMobileSearch] = useState("");
-  const [id, setId] = useState("");
+  const [id, setId] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchMovieSearch = async () => {
@@ -68,7 +68,7 @@ export default function Navbar() {
       <div className="h-16 flex items-center justify-between px-4 md:px-8 lg:px-32">
         <div className="flex items-center gap-3">
           <img
-            src="https://res.cloudinary.com/degghm3hf/image/upload/v1770800459/logo_gowit_tr-removebg-preview_vtvyyq.png"
+            src="logo.png"
             alt="GOWIT Logo"
             className="w-8 h-8 md:w-10 md:h-10 object-contain"
           />
