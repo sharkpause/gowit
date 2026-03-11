@@ -662,6 +662,8 @@ func CreateMovie(database *sql.DB) func(*gin.Context) {
 				continue // skip empty titles
 			}
 
+			userID,exists := context.Get("user_id")
+
 			// Check if movie exists
 			var existingID int
 			var existingTitle string
@@ -670,20 +672,40 @@ func CreateMovie(database *sql.DB) func(*gin.Context) {
 				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
 				return
 			}
+
 			if existingID != 0 {
-				continue // skip duplicates
+				var favID int
+				err = database.QueryRow(
+					`SELECT id FROM favorites WHERE user_id = ? AND film_id = ?`,
+					userID,
+					existingID,
+				).Scan(&favID)
+
+				if err != nil {
+					if err == sql.ErrNoRows {
+						// favorite doesn't exist → insert
+						_, err = database.Exec(
+							`INSERT INTO favorites (user_id, film_id) VALUES (?, ?)`,
+							userID,
+							existingID,
+						)
+						if err != nil {
+							context.JSON(http.StatusInternalServerError, gin.H{"error": "db error inserting favorite"})
+							fmt.Println(err)
+							return
+						}
+					} else {
+						context.JSON(http.StatusInternalServerError, gin.H{"error": "db error checking favorites"})
+						fmt.Println(err)
+						return
+					}
+				}
+
+				continue
 			}
 
-			userID,exists := context.Get("user_id")
 			if !exists {
 				context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized User",})
-			}
-
-			var favID int
-			err = database.QueryRow(`SELECT id FROM favorites WHERE user_id = ? AND film_id = ?`, userID, existingID).Scan(&favID)
-			if err != nil && err != sql.ErrNoRows {
-				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error checking favorites: %s", err)})
-				return
 			}
 
 			// Insert movie
