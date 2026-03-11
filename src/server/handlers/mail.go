@@ -42,6 +42,7 @@ func Sendmail() gin.HandlerFunc{
 	mail.SetHeader("From", system.SystemEmail)
 	mail.SetHeader("To", req.Email)
 	mail.SetHeader("Cc", system.SystemEmail)
+	mail.SetHeader("Subject", "Your question has been received")
 	if len(system.BccMailingList) > 0{
 		mail.SetHeader("Bcc", system.BccMailingList...)
 	}
