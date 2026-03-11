@@ -44,8 +44,6 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 
 		api.POST("/register", handlers.RegisterUser(database))
 		api.POST("/login", handlers.LoginUser(database))
-<<<<<<< HEAD
-=======
 
 		// TODO: Later change so that protected APIs are still accessed through {URL}/api and not {URL}/
 		// to keep API consistency
@@ -69,6 +67,5 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 
 		// auth.Test undefined, will ask Carvin for details later
 		// api.GET("/test", auth.Test)
->>>>>>> d8dc3cf66488facdeaa47641f82abf3aacaf5d0d
 	}
 }

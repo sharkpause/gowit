@@ -16,9 +16,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/sharkpause/gowit/auth"
 	"golang.org/x/crypto/bcrypt"
-<<<<<<< HEAD
-	"github.com/sharkpause/gowit/auth"
-=======
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -27,7 +24,6 @@ import (
     "image"
     _ "image/jpeg"
     _ "image/png"
->>>>>>> d8dc3cf66488facdeaa47641f82abf3aacaf5d0d
 )
 
 type registerRequest struct {
@@ -157,13 +153,7 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 	}
 }
 
-<<<<<<< HEAD
-type loginRequest struct {
-	Email		string `json:"email"`
-	Password	string `json:"password"`
-}
-=======
->>>>>>> d8dc3cf66488facdeaa47641f82abf3aacaf5d0d
+
 func LoginUser(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		var request loginRequest
@@ -173,31 +163,6 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 			})
 			return
 		}
-<<<<<<< HEAD
-		var userID uint64
-		var passwordHash string
-		err := database.QueryRow("SELECT id, password_hash FROM users WHERE email = ?", request.Email).Scan(&userID, &passwordHash)
-		if err != nil {
-			context.JSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid email or password",
-			})
-			return
-		} else if err == sql.ErrNoRows {
-				context.JSON(http.StatusInternalServerError, gin.H{
-					"error": "internal db error",
-				})
-				return
-			} 
-		err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(request.Password))
-		// request.Password = "jangwonyoung" // Placeholder to simulate password check
-		// err := bcrypt.CompareHashAndPassword([]byte("$2a$10$GhZ5qKSmVckBI9Y4mfcBVO.kwf1Xmt09RPnQ6/cMF1oRK9Dvlho/O"), []byte(request.Password)) also an api tester
-		if err != nil {
-			context.JSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid email or password",
-			})
-			return
-		}
-=======
 
 		var userID uint64
 		var passwordHash string
@@ -241,22 +206,11 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 			return
 		}
 
->>>>>>> d8dc3cf66488facdeaa47641f82abf3aacaf5d0d
 		token, err := auth.GenerateJWT(userID)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"error": "token error"})
 			return
 		}
-<<<<<<< HEAD
-		context.SetCookie("token",token, 3600*24*30, "/", "", false, true)
-		context.JSON(http.StatusOK, gin.H{
-			"message": "login successful",
-			"token": token,
-			"user_ID": userID,
-		})
-		
-	}}
-=======
 
 		context.SetCookie("token", token, 3600*24*30, "/", "", false, true)
 		context.JSON(http.StatusOK, gin.H{
@@ -515,4 +469,3 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
         requestContext.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173/")
     }
 }
->>>>>>> d8dc3cf66488facdeaa47641f82abf3aacaf5d0d
