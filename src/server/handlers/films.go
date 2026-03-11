@@ -25,6 +25,10 @@ type patchFavoriteRequest struct {
 	Notes string `json:"notes"`
 }
 
+type createMovieRequest struct {
+	Titles []string `json:"titles" binding:"required,min=1"`
+}
+
 func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	var film models.Film
 
@@ -667,7 +671,7 @@ func FavoriteListCheck(database *sql.DB) func(*gin.Context) {
 		var isFavorite bool
 		userId, exists := context.Get("user_id")
 		if !exists {
-			context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized User"})
+			context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized User",})
 		}
 		query := "SELECT IF(EXISTS(SELECT 1 FROM favorites WHERE user_id= ? AND film_id = ?), TRUE,FALSE) AS is_favorite"
 		err = database.QueryRow(query, userId, filmID).Scan(&isFavorite)
@@ -677,5 +681,83 @@ func FavoriteListCheck(database *sql.DB) func(*gin.Context) {
 		}
 		fmt.Println(isFavorite)
 		context.JSON(http.StatusOK, gin.H{"isFavorite": isFavorite}) // hardcode front end kalau belum log in otomatis false please
+	}
+}
+
+func CreateMovie(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		var request createMovieRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+			return
+		}
+
+		var createdIDs []int64
+		for _, title := range request.Titles {
+			title = strings.TrimSpace(title)
+			if title == "" {
+				continue // skip empty titles
+			}
+
+			userID,exists := context.Get("user_id")
+
+			// Check if movie exists
+			var existingID int
+			var existingTitle string
+			err := database.QueryRow(`SELECT id, title FROM films WHERE LOWER(title) = LOWER(?)`, title).Scan(&existingID, &existingTitle)
+			if err != nil && err != sql.ErrNoRows {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+				return
+			}
+
+			if existingID != 0 {
+				var favID int
+				err = database.QueryRow(
+					`SELECT id FROM favorites WHERE user_id = ? AND film_id = ?`,
+					userID,
+					existingID,
+				).Scan(&favID)
+
+				if err != nil {
+					if err == sql.ErrNoRows {
+						// favorite doesn't exist → insert
+						_, err = database.Exec(
+							`INSERT INTO favorites (user_id, film_id) VALUES (?, ?)`,
+							userID,
+							existingID,
+						)
+						if err != nil {
+							context.JSON(http.StatusInternalServerError, gin.H{"error": "db error inserting favorite"})
+							fmt.Println(err)
+							return
+						}
+					} else {
+						context.JSON(http.StatusInternalServerError, gin.H{"error": "db error checking favorites"})
+						fmt.Println(err)
+						return
+					}
+				}
+
+				continue
+			}
+
+			if !exists {
+				context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized User",})
+			}
+
+			// Insert movie
+			res, err := database.Exec(`INSERT INTO films (title) VALUES (?)`, title)
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert '%s': %s", title, err)})
+				return
+			}
+			id, _ := res.LastInsertId()
+			createdIDs = append(createdIDs, id)
+		}
+
+		context.JSON(http.StatusCreated, gin.H{
+			"message":     "movies processed",
+			"created_ids": createdIDs,
+		})
 	}
 }
