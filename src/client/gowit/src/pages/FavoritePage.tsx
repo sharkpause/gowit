@@ -1,7 +1,7 @@
 import { Heart, X, Download, Upload, Binary } from "lucide-react";
 import { Link } from "react-router";
 
-import type { WatchListType } from "../type";
+import type { ImportType, WatchListType } from "../type";
 import WatchListCard from "../components/WatchListCard";
 import * as XLSX from "xlsx";
 import { useEffect, useState } from "react";
@@ -16,6 +16,9 @@ export default function FavoritePage() {
   const [favorite, setFavorite] = useState<WatchListType[]>([]);
   const [isImport, setIsImport] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [loadingImport, setLoadingImport] = useState(false);
+
+  const [fileImport, setFileImport] = useState<string[]>([]);
 
   const fetchFavorite = async () => {
     try {
@@ -63,15 +66,57 @@ export default function FavoritePage() {
     if (!file) return;
     reader.readAsBinaryString(file);
     reader.onload = (e) => {
+      const container = [];
       const data = e.target?.result;
       const workbook = XLSX.read(data, { type: "binary" });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
-      const parsedData = XLSX.utils.sheet_to_json(sheet);
-      console.log(parsedData);
-    };
+      const parsedData: ImportType[] = XLSX.utils.sheet_to_json(sheet);
 
+      for (const element of parsedData) {
+        container.push(element.title);
+      }
+
+      setFileImport(container);
+    };
     setFileName(file.name);
+  };
+
+  const createImport = async () => {
+    try {
+      setLoadingImport(true);
+      if (fileImport.length < 1) {
+        errorAlert("Please Input Excel File First!");
+      }
+      console.log(fileImport, "ISIMPORT");
+
+      const response = await serverApi.post("/api/films/add", {
+        titles: fileImport,
+      });
+
+      setIsImport(false);
+      fetchFavorite();
+      Swal.fire({
+        title: "Favorites Imported Successfully!",
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else {
+        console.log("Error at Login Page: ", error);
+      }
+    } finally {
+      setLoadingImport(false);
+    }
   };
 
   const download = () => {
@@ -173,7 +218,7 @@ export default function FavoritePage() {
 
       {favorite.length > 0 ? (
         <div className="min-h-screen flex flex-wrap gap-16 justify-center">
-          {favorite.map((el, idx: number) => {
+          {favorite.map((el) => {
             return (
               <div className="relative flex-shrink-0" key={el.id}>
                 <button
@@ -183,7 +228,7 @@ export default function FavoritePage() {
                   <X className="w-4 h-4" />
                 </button>
                 <WatchListCard
-                  id={el.id}
+                  id={el.film_id}
                   title={el.title}
                   rating={el.average_rating}
                   description={el.description}
@@ -223,7 +268,9 @@ export default function FavoritePage() {
           >
             <div className="flex justify-center">
               <label className="flex items-center justify-center w-full px-4 py-3 bg-[#1C1E22] text-[#F5F2F2] border border-white/20 rounded-xl cursor-pointer hover:border-[#E8630A] transition">
-                <span className="font-medium">Choose Excel File</span>
+                <span className="font-medium">
+                  {fileName ? fileName : "Choose Excel File"}
+                </span>
                 <input
                   type="file"
                   accept=".xlsx,.xls"
@@ -241,16 +288,29 @@ export default function FavoritePage() {
                 Cancel
               </button>
               <button
-                onClick={() => setIsImport(false)}
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = "/files/TemplateDownload.xlsx";
+                  link.download = "TemplateDownload.xlsx";
+                  link.click();
+                }}
                 className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
               >
                 Download Template
               </button>
               <button
-                onClick={() => setIsImport(false)}
-                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
+                onClick={createImport}
+                disabled={loadingImport}
+                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Submit
+                {loadingImport ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit"
+                )}
               </button>
             </div>
           </div>
