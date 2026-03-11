@@ -25,6 +25,10 @@ type patchFavoriteRequest struct {
 	Notes		string		`json:"notes"`
 }
 
+type createMovieRequest struct {
+	Titles []string `json:"titles" binding:"required,min=1"`
+}
+
 func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	var film models.Film
 
@@ -640,5 +644,48 @@ func FavoriteListCheck(database *sql.DB)func(*gin.Context){
 		}
 		fmt.Println(isFavorite)
 		context.JSON(http.StatusOK, gin.H{"isFavorite": isFavorite,}) // hardcode front end kalau belum log in otomatis false please
+	}
+}
+
+func CreateMovie(database *sql.DB) func(*gin.Context) {
+	return func(context *gin.Context) {
+		var request createMovieRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+			return
+		}
+
+		var createdIDs []int64
+		for _, title := range request.Titles {
+			title = strings.TrimSpace(title)
+			if title == "" {
+				continue // skip empty titles
+			}
+
+			// Check if movie exists
+			var existingID int
+			err := database.QueryRow(`SELECT id FROM films WHERE title = ?`, title).Scan(&existingID)
+			if err != nil && err != sql.ErrNoRows {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
+				return
+			}
+			if existingID != 0 {
+				continue // skip duplicates
+			}
+
+			// Insert movie
+			res, err := database.Exec(`INSERT INTO films (title) VALUES (?)`, title)
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert '%s': %s", title, err)})
+				return
+			}
+			id, _ := res.LastInsertId()
+			createdIDs = append(createdIDs, id)
+		}
+
+		context.JSON(http.StatusCreated, gin.H{
+			"message":     "movies processed",
+			"created_ids": createdIDs,
+		})
 	}
 }
