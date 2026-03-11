@@ -61,6 +61,8 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.PATCH("/updateuser", handlers.UpdateUserDetail(database))
 			protected.GET("/favorites/:id", handlers.FavoriteListCheck(database)) // please think a better naming, i have no idea
 			protected.POST("/contact", handlers.Sendmail())
+
+			protected.POST("/films/add", handlers.CreateMovie(database))
 		}
 		
 		api.Use(auth.Middleware())
