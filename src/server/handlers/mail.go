@@ -18,9 +18,10 @@ func Sendmail() gin.HandlerFunc{
 	return func(context *gin.Context){
 	var req ContactRequest
 	if err:= context.ShouldBindJSON(&req); err!=nil{
-		context.JSON(400,gin.H{"Error": err.Error()})
+		context.JSON(400,gin.H{"Error": "Please provide a valid field"})
 		return
 	}
+	
 	mail := gomail.NewMessage()
 	system:= struct {
 		SystemEmail string 
