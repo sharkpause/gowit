@@ -126,20 +126,21 @@ CREATE TABLE favorites (
 	UNIQUE KEY unique_user_film (user_id, film_id)
 );
 
-CREATE TABLE comments(
+CREATE TABLE comments (
 	id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
     film_id BIGINT UNSIGNED NOT NULL,
     parent_id BIGINT UNSIGNED DEFAULT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	total_vote INT NOT NULL DEFAULT 0,
     
 	CONSTRAINT fk_comment_film FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
 	CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT fk_comment_parent FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
-	
 );
-CREATE TABLE comments_vote(
+
+CREATE TABLE comments_vote (
 	comment_id BIGINT UNSIGNED NOT NULL,
     user_id BIGINT UNSIGNED NOT NULL,
     score TINYINT NOT NULL,

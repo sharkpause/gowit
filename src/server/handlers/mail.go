@@ -50,29 +50,34 @@ func Sendmail() gin.HandlerFunc{
 	body:= fmt.Sprintf(`
 Dear %s,
 
-Thank you for contacting Gowit.
+			Thank you for contacting Gowit.
 
-We have received your message and our support team will review your inquiry. If further assistance is required, we will get back to you as soon as possible.
-Your message:
---------------------------------
-%s
---------------------------------
-Please note that response times may vary depending on the volume of requests.
+			We have received your message and our support team will review your inquiry. If further assistance is required, we will get back to you as soon as possible.
+			Your message:
+			--------------------------------
+			%s
+			--------------------------------
+			Please note that response times may vary depending on the volume of requests.
 
-We appreciate your patience and thank you for reaching out.
+			We appreciate your patience and thank you for reaching out.
 
-Best regards,  
-Gowit Support Team`, 
-req.Name,req.Question)
-	mail.SetBody("text/plain", body)
-	dial := gomail.NewDialer(system.EmailServer,system.EmailPort,system.SystemEmail,system.EmailSecret)
-	e:=dial.DialAndSend(mail)
-	if e!=nil{
-		context.JSON(500, gin.H{"Error":"Failed to send email"})
-		return
+			Best regards,  
+			Gowit Support Team`, 
+			
+			req.Name, req.Question)
+		
+		mail.SetBody("text/plain", body)
+		dial := gomail.NewDialer(system.EmailServer,system.EmailPort,system.SystemEmail,system.EmailSecret)
+
+		e:=dial.DialAndSend(mail)
+				
+		if e!=nil{
+			context.JSON(500, gin.H{"Error":"Failed to send email"})
+			fmt.Println(e)
+			return
+		}
+		context.JSON(200, gin.H{
+			"message": "Message sent",
+		})
 	}
-	context.JSON(200, gin.H{
-		"message": "Message sent",
-	})
-}
 }
