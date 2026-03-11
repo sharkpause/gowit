@@ -95,6 +95,7 @@ export default function FavoritePage() {
       });
 
       setIsImport(false);
+      fetchFavorite();
       Swal.fire({
         title: "Favorites Imported Successfully!",
         icon: "success",
