@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import type { MovieType } from "../type";
+import type { MovieType, UserType } from "../type";
 import { serverApi } from "../api";
 import { errorAlert } from "../helper/errorAlert";
 import Swal from "sweetalert2";
@@ -22,6 +22,11 @@ export default function DetailPage() {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [username, setUsername] = useState("");
   const [commentText, setCommentText] = useState("");
+<<<<<<< HEAD
+=======
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isLogin, setIsLogin] = useState<UserType>();
+>>>>>>> 02ebe291b2649c05567e0d7de676ddcdfe23a513
 
   let { id } = useParams();
   const navigate = useNavigate();
@@ -35,6 +40,27 @@ export default function DetailPage() {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const checkFavoriteMovie = async () => {
+    try {
+      const response = await serverApi.get("/api/favorites/" + id);
+      setIsFavorited(response.data.isFavorite);
+    } catch (error) {
+      console.log("Error at CheckFavoriteMovie function:", error);
+    }
+  };
+
+  const checkUser = async () => {
+    try {
+      const response = await serverApi.get("/api/me");
+      setIsLogin(response.data);
+    } catch (error) {
+      console.log("Error at checkUser function:", error);
+    }
+  };
+
+>>>>>>> 02ebe291b2649c05567e0d7de676ddcdfe23a513
   const addMovieToFavorites = async () => {
     try {
       await serverApi.post("/api/favorites", {
@@ -145,28 +171,34 @@ export default function DetailPage() {
               </div>
 
               {/* ================= COMMENT SECTION ================= */}
+              {isLogin ? (
+                <div className="mt-10 border-t border-gray-700 pt-6">
+                  <h3 className="text-2xl text-white mb-4 font-semibold">
+                    Comments ({comments.length})
+                  </h3>
 
-              <div className="mt-10 border-t border-gray-700 pt-6">
-                <h3 className="text-2xl text-white mb-4 font-semibold">
-                  Comments ({comments.length})
-                </h3>
+                  <form onSubmit={handleAddComment} className="space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full p-3 rounded bg-gray-800 text-white"
+                    />
 
-                <form onSubmit={handleAddComment} className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Your Name"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full p-3 rounded bg-gray-800 text-white"
-                  />
+                    <textarea
+                      placeholder="Write your comment..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      className="w-full p-3 rounded bg-gray-800 text-white"
+                    />
 
-                  <textarea
-                    placeholder="Write your comment..."
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    className="w-full p-3 rounded bg-gray-800 text-white"
-                  />
+                    <button className="bg-[#E8630A] hover:bg-[#C75409] px-6 py-2 rounded text-white font-semibold transition">
+                      Post Comment
+                    </button>
+                  </form>
 
+<<<<<<< HEAD
                   <button className="bg-[#E50914] px-6 py-2 rounded text-white font-semibold">
                     Post Comment
                   </button>
@@ -185,29 +217,47 @@ export default function DetailPage() {
                         <span className="text-gray-400 text-sm">
                           {c.date}
                         </span>
+=======
+                  <div className="mt-6 space-y-4">
+                    {comments.map((c, index) => (
+                      <div
+                        key={index}
+                        className="bg-gray-900 p-4 rounded border border-gray-700"
+                      >
+                        <div className="flex justify-between">
+                          <h4 className="text-orange-400 font-semibold">
+                            {c.username}
+                          </h4>
+                          <span className="text-gray-400 text-sm">
+                            {c.date}
+                          </span>
+                        </div>
+
+                        <p className="text-gray-300 mt-2">{c.comment}</p>
+
+                        <div className="flex gap-6 mt-3 text-gray-400">
+                          <button
+                            onClick={() => handleVote(index, "like")}
+                            className="hover:text-white"
+                          >
+                            👍 {c.likes}
+                          </button>
+
+                          <button
+                            onClick={() => handleVote(index, "dislike")}
+                            className="hover:text-white"
+                          >
+                            👎 {c.dislikes}
+                          </button>
+                        </div>
+>>>>>>> 02ebe291b2649c05567e0d7de676ddcdfe23a513
                       </div>
-
-                      <p className="text-gray-300 mt-2">{c.comment}</p>
-
-                      <div className="flex gap-6 mt-3 text-gray-400">
-                        <button
-                          onClick={() => handleVote(index, "like")}
-                          className="hover:text-white"
-                        >
-                          👍 {c.likes}
-                        </button>
-
-                        <button
-                          onClick={() => handleVote(index, "dislike")}
-                          className="hover:text-white"
-                        >
-                          👎 {c.dislikes}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
         </div>

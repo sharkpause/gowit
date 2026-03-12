@@ -27,6 +27,17 @@ export type WatchListType = {
   runtime: number;
 };
 
+export type UserType = {
+  id: number;
+  name: string;
+  email: string;
+  profilePictureUrl: string;
+};
+
+export type ImportType = {
+  title: string;
+};
+
 export type ProfileType = {
   name: string;
   email: string;

@@ -12,15 +12,16 @@ import (
 type ContactRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Question string `json:"question" binding:"required,min=10,max=200"` //please frontend limit question to x-amount of character
+	Question string `json:"question" binding:"required,min=1	,max=200"` //please frontend limit question to x-amount of character
 }
 func Sendmail() gin.HandlerFunc{
 	return func(context *gin.Context){
 	var req ContactRequest
 	if err:= context.ShouldBindJSON(&req); err!=nil{
-		context.JSON(400,gin.H{"Error": err.Error()})
+		context.JSON(400,gin.H{"Error": "Please provide a valid field"})
 		return
 	}
+	
 	mail := gomail.NewMessage()
 	system:= struct {
 		SystemEmail string 
@@ -41,6 +42,7 @@ func Sendmail() gin.HandlerFunc{
 	mail.SetHeader("From", system.SystemEmail)
 	mail.SetHeader("To", req.Email)
 	mail.SetHeader("Cc", system.SystemEmail)
+	mail.SetHeader("Subject", "Your question has been received")
 	if len(system.BccMailingList) > 0{
 		mail.SetHeader("Bcc", system.BccMailingList...)
 	}
@@ -48,29 +50,34 @@ func Sendmail() gin.HandlerFunc{
 	body:= fmt.Sprintf(`
 Dear %s,
 
-Thank you for contacting Gowit.
+			Thank you for contacting Gowit.
 
-We have received your message and our support team will review your inquiry. If further assistance is required, we will get back to you as soon as possible.
-Your message:
---------------------------------
-%s
---------------------------------
-Please note that response times may vary depending on the volume of requests.
+			We have received your message and our support team will review your inquiry. If further assistance is required, we will get back to you as soon as possible.
+			Your message:
+			--------------------------------
+			%s
+			--------------------------------
+			Please note that response times may vary depending on the volume of requests.
 
-We appreciate your patience and thank you for reaching out.
+			We appreciate your patience and thank you for reaching out.
 
-Best regards,  
-Gowit Support Team`, 
-req.Name,req.Question)
-	mail.SetBody("text/plain", body)
-	dial := gomail.NewDialer(system.EmailServer,system.EmailPort,system.SystemEmail,system.EmailSecret)
-	e:=dial.DialAndSend(mail)
-	if e!=nil{
-		context.JSON(500, gin.H{"Error":"Failed to send email"})
-		return
+			Best regards,  
+			Gowit Support Team`, 
+			
+			req.Name, req.Question)
+		
+		mail.SetBody("text/plain", body)
+		dial := gomail.NewDialer(system.EmailServer,system.EmailPort,system.SystemEmail,system.EmailSecret)
+
+		e:=dial.DialAndSend(mail)
+				
+		if e!=nil{
+			context.JSON(500, gin.H{"Error":"Failed to send email"})
+			fmt.Println(e)
+			return
+		}
+		context.JSON(200, gin.H{
+			"message": "Message sent",
+		})
 	}
-	context.JSON(200, gin.H{
-		"message": "Message sent",
-	})
-}
 }

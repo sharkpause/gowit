@@ -153,6 +153,7 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 	}
 }
 
+
 func LoginUser(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
 		var request loginRequest
