@@ -41,6 +41,8 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 		filmsAPI.GET("/trending", handlers.GetTrendingFilms(database))
 		filmsAPI.GET("/:id", handlers.GetFilmByID(database))
 		filmsAPI.GET("/coming-soon", handlers.GetComingSoon(database))
+		
+		filmsAPI.GET("/:id/rating", handlers.GetRating(database))
 
 		api.POST("/register", handlers.RegisterUser(database))
 		api.POST("/login", handlers.LoginUser(database))
@@ -63,6 +65,9 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.POST("/contact", handlers.Sendmail())
 
 			protected.POST("/films/add", handlers.CreateMovie(database))
+
+			protected.POST("/films/:id/rating", handlers.Rate(database))
+			protected.DELETE("/films/:id/rating", handlers.DeleteRating(database))
 		}
 		
 		api.Use(auth.Middleware())
