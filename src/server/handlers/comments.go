@@ -61,7 +61,7 @@ func CreateComment(database *sql.DB) gin.HandlerFunc {
 	}
 }
 
-func Like(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id/album/likey/1555405141?i=1555405145
+func LikeComment(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id/album/likey/1555405141?i=1555405145
 	return func(context *gin.Context){
 		userID,exists:=context.Get("user_id")
 		if !exists {
