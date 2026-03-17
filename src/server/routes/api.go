@@ -63,14 +63,17 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.POST("/logout", handlers.LogoutUser)
 			protected.GET("/userprofile", handlers.GetUserDetail(database))
 			protected.PATCH("/updateuser", handlers.UpdateUserDetail(database))
+			
 			protected.GET("/favorites/:id", handlers.FavoriteListCheck(database)) // please think a better naming, i have no idea
+			protected.POST("/favorites/add", handlers.AddMultipleFilmsToFavorite(database))
+			
 			protected.POST("/contact", handlers.Sendmail())
 
 			protected.POST("/films/add", handlers.CreateMovie(database))
 
 			protected.POST("/films/:id/rating", handlers.Rate(database))
 			protected.DELETE("/films/:id/rating", handlers.DeleteRating(database))
-			protected.POST("/like", handlers.Like(database))
+			protected.POST("/like", handlers.LikeComment(database))
 		}
 		
 		api.Use(auth.Middleware())
