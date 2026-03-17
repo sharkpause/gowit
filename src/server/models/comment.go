@@ -10,7 +10,7 @@ type Comment struct {
 	ParentID  *uint64   `json:"parent_id,omitempty"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
-	ReplyCount int		`json:"reply_count"`
+	ReplyCount int		`json:"reply_count,omitempty"`
 	VoteCount int		`json:"vote_count"`
 }
 type CommentVote struct {
