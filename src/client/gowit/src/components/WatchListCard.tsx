@@ -26,6 +26,8 @@ export default function WatchListCard({
   const [note, setNote] = useState(notes);
   const updateNote = async () => {
     try {
+      console.log(note, "aaa", id);
+
       const response = await serverApi.patch("/api/favorites/" + id, {
         notes: note,
       });
