@@ -54,3 +54,21 @@ export type ComingMovie = {
   trailer_url: string;
   trailer_duration: number;
 };
+
+export type ReplyType = {
+  user: string;
+  text: string;
+  likes: number;
+  dislikes: number;
+  userVote: "like" | "dislike" | null;
+};
+
+export type CommentType = {
+  id: number;
+  user: string;
+  text: string;
+  likes: number;
+  dislikes: number;
+  userVote: "like" | "dislike" | null;
+  replies: ReplyType[];
+};

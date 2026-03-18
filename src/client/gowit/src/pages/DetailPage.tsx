@@ -66,6 +66,12 @@ export default function DetailPage() {
         icon: "success",
         background: "#0F1115",
         color: "#F5F2F2",
+        buttonsStyling: false,
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
       });
 
       navigate("/watchlist");
@@ -80,8 +86,9 @@ export default function DetailPage() {
 
   useEffect(() => {
     fetchMovie();
+    checkFavoriteMovie();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, []);
+  }, [id]);
 
   return (
     <>
