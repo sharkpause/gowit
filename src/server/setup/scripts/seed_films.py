@@ -38,8 +38,19 @@ def convert_folder_to_webp(
 def download_youtube_video(url: str, output_path: str) -> int | None:
     if Path(output_path).is_file():
         print(f"Skipping video (already exists): {output_path}")
+
+        ydl_opts = {
+            # tell yt-dlp which JS runtime(s) to enable
+            "js_runtimes": {"node": {}},  # use Node.js if available
+
+            # your cookie handling (example)
+            "cookiesfrombrowser": ("firefox",),
+
+            # other options you want
+            "format": "bestvideo+bestaudio/best",
+        }
         
-        with yt_dlp.YoutubeDL({"quiet": True}) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
                 info = ydl.extract_info(url, download=False)
                 return info.get("duration")
@@ -52,6 +63,8 @@ def download_youtube_video(url: str, output_path: str) -> int | None:
         "outtmpl": output_path,
         "merge_output_format": "mp4",
         "quiet": True,
+        "js_runtimes": {"node": {}},
+        "cookiesfrombrowser": ("firefox",),
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -139,37 +152,67 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10):
                 videos_resp.raise_for_status()
                 videos = videos_resp.json().get("results", [])
 
+                # initialize EVERYTHING once per movie
+                trailer_id = None
+                thumbnail_url = None
+                trailer_filename = None
+                thumbnail_filename = None
+                trailer_url = None
                 trailer_download_url = None
                 thumbnail_download_url = None
+
+                selected_video = None
+                featurette_fallback = None
+
                 for video in videos:
-                    if video.get("site") == "YouTube" and video.get("type") == "Trailer":
-                        trailer_download_url = f"https://www.youtube.com/watch?v={video.get('key')}"
-                        thumbnail_download_url = f'https://img.youtube.com/vi/{video.get('key')}/hqdefault.jpg'
+                    print('\n\n', details.get('title'), video.get("site"), video.get("type"), '\n\n')
 
-                        if trailer_download_url:
-                            trailer_filename = f'{video.get('key')}.mp4'
-                            trailer_local_path = f'{TRAILER_DIR}/{trailer_filename}'
-                            trailer_duration = download_youtube_video(trailer_download_url, trailer_local_path)
+                    if video.get("site") != "YouTube":
+                        continue
 
-                            trailer_url = '/media/trailers/' + trailer_filename
+                    video_type = video.get("type")
 
-                            cursor.execute(
-                                'INSERT INTO trailers (trailer_url, trailer_duration) VALUES (%s, %s)',
-                                (trailer_url, trailer_duration)
-                            )
-
-                            trailer_id = cursor.lastrowid
-
-                        if thumbnail_download_url:
-                            thumbnail_filename = f"{movie_id}"
-                            thumbnail_local_path = f"{THUMBNAIL_DIR}/{thumbnail_filename + '.jpeg'}"
-                            download_file(thumbnail_download_url, thumbnail_local_path)
-
-                            thumbnail_url = "/media/thumbnails/" + thumbnail_filename + ".webp"
-
-                            convert_folder_to_webp(THUMBNAIL_DIR)
-                        
+                    # prefer Trailer
+                    if video_type == "Trailer":
+                        selected_video = video
                         break
+
+                    # store Featurette as fallback (but DON'T break yet)
+                    if video_type == "Featurette" and featurette_fallback is None:
+                        featurette_fallback = video
+
+                # fallback if no Trailer found
+                if not selected_video:
+                    selected_video = featurette_fallback
+
+                # process exactly ONE video
+                if selected_video:
+                    key = selected_video.get("key")
+
+                    trailer_download_url = f"https://www.youtube.com/watch?v={key}"
+                    thumbnail_download_url = f"https://img.youtube.com/vi/{key}/hqdefault.jpg"
+
+                    # download trailer ONCE
+                    trailer_filename = f"{key}.mp4"
+                    trailer_local_path = f"{TRAILER_DIR}/{trailer_filename}"
+                    trailer_duration = download_youtube_video(trailer_download_url, trailer_local_path)
+
+                    trailer_url = "/media/trailers/" + trailer_filename
+
+                    cursor.execute(
+                        "INSERT INTO trailers (trailer_url, trailer_duration) VALUES (%s, %s)",
+                        (trailer_url, trailer_duration),
+                    )
+                    connection.commit()
+                    trailer_id = cursor.lastrowid
+
+                    # download thumbnail ONCE
+                    thumbnail_filename = f"{movie_id}"
+                    thumbnail_local_path = f"{THUMBNAIL_DIR}/{thumbnail_filename}.jpeg"
+                    download_file(thumbnail_download_url, thumbnail_local_path)
+
+                    thumbnail_url = "/media/thumbnails/" + thumbnail_filename + ".webp"
+                    convert_folder_to_webp(THUMBNAIL_DIR)
 
                 credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
                 credits_resp = requests.get(credits_url, params=details_params, timeout=10)
