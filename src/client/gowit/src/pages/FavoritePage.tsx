@@ -165,7 +165,7 @@ export default function FavoritePage() {
 
   useEffect(() => {
     fetchFavorite();
-  }, []);
+  }, [sort, order, search]);
 
   return (
     <div
