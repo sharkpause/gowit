@@ -25,7 +25,7 @@ type Film struct {
 	TrailerURL            *string    	`json:"trailer_url"`
 	TrailerDuration		  *uint16		`json:"trailer_duration"`
 	AverageRating         *float64   	`json:"average_rating"`
-	Popularity            uint8   		`json:"popularity"`
+	Popularity            uint64   		`json:"popularity"`
 	Runtime               *int64     	`json:"runtime"`
 	Tagline               *string    	`json:"tagline"`
 	Genres                []string   	`json:"genres"`
