@@ -17,12 +17,16 @@ export default function FavoritePage() {
   const [isImport, setIsImport] = useState(false);
   const [fileName, setFileName] = useState("");
   const [loadingImport, setLoadingImport] = useState(false);
-
+  const [sort, setSort] = useState("");
+  const [order, setOrder] = useState("");
+  const [search, setSearch] = useState("");
   const [fileImport, setFileImport] = useState<string[]>([]);
 
   const fetchFavorite = async () => {
     try {
-      const response = await serverApi.get("/api/favorites");
+      const response = await serverApi.get(
+        `/api/favorites?sort=${sort}&order=${order}&search=${search}`,
+      );
       console.log(response.data);
 
       setFavorite(response.data.favorites || []);
@@ -173,7 +177,10 @@ export default function FavoritePage() {
             <label className="text-[#F5F2F2] text-sm font-medium">
               Sort by:
             </label>
-            <select className="bg-[#1C1E22]  text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer">
+            <select
+              onChange={(e) => setSort(e.target.value)}
+              className="bg-[#1C1E22]  text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+            >
               <option value="title">Title</option>
               <option value="average_rating">Rating</option>
               <option value="release_year">Year</option>
@@ -184,7 +191,10 @@ export default function FavoritePage() {
 
           <div className="flex items-center gap-2">
             <label className="text-[#F5F2F2] text-sm font-medium">Order:</label>
-            <select className="bg-[#1C1E22] text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer">
+            <select
+              onChange={(e) => setOrder(e.target.value)}
+              className="bg-[#1C1E22] text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+            >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </select>
@@ -194,6 +204,7 @@ export default function FavoritePage() {
             type="text"
             className="flex-1 text-[#F5F2F2] text-sm font-medium px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             placeholder="Search"
+            onChange={(e) => setSearch(e.target.value)}
           />
 
           <button
@@ -248,12 +259,21 @@ export default function FavoritePage() {
           <p className="text-md font-light text-gray-400">
             Keep track of movies and TV shows you want to watch.
           </p>
-          <Link
-            to="/"
-            className="mt-2 bg-[#E8630A] rounded-lg p-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105"
-          >
-            Explore Movies
-          </Link>
+          <div className="flex gap-4 justify-center items-center">
+            <Link
+              to="/"
+              className="mt-2 bg-[#E8630A] rounded-lg p-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105"
+            >
+              Explore Movies
+            </Link>
+            <button
+              onClick={() => setIsImport(true)}
+              className="mt-2 bg-[#1C1E22] rounded-lg p-3 hover:bg-[#1C1E22]/90 transition-all shadow-md shadow-[#1C1E22]/40 hover:shadow-[#1C1E22]/50 hover:scale-105 flex items-center justify-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Import Movies
+            </button>
+          </div>
         </div>
       )}
 

@@ -508,44 +508,29 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 			context.JSON(http.StatusUnauthorized, gin.H{"error": "user unauthorized"}) // will revised error code later
 			return
 		}
-		sort := "title"
-		order := "ASC"
-		var request = struct {
-			BasedOn string `json:"based_on,omitempty"` // name, year, etc
-			Order   string `json:"order,omitempty"`    // ascending descending
-		}{
-			BasedOn: "title",
-			Order: "ASC",
-		}
-		if err := context.ShouldBindJSON(&request); err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"error": "invalid request body",
-			})
-			return
-		}
-		if request.BasedOn != ""{
-		switch request.BasedOn {
+		sort := context.DefaultQuery("based_on", "title")
+        order := context.DefaultQuery("order", "ASC")
+
+		switch sort {
 			case "title","release_date", "average_rating", "popularity", "runtime":
-				sort = request.BasedOn
+				sort = sort
 			default:
 				context.JSON(http.StatusBadRequest, gin.H{
 					"error": "invalid sort parameter",
 				})
 				return
 			}
-		}
-		request.Order = strings.ToUpper(request.Order)
-		if request.Order != ""{
-		switch request.Order {
+
+		switch order {
 		case "ASC", "DESC":
-			order = request.Order
+			order = order
 		default:
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid order parameter",
 			})
 			return
 		}
-	}
+
 		query := `
 			SELECT
 				favorite.id,
