@@ -182,39 +182,42 @@ export default function HomePage() {
         </div>
 
         <div
-          className="relative flex flex-col z-10 min-h-screen justify-center items-center px-6 text-center"
+          className="relative flex flex-col z-10 min-h-screen justify-center items-center px-4 sm:px-6 md:px-8 text-center pt-20 sm:pt-24 md:pt-0"
           id="home"
         >
-          <h1 className="text-3xl md:text-4xl lg:text-5xl  font-bold text-[#F5F2F2] mt-8 ">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#F5F2F2] mt-4 sm:mt-6 md:mt-8">
             Discover Movies with Smarter Insights
           </h1>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#F5F2F2] mt-4 ">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#F5F2F2] mt-3 sm:mt-4 md:mt-4">
             Built for discovery, powered by data.
           </h1>
 
-          <p className="text-lg md:text-xl lg:text-xl text-[#F5F2F2]/80 mt-5 max-w-2xl">
+          <p className="text-base sm:text-lg md:text-xl text-[#F5F2F2]/80 mt-4 sm:mt-5 md:mt-6 max-w-2xl px-2">
             Explore films, track your favorites, and never miss what to watch
             next.
           </p>
-          <div className="flex gap-4 mt-8">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8 w-full sm:w-auto px-4 sm:px-0">
             <a
               href="#movies"
-              className="px-8 py-3  bg-[#E8630A] text-white font-semibold rounded-full hover:bg-[#C75409] transition-all shadow-lg shadow-[#E8630A]/30"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-[#E8630A] text-white font-semibold rounded-full hover:bg-[#C75409] transition-all shadow-lg shadow-[#E8630A]/30 text-center"
             >
               Explore Movies
             </a>
             <a
               href="#top"
-              className="px-8 py-3 bg-white/10 text-[#F5F2F2] font-semibold rounded-full hover:bg-white/20 transition-all ring-1 ring-white/20 backdrop-blur-sm"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-white/10 text-[#F5F2F2] font-semibold rounded-full hover:bg-white/20 transition-all ring-1 ring-white/20 backdrop-blur-sm text-center"
             >
               Explore Top Films
             </a>
           </div>
         </div>
 
-        <div id="movies" className="px-4 md:px-8 lg:px-32 pt-32 pb-16">
+        <div
+          id="movies"
+          className="px-3 sm:px-4 md:px-8 lg:px-32 pt-16 sm:pt-24 md:pt-32 pb-12 sm:pb-16"
+        >
           <h1
-            className="text-[#F5F2F2] text-4xl font-bold mb-5"
+            className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold mb-4 sm:mb-5"
             style={{
               fontFamily: "Poppins, sans-serif",
             }}
@@ -269,16 +272,19 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="px-4 md:px-8 lg:px-32 h-full pt-24 pb-16 z-10" id="top">
+        <div
+          className="px-3 sm:px-4 md:px-8 lg:px-32 h-full pt-16 sm:pt-24 md:pt-24 pb-12 sm:pb-16 z-10"
+          id="top"
+        >
           <h1
-            className="text-[#F5F2F2] text-4xl font-bold "
+            className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold"
             style={{
               fontFamily: "Poppins, sans-serif",
             }}
           >
             Top Rating Movies
           </h1>
-          <p className="text-[#F5F2F2] mt-2 mb-12 font-light">
+          <p className="text-[#F5F2F2] mt-2 sm:mt-3 mb-6 sm:mb-8 md:mb-12 font-light text-sm sm:text-base">
             TV Shows and Movies Just For You
           </p>
           <div className="flex gap-8 relative">
@@ -302,11 +308,11 @@ export default function HomePage() {
             </button>
             <Swiper
               modules={[Navigation]}
-              spaceBetween={16}
-              slidesPerView={1.2}
+              spaceBetween={18}
+              slidesPerView={2}
               navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
               breakpoints={{
-                640: { slidesPerView: 2.2 },
+                640: { slidesPerView: 3 },
                 1024: { slidesPerView: 4 },
               }}
               loop={false}
@@ -339,16 +345,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="px-4 md:px-8 lg:px-32 h-full pt-24 pb-16 z-10">
+        <div className="px-3 sm:px-4 md:px-8 lg:px-32 h-full pt-16 sm:pt-24 md:pt-24 pb-12 sm:pb-16 z-10">
           <h1
-            className="text-[#F5F2F2] text-4xl font-bold "
+            className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold"
             style={{
               fontFamily: "Poppins, sans-serif",
             }}
           >
             Coming Soon
           </h1>
-          <p className="text-[#F5F2F2] mt-2 mb-12 font-light">
+          <p className="text-[#F5F2F2] mt-2 sm:mt-3 mb-6 sm:mb-8 md:mb-12 font-light text-sm sm:text-base">
             Trailers For Upcoming Releases
           </p>
           <div className="flex gap-8 relative">
@@ -376,7 +382,7 @@ export default function HomePage() {
               slidesPerView={1.2}
               navigation={{ prevEl: ".prev-btn-cs", nextEl: ".next-btn-cs" }}
               breakpoints={{
-                640: { slidesPerView: 2.2 },
+                640: { slidesPerView: 2 },
                 1024: { slidesPerView: 4 },
               }}
               loop={false}
@@ -404,7 +410,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative min-h-96 px-4 md:px-8 lg:px-32 py-18 md:py-28">
+        <div className="relative min-h-screen px-3 sm:px-4 md:px-8 lg:px-32 py-12 sm:py-16 md:py-20 lg:py-28">
           <div
             className="absolute inset-0 z-0 opacity-30 bg-cover bg-center"
             style={{
@@ -415,20 +421,22 @@ export default function HomePage() {
 
           <div
             id="contact-us"
-            className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-12 lg:gap-20 text-[#F5F2F2]"
+            className="relative z-10 flex flex-col lg:flex-row items-start gap-8 sm:gap-10 md:gap-12 lg:gap-20 text-[#F5F2F2]"
           >
-            <div className="flex-1 align-top space-y-8">
+            <div className="flex-1 align-top space-y-6 sm:space-y-8">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
                   Contact Us
                 </h1>
-                <p className="text-gray-300 text-lg">
+                <p className="text-gray-300 text-base sm:text-lg">
                   Having a Problem? We're ready to help!
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <h3 className="font-bold text-xl text-white">Get in Touch</h3>
+              <div className="space-y-4 sm:space-y-6">
+                <h3 className="font-bold text-base sm:text-lg md:text-xl text-white">
+                  Get in Touch
+                </h3>
 
                 <div className="space-y-4">
                   <div className="flex items-start gap-4 group">
@@ -463,18 +471,18 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="w-full max-w-xl max-h-lg">
-              <div className="bg-[#0F1115]/95 backdrop-blur-md p-8 md:p-10 rounded-2xl border border-white/20 shadow-2xl">
-                <h2 className="text-white text-center text-2xl md:text-3xl font-bold mb-8">
+            <div className="w-full lg:max-w-xl">
+              <div className="bg-[#0F1115]/95 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-2xl border border-white/20 shadow-2xl">
+                <h2 className="text-white text-center text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8">
                   Question...?
                 </h2>
 
-                <form onSubmit={postMail} className="space-y-5">
+                <form onSubmit={postMail} className="space-y-4 sm:space-y-5">
                   <div>
                     <input
                       type="text"
                       placeholder="Name..."
-                      className="w-full px-6 py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium"
+                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
@@ -484,7 +492,7 @@ export default function HomePage() {
                     <input
                       type="email"
                       placeholder="Email..."
-                      className="w-full px-6 py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium"
+                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -493,18 +501,18 @@ export default function HomePage() {
                   <div>
                     <textarea
                       placeholder="Messages..."
-                      rows={6}
-                      className="w-full px-6 py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl resize-none focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium"
+                      rows={5}
+                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl resize-none focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
 
-                  <div className="flex justify-end pt-3">
+                  <div className="flex justify-end pt-2 sm:pt-3">
                     <button
                       type="submit"
                       disabled={loadingMail}
-                      className="w-full md:w-auto px-8 py-2 bg-[#E8630A] text-white font-bold text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-[#E8630A] text-white font-bold text-base sm:text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
                       {loadingMail ? (
                         <>

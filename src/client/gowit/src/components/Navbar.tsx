@@ -68,7 +68,7 @@ export default function Navbar() {
       <div className="h-16 flex items-center justify-between px-4 md:px-8 lg:px-32">
         <div className="flex items-center gap-3">
           <img
-            src="logo.png"
+            src="../logo.png"
             alt="GOWIT Logo"
             className="w-8 h-8 md:w-10 md:h-10 object-contain"
           />
@@ -279,12 +279,21 @@ export default function Navbar() {
           </div>
 
           <div className="px-4 py-4 border-t border-white/10">
-            <Link
-              to="/login"
-              className="w-full bg-white text-black py-2.5 rounded-full font-semibold hover:bg-gray-200 transition-all"
-            >
-              Sign In
-            </Link>
+            {id ? (
+              <Link
+                to="/profile"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                <CircleUserRound size={28} />
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

@@ -24,9 +24,7 @@ export default function FavoritePage() {
 
   const fetchFavorite = async () => {
     try {
-      const response = await serverApi.get(
-        `/api/favorites?sort=${sort}&order=${order}&search=${search}`,
-      );
+      const response = await serverApi.get(`/api/favorites`);
       console.log(response.data);
 
       setFavorite(response.data.favorites || []);
@@ -169,17 +167,17 @@ export default function FavoritePage() {
 
   return (
     <div
-      className={`bg-[#0F1115] overflow-hidden px-4 md:px-8 lg:px-36 ${favorite.length > 0 ? "pt-32" : "pt-8"} pb-16`}
+      className={`bg-[#0F1115] overflow-hidden px-3 sm:px-4 md:px-8 lg:px-36 ${favorite.length > 0 ? "pt-24 sm:pt-28 md:pt-32" : "pt-8"} pb-12 sm:pb-16`}
     >
       {favorite.length > 0 ? (
-        <div className="flex flex-wrap gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-2">
-            <label className="text-[#F5F2F2] text-sm font-medium">
-              Sort by:
+            <label className="text-[#F5F2F2] text-xs sm:text-sm font-medium">
+              Sort:
             </label>
             <select
               onChange={(e) => setSort(e.target.value)}
-              className="bg-[#1C1E22]  text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+              className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             >
               <option value="title">Title</option>
               <option value="average_rating">Rating</option>
@@ -190,10 +188,12 @@ export default function FavoritePage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-[#F5F2F2] text-sm font-medium">Order:</label>
+            <label className="text-[#F5F2F2] text-xs sm:text-sm font-medium whitespace-nowrap">
+              Order:
+            </label>
             <select
               onChange={(e) => setOrder(e.target.value)}
-              className="bg-[#1C1E22] text-[#F5F2F2] text-center px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+              className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -202,25 +202,25 @@ export default function FavoritePage() {
 
           <input
             type="text"
-            className="flex-1 text-[#F5F2F2] text-sm font-medium px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+            className="flex-1 text-[#F5F2F2] text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             placeholder="Search"
             onChange={(e) => setSearch(e.target.value)}
           />
 
           <button
             onClick={download}
-            className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-2"
+            className="bg-[#1C1E22] text-[#F5F2F2] px-3 sm:px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
           >
-            <Download className="w-4 h-4" />
-            Export
+            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Export</span>
           </button>
 
           <button
             onClick={() => setIsImport(true)}
-            className="bg-[#1C1E22] text-[#F5F2F2] px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-2"
+            className="bg-[#1C1E22] text-[#F5F2F2] px-3 sm:px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
           >
-            <Upload className="w-4 h-4" />
-            Import
+            <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Import</span>
           </button>
         </div>
       ) : (
@@ -228,7 +228,7 @@ export default function FavoritePage() {
       )}
 
       {favorite.length > 0 ? (
-        <div className="min-h-screen flex flex-wrap gap-16 justify-center">
+        <div className="min-h-screen flex flex-wrap gap-6 sm:gap-8 md:gap-10 lg:gap-16 justify-start md:justify-center">
           {favorite.map((el) => {
             return (
               <div className="relative flex-shrink-0" key={el.id}>
@@ -253,25 +253,27 @@ export default function FavoritePage() {
           })}
         </div>
       ) : (
-        <div className="min-h-screen flex flex-col justify-center items-center text-[#F5F2F2] space-y-4">
-          <Heart className="w-40 h-40 font-thin" />
-          <h1 className="text-2xl mt-1">Your Watchlist has no titles yet.</h1>
-          <p className="text-md font-light text-gray-400">
+        <div className="min-h-screen flex flex-col justify-center items-center text-[#F5F2F2] space-y-4 px-4">
+          <Heart className="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 font-thin" />
+          <h1 className="text-xl sm:text-2xl md:text-3xl text-center font-semibold mt-4">
+            Your Watchlist has no titles yet.
+          </h1>
+          <p className="text-sm sm:text-base font-light text-gray-400 text-center max-w-md">
             Keep track of movies and TV shows you want to watch.
           </p>
-          <div className="flex gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full pt-2">
             <Link
               to="/"
-              className="mt-2 bg-[#E8630A] rounded-lg p-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105"
+              className="w-full sm:w-auto mt-2 bg-[#E8630A] rounded-lg px-6 py-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105 text-center text-sm sm:text-base font-semibold"
             >
               Explore Movies
             </Link>
             <button
               onClick={() => setIsImport(true)}
-              className="mt-2 bg-[#1C1E22] rounded-lg p-3 hover:bg-[#1C1E22]/90 transition-all shadow-md shadow-[#1C1E22]/40 hover:shadow-[#1C1E22]/50 hover:scale-105 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto mt-2 bg-[#1C1E22] rounded-lg px-6 py-3 hover:bg-[#1C1E22]/90 transition-all shadow-md shadow-[#1C1E22]/40 hover:shadow-[#1C1E22]/50 hover:scale-105 flex items-center justify-center gap-2 text-sm sm:text-base font-semibold"
             >
               <Upload className="w-4 h-4" />
-              Import Movies
+              Import
             </button>
           </div>
         </div>
@@ -279,16 +281,16 @@ export default function FavoritePage() {
 
       {isImport ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 "
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-4"
           onClick={() => setIsImport(false)}
         >
           <div
-            className="relative bg-[#1C1E22] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6"
+            className="relative bg-[#1C1E22] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-center">
-              <label className="flex items-center justify-center w-full px-4 py-3 bg-[#1C1E22] text-[#F5F2F2] border border-white/20 rounded-xl cursor-pointer hover:border-[#E8630A] transition">
-                <span className="font-medium">
+              <label className="flex items-center justify-center w-full px-4 py-3 bg-[#1C1E22] text-[#F5F2F2] text-sm sm:text-base border border-white/20 rounded-xl cursor-pointer hover:border-[#E8630A] transition">
+                <span className="font-medium text-center">
                   {fileName ? fileName : "Choose Excel File"}
                 </span>
                 <input
@@ -300,10 +302,10 @@ export default function FavoritePage() {
               </label>
             </div>
 
-            <div className="flex justify-center gap-3 mt-4">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-4">
               <button
                 onClick={() => setIsImport(false)}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-400 hover:text-white transition-colors"
               >
                 Cancel
               </button>
@@ -314,19 +316,19 @@ export default function FavoritePage() {
                   link.download = "TemplateDownload.xlsx";
                   link.click();
                 }}
-                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
+                className="px-3 sm:px-5 py-2 text-xs sm:text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors whitespace-nowrap"
               >
                 Download Template
               </button>
               <button
                 onClick={createImport}
                 disabled={loadingImport}
-                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-3 sm:px-5 py-2 text-xs sm:text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
               >
                 {loadingImport ? (
                   <>
                     <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Submitting...
+                    <span className="hidden sm:inline">Submitting...</span>
                   </>
                 ) : (
                   "Submit"

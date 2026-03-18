@@ -94,9 +94,9 @@ export default function DetailPage() {
     <>
       <Navbar />
       <div className="bg-[#0F1115] min-h-screen">
-        <div className="max-w-6xl mx-auto px-6 py-10 ">
-          <div className="bg-[#0B0C0D] border border-gray-800 rounded-lg p-8 shadow-xl mt-12">
-            <h2 className="text-white mb-6 font-bold text-3xl">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-10">
+          <div className="bg-[#0B0C0D] border border-gray-800 rounded-lg p-4 sm:p-6 md:p-8 shadow-xl mt-8 sm:mt-10 md:mt-12">
+            <h2 className="text-white mb-4 sm:mb-6 font-bold text-2xl sm:text-3xl md:text-4xl break-words">
               {detailMovie?.title}
             </h2>
 
@@ -108,79 +108,97 @@ export default function DetailPage() {
               ></iframe>
             </div>
 
-            <div className="mt-6 bg-black rounded-md p-6">
+            <div className="mt-6 bg-black rounded-md p-4 sm:p-6 md:p-8">
               {/* Movie Info */}
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="max-w-5xl mx-auto grid md:grid-cols-[280px_1fr] gap-5">
-                  <div className="flex flex-col">
-                    <img
-                      src={detailMovie?.poster_image_url}
-                      className="rounded-lg shadow-lg"
-                      alt="Poster"
-                    />
-                    <div className="flex gap-4 w-full ml-2 mt-2">
-                      <button
-                        onClick={addMovieToFavorites}
-                        className={` ${isFavorited ? "bg-[#E8630A]/60 hover:bg-[#E8630A]/50 text-white/60 cursor-not-allowed w-full" : "bg-[#E8630A] hover:bg-[#C75409] transition flex items-center gap-2 text-white cursor-pointer"} text-white px-5 py-3 rounded-lg transition flex justify-center items-center gap-2 font-bold w-full`}
-                        disabled={isFavorited}
-                      >
-                        <img
-                          src="../watchlisticon.png"
-                          alt="Watchlist"
-                          className="w-4 h-4"
-                        />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div className="flex flex-col">
+                  <img
+                    src={detailMovie?.poster_image_url}
+                    className="rounded-lg shadow-lg w-full md:w-auto md:max-w-xs"
+                    alt="Poster"
+                    onError={(e) => (e.currentTarget.src = "/profilicon.png")}
+                  />
+                  <div className="flex gap-3 w-full mt-4">
+                    <button
+                      onClick={addMovieToFavorites}
+                      className={`flex-1 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg transition flex justify-center items-center gap-2 font-bold text-sm sm:text-base ${
+                        isFavorited
+                          ? "bg-[#E8630A]/60 hover:bg-[#E8630A]/50 text-white/60 cursor-not-allowed"
+                          : "bg-[#E8630A] hover:bg-[#C75409] text-white cursor-pointer"
+                      }`}
+                      disabled={isFavorited}
+                    >
+                      <img
+                        src="/watchlisticon.png"
+                        alt="Watchlist"
+                        className="w-4 h-4"
+                      />
+                      <span>
                         {isFavorited
                           ? "Added to Watchlist"
                           : "Add to Watchlist"}
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                   </div>
                 </div>
-                <div className="md:col-span-2 space-y-4 .md:-ml-3">
-                  {" "}
-                  <h1 className="text-3xl font-bold text-white">
+                <div className="md:col-span-2 space-y-4">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
                     {detailMovie?.title}
                   </h1>
-                  <div className="mt-4 items-center text-xl py-1 rounded-md shadow-sm">
-                    <span className="text-yellow-400 text-lg">⭐</span>
-                    <span className="text-white font-semibold ml-1">
+                  <div className="flex items-center gap-2 text-lg sm:text-xl py-2">
+                    <span className="text-yellow-400 text-lg sm:text-2xl">
+                      ⭐
+                    </span>
+                    <span className="text-white font-semibold">
                       {detailMovie?.average_rating}
                     </span>
                     <span className="text-gray-400 text-sm">/5</span>
                   </div>
-                  <p className="text-gray-300 text-justify">
+                  <p className="text-gray-300 text-sm sm:text-base text-justify leading-relaxed">
                     {detailMovie?.description}
                   </p>
-                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-400 pt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400 pt-4">
                     <p>
                       <span className="text-white font-semibold">
                         Released:
                       </span>{" "}
-                      {detailMovie?.release_year}
+                      <span className="text-gray-300">
+                        {detailMovie?.release_year}
+                      </span>
                     </p>
                     <p>
                       <span className="text-white font-semibold">
                         Duration:
                       </span>{" "}
-                      {detailMovie?.runtime} min
+                      <span className="text-gray-300">
+                        {detailMovie?.runtime} min
+                      </span>
                     </p>
                     <p>
                       <span className="text-white font-semibold">Genre:</span>{" "}
-                      {detailMovie?.genres.join(" ")}
+                      <span className="text-gray-300">
+                        {detailMovie?.genres.join(", ")}
+                      </span>
                     </p>
                     <p>
                       <span className="text-white font-semibold">Country:</span>{" "}
-                      {detailMovie?.production_countries.join(" ")}
+                      <span className="text-gray-300">
+                        {detailMovie?.production_countries.join(", ")}
+                      </span>
                     </p>
-                    <p>
+                    <p className="sm:col-span-2">
                       <span className="text-white font-semibold">
                         Production:
                       </span>{" "}
-                      {detailMovie?.production_companies.join(" ")}
+                      <span className="text-gray-300">
+                        {detailMovie?.production_companies.join(", ")}
+                      </span>
                     </p>
-                    <p>
+                    <p className="sm:col-span-2">
                       <span className="text-white font-semibold">Casts:</span>{" "}
-                      {detailMovie?.casts.join(" ")}
+                      <span className="text-gray-300">
+                        {detailMovie?.casts.join(", ")}
+                      </span>
                     </p>
                   </div>
                 </div>
