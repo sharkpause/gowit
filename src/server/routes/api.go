@@ -65,11 +65,11 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.PATCH("/updateuser", handlers.UpdateUserDetail(database))
 			
 			protected.GET("/favorites/:id", handlers.FavoriteListCheck(database)) // please think a better naming, i have no idea
-			protected.POST("/favorites/add", handlers.AddMultipleFilmsToFavorite(database))
+			// protected.POST("/favorites/add", handlers.AddMultipleFilmsToFavorite(database))
 			
 			protected.POST("/contact", handlers.Sendmail())
 
-			protected.POST("/films/add", handlers.CreateMovie(database))
+			protected.POST("/films/add", handlers.ImportMovie(database))
 
 			protected.POST("/films/:id/rating", handlers.Rate(database))
 			protected.DELETE("/films/:id/rating", handlers.DeleteRating(database))
