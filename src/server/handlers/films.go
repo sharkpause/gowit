@@ -37,7 +37,7 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 	var releaseDate *time.Time
 	var runtime *int64
 	var averageRating *float64
-	var popularity uint8
+	var popularity uint64
 
 	err := row.Scan(
 		&film.ID,

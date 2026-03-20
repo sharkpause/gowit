@@ -2,14 +2,14 @@ import { Search, Plus, Menu, X, CircleUserRound } from "lucide-react";
 import { Link } from "react-router";
 import { useEffect, useState } from "react";
 import { serverApi } from "../api";
-import type { MovieType } from "../type";
+import type { MovieType, UserType } from "../type";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [searchMovie, setSearchMovie] = useState<MovieType[]>([]);
   const [mobileSearch, setMobileSearch] = useState("");
-  const [id, setId] = useState(0);
+  const [user, setUser] = useState<UserType>();
   const [loading, setLoading] = useState(true);
 
   const fetchMovieSearch = async () => {
@@ -30,7 +30,7 @@ export default function Navbar() {
       try {
         const response = await serverApi.get("/api/me");
 
-        setId(response.data.id);
+        setUser(response.data);
       } catch (error) {
         console.log("Error at Layout:", error);
       } finally {
@@ -68,7 +68,7 @@ export default function Navbar() {
       <div className="h-16 flex items-center justify-between px-4 md:px-8 lg:px-32">
         <div className="flex items-center gap-3">
           <img
-            src="logo.png"
+            src="../logo.png"
             alt="GOWIT Logo"
             className="w-8 h-8 md:w-10 md:h-10 object-contain"
           />
@@ -165,12 +165,20 @@ export default function Navbar() {
             <span className="font-medium hidden lg:inline">Watch List</span>
           </Link>
 
-          {id ? (
+          {user ? (
             <Link
               to="/profile"
               className="text-white hover:text-gray-300 transition-colors"
             >
-              <CircleUserRound size={28} />
+              {user.profile_picture_url ? (
+                <img
+                  className="w-10 h-10 rounded-full object-cover border-1"
+                  src={user.profile_picture_url}
+                  alt="profile_picture"
+                />
+              ) : (
+                <CircleUserRound size={28} />
+              )}
             </Link>
           ) : (
             <Link
@@ -279,12 +287,29 @@ export default function Navbar() {
           </div>
 
           <div className="px-4 py-4 border-t border-white/10">
-            <Link
-              to="/login"
-              className="w-full bg-white text-black py-2.5 rounded-full font-semibold hover:bg-gray-200 transition-all"
-            >
-              Sign In
-            </Link>
+            {user ? (
+              <Link
+                to="/profile"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                {user.profile_picture_url ? (
+                  <img
+                    className="w-10 h-10 rounded-full object-cover border-1"
+                    src={user.profile_picture_url}
+                    alt="profile_picture"
+                  />
+                ) : (
+                  <CircleUserRound size={28} />
+                )}
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}
