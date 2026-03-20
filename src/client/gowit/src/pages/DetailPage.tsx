@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { capitalizeEachWord } from "../helper/helper";
 import Navbar from "../components/Navbar";
+import { Star } from "lucide-react";
 
 type CommentType = {
   username: string;
@@ -19,11 +20,9 @@ type CommentType = {
 
 export default function DetailPage() {
   const [detailMovie, setDetailMovie] = useState<MovieType>();
-  const [comments, setComments] = useState<CommentType[]>([]);
-  const [username, setUsername] = useState("");
-  const [commentText, setCommentText] = useState("");
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLogin, setIsLogin] = useState<UserType>();
+  const [rating, setRating] = useState(0);
 
   let { id } = useParams();
   const navigate = useNavigate();
@@ -85,6 +84,7 @@ export default function DetailPage() {
   };
 
   useEffect(() => {
+    checkUser();
     fetchMovie();
     checkFavoriteMovie();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -145,9 +145,33 @@ export default function DetailPage() {
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
                     {detailMovie?.title}
                   </h1>
+                  {isLogin ? (
+                    <div className="flex gap-4">
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((el) => {
+                          return (
+                            <Star
+                              onClick={() => setRating(el)}
+                              className={`w-7 h-7 cursor-pointer ${
+                                el <= rating
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <button className="bg-[#E8630A] text-base text-white font-bold rounded-lg px-2 py-1 hover:bg-[#C75409] transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105">
+                        Submit
+                      </button>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+
                   <div className="flex items-center gap-2 text-lg sm:text-xl py-2">
                     <span className="text-yellow-400 text-lg sm:text-2xl">
-                      ⭐
+                      <Star />
                     </span>
                     <span className="text-white font-semibold">
                       {detailMovie?.average_rating}

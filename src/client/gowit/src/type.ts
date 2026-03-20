@@ -22,7 +22,7 @@ export type WatchListType = {
   title: string;
   description: string;
   poster_image_url: string;
-  release_date: string;
+  release_year: number;
   average_rating: number;
   runtime: number;
 };
@@ -31,7 +31,7 @@ export type UserType = {
   id: number;
   name: string;
   email: string;
-  profilePictureUrl: string;
+  profile_picture_url: string;
 };
 
 export type ImportType = {

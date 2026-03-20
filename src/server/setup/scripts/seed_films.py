@@ -85,7 +85,7 @@ def download_file(url: str, local_path: str):
     except Exception as e:
         print(f"Failed to download {url}: {e}")
 
-def seed_films(connection=None, movie_csv_path="movies.csv", limit=10):
+def seed_films(connection=None, movie_csv_path="movies.csv", limit=3): # Edit this if you want to seed more or fewer movies (limit=None for no limit)
     # own_connection here is needed incase seed_films is ran as a standalone script
     
     own_connection = False

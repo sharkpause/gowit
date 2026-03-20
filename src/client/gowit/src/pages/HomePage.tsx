@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import LightRays from "../components/LightRays";
-import { ArrowLeft, ArrowRight, Film, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail, MapPin, Phone } from "lucide-react";
 // import MovieCard from "../components/MovieCard";
 import axios from "axios";
 import MovieCard from "../components/MovieCard";
@@ -11,7 +11,7 @@ import type { ComingMovie, MovieType } from "../type";
 import { Link, useLocation } from "react-router";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
-import { Navigation, Pagination } from "swiper/modules";
+import { Navigation } from "swiper/modules";
 
 import "swiper/swiper-bundle.css";
 import Navbar from "../components/Navbar";
@@ -33,6 +33,13 @@ export default function HomePage() {
   const [message, setMessage] = useState("");
   const [loadingMail, setLoadingMail] = useState(false);
   const [movieComingSoon, setMovieComingSoon] = useState<ComingMovie[]>([]);
+  const [swiperTop, setSwiperTop] = useState(true);
+  const [swiperComing, setSwiperComing] = useState(true);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [loadingTop, setLoadingTop] = useState(true);
+  const [loadingComingSoon, setLoadingComingSoon] = useState(true);
+
+  console.log(swiperTop);
 
   const location = useLocation();
 
@@ -63,12 +70,15 @@ export default function HomePage() {
 
   async function fetchMovieComingSoon() {
     try {
+      setLoadingComingSoon(true);
       const response = await serverApi.get("/api/films/coming-soon");
-      console.log(response.data.coming_soon);
+      console.log(response.data);
 
       setMovieComingSoon(response.data.coming_soon);
     } catch (error) {
       console.log("Error fetching featured movies:", error);
+    } finally {
+      setLoadingComingSoon(false);
     }
   }
 
@@ -78,7 +88,7 @@ export default function HomePage() {
       setLoadingMail(true);
       console.log(message);
 
-      const response = await serverApi.post("/api/contact", {
+      await serverApi.post("/api/contact", {
         name,
         email,
         question: message,
@@ -110,23 +120,88 @@ export default function HomePage() {
   async function fetchFeaturedMovies() {
     // Simulate fetching featured movies\
     try {
-      const response = await serverApi.get("/api/films");
+      setLoadingFeatured(true);
+      const response = await serverApi.get("/api/films?limit=100");
       setMovieFeatured(response.data.films);
     } catch (error) {
       console.log("Error fetching featured movies:", error);
+    } finally {
+      setLoadingFeatured(false);
     }
   }
 
   async function fetchTopMovie() {
     try {
+      setLoadingTop(true);
       const response = await serverApi.get(
         "/api/films?sort=average_rating&order=desc&limit=10",
       );
       setTopMovie(response.data.films);
     } catch (error) {
       console.log("Error fetching top movies:", error);
+    } finally {
+      setLoadingTop(false);
     }
   }
+
+  if (loadingFeatured || loadingTop || loadingComingSoon) {
+    <div className="flex min-h-screen items-center justify-center bg-[#0F1115]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-[#E8630A] border-t-transparent rounded-full animate-spin" />
+        <span className="text-gray-400 text-sm tracking-widest uppercase">
+          Loading...
+        </span>
+      </div>
+    </div>;
+  }
+
+  const checkTopMovies = () => {
+    let w = window.innerWidth;
+
+    if (w >= 1024) {
+      if (topMovie.length < 4) {
+        console.log("a");
+
+        setSwiperTop(false);
+      } else {
+        setSwiperTop(true);
+      }
+    } else if (w >= 640) {
+      if (topMovie.length < 3) {
+        console.log("b");
+
+        setSwiperTop(false);
+      } else {
+        setSwiperTop(true);
+      }
+    } else {
+      console.log("c");
+
+      if (topMovie.length < 2) {
+        setSwiperTop(false);
+      } else {
+        setSwiperTop(true);
+      }
+    }
+  };
+
+  const checkComingMovies = () => {
+    let w = window.innerWidth;
+
+    if (w >= 1024) {
+      if (movieComingSoon.length < 4) {
+        setSwiperComing(false);
+      } else {
+        setSwiperComing(true);
+      }
+    } else {
+      if (movieComingSoon.length < 2) {
+        setSwiperComing(false);
+      } else {
+        setSwiperComing(true);
+      }
+    }
+  };
 
   useEffect(() => {
     fetchFeaturedMovies();
@@ -144,11 +219,21 @@ export default function HomePage() {
     };
 
     calc();
+
     window.addEventListener("resize", calc);
+
     return () => {
       window.removeEventListener("resize", calc);
     };
   }, []);
+
+  useEffect(() => {
+    checkTopMovies();
+  }, [topMovie]);
+
+  useEffect(() => {
+    checkComingMovies();
+  }, [movieComingSoon]);
 
   const wFeatured = 208;
   const gapFeatured = 40;
@@ -244,7 +329,7 @@ export default function HomePage() {
                           key={el.id}
                           src={el.poster_image_url}
                           alt="Movie Poster"
-                          className="h-72 w-52 flex-shrink-0 flex-grow-1 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110 "
+                          className="h-72 w-52 shrink-0 grow object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110 "
                         />
                       </Link>
                     );
@@ -306,42 +391,69 @@ export default function HomePage() {
             >
               <ArrowRight className="text-white w-8 h-8" />
             </button>
-            <Swiper
-              modules={[Navigation]}
-              spaceBetween={18}
-              slidesPerView={2}
-              navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
-              breakpoints={{
-                640: { slidesPerView: 3 },
-                1024: { slidesPerView: 4 },
-              }}
-              loop={false}
-              onSwiper={syncEdges}
-              onSlideChange={syncEdges}
-              observer
-              observeParents
-              updateOnWindowResize
-              onResize={syncEdges}
-            >
-              {topMovie.length
-                ? topMovie.map((el, idx) => {
-                    return (
-                      <SwiperSlide key={el.id}>
-                        <Link to={`/movies/${el.id}`} className="inline-block">
-                          <MovieCard
-                            poster_url={el.poster_image_url}
-                            rating={el.average_rating}
-                            title={el.title}
-                            description={el.description}
-                            year={el.release_year}
-                            rank={idx + 1}
-                          />
-                        </Link>
-                      </SwiperSlide>
-                    );
-                  })
-                : ""}
-            </Swiper>
+
+            {swiperTop ? (
+              <Swiper
+                modules={[Navigation]}
+                spaceBetween={18}
+                slidesPerView={2}
+                navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
+                breakpoints={{
+                  640: { slidesPerView: 3 },
+                  1024: { slidesPerView: 4 },
+                }}
+                loop={false}
+                onSwiper={syncEdges}
+                onSlideChange={syncEdges}
+                observer
+                observeParents
+                updateOnWindowResize
+                onResize={syncEdges}
+              >
+                {topMovie.length
+                  ? topMovie.map((el, idx) => {
+                      return (
+                        <SwiperSlide key={el.id}>
+                          <Link
+                            to={`/movies/${el.id}`}
+                            className="inline-block"
+                          >
+                            <MovieCard
+                              poster_url={el.poster_image_url}
+                              rating={el.average_rating}
+                              title={el.title}
+                              description={el.description}
+                              year={el.release_year}
+                              rank={idx + 1}
+                            />
+                          </Link>
+                        </SwiperSlide>
+                      );
+                    })
+                  : ""}
+              </Swiper>
+            ) : topMovie.length ? (
+              topMovie.map((el, idx) => {
+                return (
+                  <Link
+                    to={`/movies/${el.id}`}
+                    key={el.id}
+                    className="inline-block"
+                  >
+                    <MovieCard
+                      poster_url={el.poster_image_url}
+                      rating={el.average_rating}
+                      title={el.title}
+                      description={el.description}
+                      year={el.release_year}
+                      rank={idx + 1}
+                    />
+                  </Link>
+                );
+              })
+            ) : (
+              ""
+            )}
           </div>
         </div>
 
@@ -376,37 +488,52 @@ export default function HomePage() {
             >
               <ArrowRight className="text-white w-8 h-8" />
             </button>
-            <Swiper
-              modules={[Navigation]}
-              spaceBetween={48}
-              slidesPerView={1.2}
-              navigation={{ prevEl: ".prev-btn-cs", nextEl: ".next-btn-cs" }}
-              breakpoints={{
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 4 },
-              }}
-              loop={false}
-              onSwiper={syncEdgesCS}
-              onSlideChange={syncEdgesCS}
-              observer
-              observeParents
-              updateOnWindowResize
-              onResize={syncEdgesCS}
-            >
-              {movieComingSoon?.map((el, idx) => {
+            {swiperComing ? (
+              <Swiper
+                modules={[Navigation]}
+                spaceBetween={48}
+                slidesPerView={1.2}
+                navigation={{ prevEl: ".prev-btn-cs", nextEl: ".next-btn-cs" }}
+                breakpoints={{
+                  640: { slidesPerView: 2 },
+                  1024: { slidesPerView: 4 },
+                }}
+                loop={false}
+                onSwiper={syncEdgesCS}
+                onSlideChange={syncEdgesCS}
+                observer
+                observeParents
+                updateOnWindowResize
+                onResize={syncEdgesCS}
+              >
+                {movieComingSoon?.map((el, idx) => {
+                  return (
+                    <SwiperSlide key={idx}>
+                      <TrailerCard
+                        image_url={el.thumbnail_url}
+                        duration={el.trailer_duration}
+                        date={el.release_date}
+                        title={el.title}
+                        trailer_url={el.trailer_url}
+                      />
+                    </SwiperSlide>
+                  );
+                })}
+              </Swiper>
+            ) : (
+              movieComingSoon?.map((el, idx) => {
                 return (
-                  <SwiperSlide key={idx}>
-                    <TrailerCard
-                      image_url={el.thumbnail_url}
-                      duration={el.trailer_duration}
-                      date={el.release_date}
-                      title={el.title}
-                      trailer_url={el.trailer_url}
-                    />
-                  </SwiperSlide>
+                  <TrailerCard
+                    key={idx}
+                    image_url={el.thumbnail_url}
+                    duration={el.trailer_duration}
+                    date={el.release_date}
+                    title={el.title}
+                    trailer_url={el.trailer_url}
+                  />
                 );
-              })}
-            </Swiper>
+              })
+            )}
           </div>
         </div>
 
@@ -440,7 +567,7 @@ export default function HomePage() {
 
                 <div className="space-y-4">
                   <div className="flex items-start gap-4 group">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-white/20 transition-colors">
+                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
                       <MapPin className="w-5 h-5" />
                     </div>
                     <div className="pt-2">
@@ -451,7 +578,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex items-center gap-4 group">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-white/20 transition-colors">
+                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
                       <Phone className="w-5 h-5" />
                     </div>
                     <div className="pt-2">
@@ -460,7 +587,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex items-center gap-4 group">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-white/20 transition-colors">
+                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
                       <Mail className="w-5 h-5" />
                     </div>
                     <div className="pt-2">
@@ -482,7 +609,7 @@ export default function HomePage() {
                     <input
                       type="text"
                       placeholder="Name..."
-                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
+                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
@@ -492,7 +619,7 @@ export default function HomePage() {
                     <input
                       type="email"
                       placeholder="Email..."
-                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
+                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -502,7 +629,7 @@ export default function HomePage() {
                     <textarea
                       placeholder="Messages..."
                       rows={5}
-                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl resize-none focus:outline-none border-1 border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
+                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl resize-none focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
@@ -512,7 +639,7 @@ export default function HomePage() {
                     <button
                       type="submit"
                       disabled={loadingMail}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-[#E8630A] text-white font-bold text-base sm:text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 text-sm sm:text-base"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-[#E8630A] text-white font-bold text-base sm:text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                     >
                       {loadingMail ? (
                         <>

@@ -17,14 +17,16 @@ export default function FavoritePage() {
   const [isImport, setIsImport] = useState(false);
   const [fileName, setFileName] = useState("");
   const [loadingImport, setLoadingImport] = useState(false);
-  const [sort, setSort] = useState("");
-  const [order, setOrder] = useState("");
+  const [sort, setSort] = useState("title");
+  const [order, setOrder] = useState("ASC");
   const [search, setSearch] = useState("");
   const [fileImport, setFileImport] = useState<string[]>([]);
 
   const fetchFavorite = async () => {
     try {
-      const response = await serverApi.get(`/api/favorites`);
+      const response = await serverApi.get(
+        `/api/favorites?sort=${sort}&order=${order}&search=${search}`,
+      );
       console.log(response.data);
 
       setFavorite(response.data.favorites || []);
@@ -128,7 +130,7 @@ export default function FavoritePage() {
         Description: el.description,
         "Poster URL": el.poster_image_url,
         "Average Rating": el.average_rating,
-        "Release Date": el.release_date,
+        "Release Year": el.release_year,
         "Duration (Minutes)": el.runtime,
         Note: el.notes,
       };
@@ -179,7 +181,9 @@ export default function FavoritePage() {
               onChange={(e) => setSort(e.target.value)}
               className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             >
-              <option value="title">Title</option>
+              <option selected value="title">
+                Title
+              </option>
               <option value="average_rating">Rating</option>
               <option value="release_year">Year</option>
               <option value="popularity">Popularity</option>
@@ -195,8 +199,10 @@ export default function FavoritePage() {
               onChange={(e) => setOrder(e.target.value)}
               className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
+              <option selected value="ASC">
+                Ascending
+              </option>
+              <option value="DESC">Descending</option>
             </select>
           </div>
 
@@ -244,7 +250,7 @@ export default function FavoritePage() {
                   rating={el.average_rating}
                   description={el.description}
                   poster_url={el.poster_image_url}
-                  year={Number(formatYear(el.release_date))}
+                  year={el.release_year}
                   minute={el.runtime}
                   notes={el.notes}
                 />

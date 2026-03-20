@@ -144,7 +144,7 @@ export default function Comment({ comment }: { comment: CommentType }) {
         )}
 
         {/* SHOW REPLIES */}
-        {comment.replies.length > 0 && (
+        {/* {comment.replies.length > 0 && (
           <button
             onClick={() => setShowReplies(!showReplies)}
             className="text-white font-bold text-sm mt-2"
@@ -158,7 +158,7 @@ export default function Comment({ comment }: { comment: CommentType }) {
               />
             </div>
           </button>
-        )}
+        )} */}
 
         {showReplies && (
           <div className="mt-3 ml-3 border-l border-gray-700 pl-4 space-y-4">

@@ -2,14 +2,14 @@ import { Search, Plus, Menu, X, CircleUserRound } from "lucide-react";
 import { Link } from "react-router";
 import { useEffect, useState } from "react";
 import { serverApi } from "../api";
-import type { MovieType } from "../type";
+import type { MovieType, UserType } from "../type";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [searchMovie, setSearchMovie] = useState<MovieType[]>([]);
   const [mobileSearch, setMobileSearch] = useState("");
-  const [id, setId] = useState(0);
+  const [user, setUser] = useState<UserType>();
   const [loading, setLoading] = useState(true);
 
   const fetchMovieSearch = async () => {
@@ -30,7 +30,7 @@ export default function Navbar() {
       try {
         const response = await serverApi.get("/api/me");
 
-        setId(response.data.id);
+        setUser(response.data);
       } catch (error) {
         console.log("Error at Layout:", error);
       } finally {
@@ -165,12 +165,20 @@ export default function Navbar() {
             <span className="font-medium hidden lg:inline">Watch List</span>
           </Link>
 
-          {id ? (
+          {user ? (
             <Link
               to="/profile"
               className="text-white hover:text-gray-300 transition-colors"
             >
-              <CircleUserRound size={28} />
+              {user.profile_picture_url ? (
+                <img
+                  className="w-10 h-10 rounded-full object-cover border-1"
+                  src={user.profile_picture_url}
+                  alt="profile_picture"
+                />
+              ) : (
+                <CircleUserRound size={28} />
+              )}
             </Link>
           ) : (
             <Link
@@ -279,12 +287,20 @@ export default function Navbar() {
           </div>
 
           <div className="px-4 py-4 border-t border-white/10">
-            {id ? (
+            {user ? (
               <Link
                 to="/profile"
                 className="text-white hover:text-gray-300 transition-colors"
               >
-                <CircleUserRound size={28} />
+                {user.profile_picture_url ? (
+                  <img
+                    className="w-10 h-10 rounded-full object-cover border-1"
+                    src={user.profile_picture_url}
+                    alt="profile_picture"
+                  />
+                ) : (
+                  <CircleUserRound size={28} />
+                )}
               </Link>
             ) : (
               <Link
