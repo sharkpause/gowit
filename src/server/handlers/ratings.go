@@ -5,11 +5,14 @@ import (
     "fmt"
     "math"
     "net/http"
+    "os"
+
     "github.com/gin-gonic/gin"
+    "github.com/golang-jwt/jwt/v5"
 )
 
 type RatingRequest struct {
-    Rating uint8 `json:"rating" binding:"required,min=0,max=10"`
+    Rating uint8 `json:"rating" binding:"required,min=0,max=5"`
 }
 
 type RatingResponse struct {
@@ -65,6 +68,7 @@ func Rate(database *sql.DB) func(*gin.Context) {
 			transaction.Rollback()
 			context.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert or update rating"})
 			fmt.Println(err)
+            fmt.Println(userID, filmID, req.Rating)
 			return
 		}
 
@@ -114,6 +118,7 @@ type FilmRatingResponse struct {
     FilmID        uint64   `json:"film_id"`
     AverageRating *float64 `json:"average_rating"`
     RatingCount   *uint64  `json:"rating_count"`
+    UserRating    *uint8   `json:"user_rating"`
 }
 
 func GetRating(database *sql.DB) func(*gin.Context) {
@@ -155,10 +160,39 @@ func GetRating(database *sql.DB) func(*gin.Context) {
             ratingCount = &temp
         }
 
+        var userRating *uint8
+        tokenString, err := context.Cookie("token")
+        if err == nil && tokenString != "" {
+            // decode token
+            token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+                return []byte(os.Getenv("JWT_SECRET")), nil
+            })
+            if err == nil && token.Valid {
+                if claims, ok := token.Claims.(jwt.MapClaims); ok {
+                    if uid, ok := claims["user_id"].(float64); ok {
+                        userID := uint64(uid)
+                        var rating sql.NullInt64
+                        err := database.QueryRow(
+                            "SELECT rating FROM ratings WHERE film_id = ? AND user_id = ?",
+                            filmID, userID,
+                        ).Scan(&rating)
+                        if err != nil && err != sql.ErrNoRows {
+                            fmt.Println("error querying user rating:", err)
+                        }
+                        if rating.Valid {
+                            temp := uint8(rating.Int64)
+                            userRating = &temp
+                        }
+                    }
+                }
+            }
+        }
+
         context.JSON(http.StatusOK, FilmRatingResponse{
             FilmID:        uint64(filmID),
             AverageRating: averageRating,
             RatingCount:   ratingCount,
+            UserRating:    userRating,
         })
     }
 }
