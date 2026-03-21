@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
@@ -68,7 +69,6 @@ func LikeComment(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id
 			context.JSON(401, gin.H{"message": "Unauthorized",})
 			return
 		}
-
 		var vote models.CommentVote
 		if err:= context.ShouldBindJSON(&vote); err != nil{
 			context.JSON(http.StatusBadRequest, gin.H{
@@ -76,15 +76,29 @@ func LikeComment(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id
 			})
 			return
 		}
-
+		
+		vote.UserID = userID.(uint64)
+		if vote.Score == 0{
+			_,err:=database.Exec(`
+			DELETE FROM comments_vote WHERE comment_id = ? AND user_id = ?
+			`,vote.CommentID,vote.UserID)
+			if err != nil{
+				context.JSON(http.StatusInternalServerError,gin.H{
+					"message": "Database deletion failure",
+				})
+				return
+			}
+			context.JSON(http.StatusOK,gin.H{
+				"message":"Unvoted",
+			})
+			return
+		}
 		if vote.Score != -1 && vote.Score != 1{
 			context.JSON(http.StatusBadRequest, gin.H{
 				"message": "invalid score: must be the water -1 or 1",
 			})
 			return
 		}
-
-		vote.UserID = userID.(uint64)
 		_,err := database.Exec(`
 		INSERT INTO comments_vote (comment_id,user_id,score)
 		VALUES (
@@ -116,6 +130,32 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 			})
 			return
 		}
+		sort:="created_at"
+		order:="ASC"
+		if sortParam:=context.Query("sort"); sortParam!=""{
+			sortParam=strings.ToLower(sortParam)
+			switch sortParam{
+			case "created_at","vote_count","reply_count":
+				sort=sortParam
+			default:
+				context.JSON(http.StatusBadRequest,gin.H{
+					"error":"invalid sort parameter",
+				})
+				return
+			}
+		}
+		if orderParam:=context.Query("order"); orderParam!=""{
+			orderParam=strings.ToUpper(orderParam)
+			switch orderParam{
+			case "ASC", "DESC":
+				order=orderParam
+			default:
+				context.JSON(http.StatusBadRequest,gin.H{
+					"errro":"invalid order parameter",
+				})
+				return
+			}
+		}
 		userIDVal, exists := context.Get("user_id")
         var userID uint64
         if exists {
@@ -123,23 +163,28 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
         }
 		var rows *sql.Rows
 		if !exists{
-			rows,err = database.Query( // 																		reply count
-			`SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count
+			query:=fmt.Sprintf(
+				`
+			SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count
 			FROM comments c 
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE film_id = ? AND parent_id IS NULL 
 			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
-			ORDER BY created_at ASC`, film_id)	
+			ORDER BY %s %s`,sort,order)
+			rows,err = database.Query(query, film_id)	
 		} else{
-			rows,err = database.Query( // 																		reply count
-			`SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state, (CASE WHEN c.user_id = ? THEN 1 ELSE 0 END) AS is_owner
+			query:=fmt.Sprintf(
+				`
+			SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state, (CASE WHEN c.user_id = ? THEN 1 ELSE 0 END) AS is_owner
 			FROM comments c 
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE film_id = ? AND parent_id IS NULL 
 			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
-			ORDER BY created_at ASC`,userID,userID, film_id)
+			ORDER BY %s %s
+				`,sort,order)
+			rows,err = database.Query(query,userID,userID, film_id)
 		}
 		if err != nil {
 			fmt.Println(err)

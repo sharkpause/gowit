@@ -408,11 +408,11 @@ Response example:
 # Comments
 ## POST /api/films/{id}/comments
 create a comment, by parsing parameter of film_id, taking the body of 
-
+```
   ParentID *uint64 `json:"parent_id,omitempty"`
 
   Content   string `json:"content"`
-
+```
 
 If the comment will be at the top or root of the comment, dont need to send parent_id. parent_id itself is nullable
 
@@ -424,13 +424,17 @@ it will return 200 and the comment_id
 ## POST /api/comments/like
 will vote the comment. taking the body of models.CommentVote, 
 
-
+```
   `json:"comment_id"`
 
 	`json:"score"`
-
+```
 
 if you look closely on the struct, you may notice it has user_id, userid will be overwritten by the middleware, so dont car about it
+
+score can be 1 or -1 or 0
+
+0 will unvote
 
 
 it will return 200
@@ -438,7 +442,7 @@ it will return 200
 ID as in film_id, will return all parent comment. Replies will be loaded by the next endpoint. 
 
 It will return the models/comment.go. status code 200
-
+```
   `json:"id"`
 
 	`json:"film_id"`
@@ -457,9 +461,22 @@ It will return the models/comment.go. status code 200
 
   `json:"vote_count"`
 
+  `json:"vote_state"`
+
+  `json:"is_owner"`
+```
+  this is owner is for checking whether the comment is made by the logged in user, thus can add edit or delete button onto the comment. if user is not logged in, the is_owner and vote_state will likely be zero
 
 comment content must be constrained to 2 min, and 300 max
 
-both of this doesnt return current state of whether the user has voted or hasnt. WILL add this later
+
 ## GET /api/comments/{id}/replies
 ID as in parent id of the comment. It will return the same struct as the previous endpoint. no replies counts tho
+
+## POST /comments/{id}/edits
+
+very self explanatory, will return 401 if not logged in, 403 if they try to edit the comment yangg bukan orangnya. 200 if successful
+
+taking only `content` from json
+
+i have `handlers.userAuthorizedToMakeChangesThisNamingIsFuck`, might think of a better naming, i will reuse this function for  delete comment. the name itself is also self explanatory
