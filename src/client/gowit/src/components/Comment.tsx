@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowBigDown, ArrowBigUp } from "lucide-react";
 import type { CommentType } from "../type";
+import { commentDate } from "../helper/helper";
 
 export default function Comment({ comment }: { comment: CommentType }) {
   const [showReplies, setShowReplies] = useState(false);
@@ -31,15 +32,17 @@ export default function Comment({ comment }: { comment: CommentType }) {
       />
       {/* Bisa diganti dengan avatar user yang komentar */}
       <div className="flex-1">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-semibold">{comment.user_name}</span>
-          <span className="text-gray-400 text-xs"></span>
+        <div className="flex items-center gap-2 text-sm text-white">
+          <span className="font-semibold">{comment.username}</span>
+          <span className="text-gray-400 text-xs">
+            {commentDate(comment.created_at)}
+          </span>
         </div>
         <p className="text-gray-300 text-sm">{comment.content}</p>
         <div className="flex gap-6 text-sm text-gray-400 mt-1">
           <button
             className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm transition ${
-              comment.user_name === "like"
+              comment.vote_state === 1
                 ? "text-white hover:bg-white/20"
                 : "text-gray-400 hover:bg-white/20"
             }`}
@@ -48,7 +51,7 @@ export default function Comment({ comment }: { comment: CommentType }) {
           </button>
           <button
             className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm transition ${
-              comment.user_name === "dislike"
+              comment.vote_state === -1
                 ? "text-white hover:bg-white/20"
                 : "text-gray-400 hover:bg-white/20"
             }`}

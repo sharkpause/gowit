@@ -157,9 +157,9 @@ export default function FavoritePage() {
 
   return (
     <div
-      className={`bg-[#0F1115] overflow-hidden px-3 sm:px-4 md:px-8 lg:px-36 ${favorite.length > 0 ? "pt-24 sm:pt-28 md:pt-32" : "pt-8"} pb-12 sm:pb-16`}
+      className={`bg-[#0F1115] overflow-hidden px-3 sm:px-4 md:px-8 lg:px-36 ${favorite.length > 0 || search.length > 0 ? "pt-24 sm:pt-28 md:pt-32" : "pt-8"} pb-12 sm:pb-16`}
     >
-      {favorite.length > 0 ? (
+      {favorite.length > 0 || search.length > 0 ? (
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-2">
             <label className="text-[#F5F2F2] text-xs sm:text-sm font-medium">
@@ -225,8 +225,10 @@ export default function FavoritePage() {
         <div className="min-h-screen flex flex-wrap gap-6 sm:gap-8 md:gap-10 lg:gap-16 justify-start md:justify-center">
           {favorite.map((el) => {
             return (
-              <div className="relative flex-shrink-0" key={el.id}>
+              <div className="relative flex-shrink-0" keymin-h-screen={el.id}>
                 <button
+                  justify-center
+                  items-center
                   onClick={() => deleteFavorite(el.film_id)}
                   className="absolute top-2 right-2 z-10 bg-[#E8630A] hover:bg-[#C75409] text-white rounded-full p-2 transition-all shadow-lg hover:scale-110 cursor-pointer"
                 >
@@ -245,6 +247,23 @@ export default function FavoritePage() {
               </div>
             );
           })}
+        </div>
+      ) : search.length > 0 ? (
+        <div className="min-h-screen flex flex-col items-center text-[#F5F2F2] space-y-4 px-4 mt-40">
+          <Heart className="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 font-thin opacity-50" />
+          <h1 className="text-xl sm:text-2xl md:text-3xl text-center font-semibold mt-4">
+            No results found
+          </h1>
+          <p className="text-sm sm:text-base font-light text-gray-400 text-center max-w-md">
+            We couldn't find any movies matching "{search}". Try a different
+            search term.
+          </p>
+          <button
+            onClick={() => setSearch("")}
+            className="mt-4 bg-[#E8630A] rounded-lg px-6 py-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105 text-sm sm:text-base font-semibold"
+          >
+            Clear Search
+          </button>
         </div>
       ) : (
         <div className="min-h-screen flex flex-col justify-center items-center text-[#F5F2F2] space-y-4 px-4">
@@ -272,7 +291,6 @@ export default function FavoritePage() {
           </div>
         </div>
       )}
-
       {isImport ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-4"

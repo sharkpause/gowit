@@ -15,6 +15,7 @@ export function toDateInputValue(s?: string | null) {
 
 export function commentDate(created_at: string) {
   const nowDate = new Date();
+
   const dateComment = new Date(created_at);
 
   const diffMs = nowDate.getTime() - dateComment.getTime();

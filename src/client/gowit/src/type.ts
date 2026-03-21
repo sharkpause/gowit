@@ -59,13 +59,15 @@ export type CommentType = {
   id: number;
   film_id: number;
   user_id: number;
-  user_name: string;
+  username: string;
   profile_picture_url: string;
   parent_id: number;
   content: string;
   created_at: string;
   reply_count: number;
+  vote_state: number;
   vote_count: number;
+  is_owner: boolean;
 };
 
 export type RatingType = {

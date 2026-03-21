@@ -186,6 +186,8 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 				`,sort,order)
 			rows,err = database.Query(query,userID,userID, film_id)
 		}
+
+		
 		if err != nil {
 			fmt.Println(err)
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -204,6 +206,7 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount,&c.VoteState,&c.IsOwner)
 			}
 			if err != nil{
+				fmt.Println(err)
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Internal server error",
 				})
