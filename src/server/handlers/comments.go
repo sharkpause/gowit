@@ -116,16 +116,31 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 			})
 			return
 		}
-
-		rows,err := database.Query( // 																		reply count
-		`SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count
-		FROM comments c 
-		JOIN users u ON u.id = c.user_id
-		LEFT JOIN comments_vote cv ON cv.comment_id = c.id
-		WHERE film_id = ? AND parent_id IS NULL 
-		GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
-		ORDER BY created_at ASC`, film_id)
-		fmt.Println(err)
+		userIDVal, exists := context.Get("user_id")
+        var userID uint64
+        if exists {
+            userID = userIDVal.(uint64)
+        }
+		var rows *sql.Rows
+		if !exists{
+			rows,err = database.Query( // 																		reply count
+			`SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE film_id = ? AND parent_id IS NULL 
+			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
+			ORDER BY created_at ASC`, film_id)	
+		} else{
+			rows,err = database.Query( // 																		reply count
+			`SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE film_id = ? AND parent_id IS NULL 
+			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
+			ORDER BY created_at ASC`,userID, film_id)
+		}
 		if err != nil {
 			fmt.Println(err)
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -138,7 +153,11 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 		var comments []models.Comment
 		for rows.Next() {
 			var c models.Comment
-			err := rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount)
+			if !exists{
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount)
+			} else {
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount,&c.VoteState)
+			}
 			if err != nil{
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Internal server error",
@@ -171,15 +190,33 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 			})
 			return
 		}
+		userIDVal, exists := context.Get("user_id")
+        var userID uint64
+        if exists {
+            userID = userIDVal.(uint64)
+        }
+		var rows *sql.Rows
 		// just realised, is returning film_id in this case will benefit have anything good?
-		rows,err := database.Query(
-		`SELECT c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count
-		FROM comments c 
-		JOIN users u ON u.id = c.user_id
-		LEFT JOIN comments_vote cv ON cv.comment_id = c.id
-		WHERE c.parent_id = ? 
-		GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
-		ORDER BY created_at ASC`, parent_id) // given the parent_id IS nullable, please on models.comment.parentid, please. make it a pointer
+		if !exists{
+			rows,err = database.Query(
+			`SELECT c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE c.parent_id = ? 
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
+			ORDER BY created_at ASC`, parent_id) // given the parent_id IS nullable, please on models.comment.parentid, please. make it a pointer
+		} else {
+			rows,err = database.Query(
+			`SELECT c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE c.parent_id = ? 
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
+			ORDER BY created_at ASC`,userID, parent_id)
+
+		}
 		if err != nil {
 			fmt.Println(err)
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -192,7 +229,11 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 		var comments []models.Comment
 		for rows.Next() {
 			var c models.Comment
-			err := rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount)
+			if !exists{
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount)
+			} else{
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount,&c.VoteState)
+			}
 			if err != nil{
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Internal server error",
