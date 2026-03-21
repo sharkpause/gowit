@@ -1,13 +1,6 @@
 import { useState } from "react";
-import {
-  ArrowBigDown,
-  ArrowBigUp,
-  ChevronDown,
-  ThumbsDown,
-  ThumbsUp,
-} from "lucide-react";
+import { ArrowBigDown, ArrowBigUp } from "lucide-react";
 import type { CommentType } from "../type";
-import Reply from "./Reply";
 
 export default function Comment({ comment }: { comment: CommentType }) {
   const [showReplies, setShowReplies] = useState(false);
@@ -29,10 +22,12 @@ export default function Comment({ comment }: { comment: CommentType }) {
   return (
     <div className="flex gap-4">
       <img
-        src="/profilicon.png"
+        src={
+          comment.profile_picture_url ||
+          "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
+        }
         className="w-10 h-10 rounded-full"
         alt="Profile"
-        onError={(e) => (e.currentTarget.src = "/profilicon.png")}
       />
       {/* Bisa diganti dengan avatar user yang komentar */}
       <div className="flex-1">

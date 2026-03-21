@@ -20,6 +20,7 @@ export default function DetailPage() {
   const [open, setOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [active, setActive] = useState(false);
+  const [isEditRating, setIsEditRating] = useState(false);
 
   let { id } = useParams();
   const navigate = useNavigate();
@@ -37,9 +38,11 @@ export default function DetailPage() {
     try {
       const response = await serverApi.get(`/api/films/${id}/rating`);
       console.log(response.data);
+      const hasUserRating = response.data.user_rating != null;
+      setIsEditRating(!hasUserRating);
 
       setDataRating(response.data);
-      setRating(response.data.rating_count);
+      setRating(response.data.user_rating);
     } catch (error) {
       console.log("Error at Fetch Rating", error);
     }
@@ -56,6 +59,7 @@ export default function DetailPage() {
       });
 
       fetchRating();
+      setOpen(false);
       Swal.fire({
         title: "Rating saved!",
         icon: "success",
@@ -245,52 +249,82 @@ export default function DetailPage() {
                     {detailMovie?.title}
                   </h1>
                   {isLogin ? (
-                    <div className="flex gap-4 items-center">
+                    <div className="flex gap-3 items-center">
                       <div className="flex gap-2">
                         {[1, 2, 3, 4, 5].map((el, idx) => {
+                          const isStarDisabled =
+                            !isEditRating && dataRating?.user_rating != null;
+
                           return (
                             <Star
                               key={idx}
-                              onClick={() => setRating(el)}
-                              className={`w-7 h-7 cursor-pointer ${
+                              onClick={() => {
+                                if (isStarDisabled) return;
+                                setRating(el);
+                              }}
+                              className={`w-7 h-7 ${
                                 el <= rating
                                   ? "fill-yellow-400 text-yellow-400"
                                   : "text-gray-300"
+                              } ${
+                                isStarDisabled
+                                  ? "cursor-not-allowed opacity-60"
+                                  : "cursor-pointer"
                               }`}
                             />
                           );
                         })}
                       </div>
-                      <button
-                        onClick={postRating}
-                        className="bg-[#E8630A] text-base text-white font-bold rounded-lg px-3 py-1 hover:bg-[#C75409] transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105"
-                      >
-                        Rate
-                      </button>
-                      <div className="relative inline-block text-left">
-                        {/* Button */}
-                        <button
-                          onClick={() => setOpen(!open)}
-                          className="p-2 rounded-full hover:bg-gray-700"
-                        >
-                          <MoreVertical className="w-5 h-5 text-white" />
-                        </button>
+                      {!isEditRating ? (
+                        <div className="relative inline-block text-left">
+                          <button
+                            onClick={() => setOpen(!open)}
+                            className="p-2 rounded-full hover:bg-gray-700"
+                          >
+                            <MoreVertical className="w-5 h-5 text-white" />
+                          </button>
 
-                        {/* Dropdown */}
-                        {open && (
-                          <div className="absolute text-white right-0 mt-2 w-40 bg-[#0F1115] border border-gray-700 rounded-lg shadow-lg z-50">
-                            <button className="block w-full text-left px-4 py-2 hover:bg-gray-700">
-                              Edit Rating
-                            </button>
+                          {open && (
+                            <div className="absolute text-white right-0 mt-2 w-40 bg-[#0F1115] border border-gray-700 rounded-lg shadow-lg z-50">
+                              <button
+                                onClick={() => setIsEditRating(true)}
+                                className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                              >
+                                Edit Rating
+                              </button>
+                              <button
+                                onClick={deleteRating}
+                                className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                              >
+                                Delete Rating
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={postRating}
+                            className="bg-[#E8630A] text-base text-white font-bold rounded-lg px-3 py-1 hover:bg-[#C75409] transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105"
+                          >
+                            {dataRating?.user_rating != null
+                              ? "Update Rating"
+                              : "Rate"}
+                          </button>
+                          {isEditRating && dataRating?.user_rating != null && (
                             <button
-                              onClick={deleteRating}
-                              className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                              onClick={() => {
+                                setIsEditRating(false);
+                                setRating(dataRating.user_rating);
+                                setOpen(false);
+                              }}
+                              className="border border-gray-600 text-base text-white font-bold rounded-lg px-3 py-1 hover:bg-gray-700 transition-all"
                             >
-                              Delete Rating
+                              Cancel
                             </button>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   ) : (
                     ""
@@ -365,7 +399,7 @@ export default function DetailPage() {
               {/* Comment Section */}
               <div className="mt-10">
                 <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-6 sm:mb-8">
-                  Comments ({0})
+                  Comments ({dataComment.length})
                 </h3>
 
                 {isLogin ? (

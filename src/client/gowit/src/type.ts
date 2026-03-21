@@ -72,4 +72,5 @@ export type RatingType = {
   film_id: number;
   average_rating: number;
   rating_count: number;
+  user_rating: number;
 };
