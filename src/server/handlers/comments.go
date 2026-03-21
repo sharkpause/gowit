@@ -69,7 +69,6 @@ func LikeComment(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id
 			context.JSON(401, gin.H{"message": "Unauthorized",})
 			return
 		}
-
 		var vote models.CommentVote
 		if err:= context.ShouldBindJSON(&vote); err != nil{
 			context.JSON(http.StatusBadRequest, gin.H{
@@ -77,15 +76,29 @@ func LikeComment(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id
 			})
 			return
 		}
-
+		
+		vote.UserID = userID.(uint64)
+		if vote.Score == 0{
+			_,err:=database.Exec(`
+			DELETE FROM comments_vote WHERE comment_id = ? AND user_id = ?
+			`,vote.CommentID,vote.UserID)
+			if err != nil{
+				context.JSON(http.StatusInternalServerError,gin.H{
+					"message": "Database deletion failure",
+				})
+				return
+			}
+			context.JSON(http.StatusOK,gin.H{
+				"message":"Unvoted",
+			})
+			return
+		}
 		if vote.Score != -1 && vote.Score != 1{
 			context.JSON(http.StatusBadRequest, gin.H{
 				"message": "invalid score: must be the water -1 or 1",
 			})
 			return
 		}
-
-		vote.UserID = userID.(uint64)
 		_,err := database.Exec(`
 		INSERT INTO comments_vote (comment_id,user_id,score)
 		VALUES (
