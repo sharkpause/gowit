@@ -39,20 +39,6 @@ export default function FavoritePage() {
     try {
       const response = await serverApi.delete("/api/favorites/" + id);
 
-      Swal.fire({
-        title: `Film Deleted Successfully From Favorite"`,
-
-        icon: "success",
-        buttonsStyling: false,
-        background: "#0F1115",
-        color: "#F5F2F2",
-        customClass: {
-          title: "text-white",
-          confirmButton:
-            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
-        },
-      });
-
       fetchFavorite();
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -80,6 +66,8 @@ export default function FavoritePage() {
       for (const element of parsedData) {
         container.push(element.title);
       }
+
+      console.log(container);
 
       setFileImport(container);
     };
