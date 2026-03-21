@@ -14,6 +14,7 @@ type Comment struct {
 	ReplyCount int		`json:"reply_count,omitempty"`
 	VoteCount int		`json:"vote_count"`
 	VoteState int8		`json:"vote_state"`
+	IsOwner	  bool		`json:"is_owner"` // the struct is getting bigger, might refactor it LATER although its not going to happen anyway
 }
 type CommentVote struct {
 	CommentID uint64 `json:"comment_id"`

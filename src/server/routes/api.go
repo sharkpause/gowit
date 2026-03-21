@@ -75,6 +75,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.DELETE("/films/:id/rating", handlers.DeleteRating(database))
 			protected.POST("/films/:id/comments", handlers.CreateComment(database))
 			protected.POST("/comments/like", handlers.LikeComment(database))
+			protected.POST("/comments/:id/edits", handlers.EditComment(database))
 			
 		}
 		

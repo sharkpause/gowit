@@ -133,13 +133,13 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 			ORDER BY created_at ASC`, film_id)	
 		} else{
 			rows,err = database.Query( // 																		reply count
-			`SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state
+			`SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state, (CASE WHEN c.user_id = ? THEN 1 ELSE 0 END) AS is_owner
 			FROM comments c 
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE film_id = ? AND parent_id IS NULL 
 			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
-			ORDER BY created_at ASC`,userID, film_id)
+			ORDER BY created_at ASC`,userID,userID, film_id)
 		}
 		if err != nil {
 			fmt.Println(err)
@@ -156,7 +156,7 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 			if !exists{
 				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount)
 			} else {
-				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount,&c.VoteState)
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount,&c.VoteState,&c.IsOwner)
 			}
 			if err != nil{
 				context.JSON(http.StatusInternalServerError, gin.H{
@@ -208,13 +208,13 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 			ORDER BY created_at ASC`, parent_id) // given the parent_id IS nullable, please on models.comment.parentid, please. make it a pointer
 		} else {
 			rows,err = database.Query(
-			`SELECT c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state
+			`SELECT c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state, (CASE WHEN c.user_id = ? THEN 1 ELSE 0 END) AS is_owner
 			FROM comments c 
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE c.parent_id = ? 
 			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
-			ORDER BY created_at ASC`,userID, parent_id)
+			ORDER BY created_at ASC`,userID,userID, parent_id)
 
 		}
 		if err != nil {
@@ -232,7 +232,7 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 			if !exists{
 				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount)
 			} else{
-				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount,&c.VoteState)
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount,&c.VoteState,&c.IsOwner)
 			}
 			if err != nil{
 				context.JSON(http.StatusInternalServerError, gin.H{
@@ -251,4 +251,62 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 		}
 		context.JSON(http.StatusOK, comments)
 	}
+}
+
+func userAuthorizedToMakeChangesThisNamingIsFuck(database *sql.DB,userID uint64,commentID uint64) (bool,error){
+	var ownerID uint64
+	err := database.QueryRow(`SELECT user_id FROM comments WHERE id =?`,commentID).Scan(&ownerID)
+	if err != nil{
+		return false,err
+	}
+	if ownerID != userID{
+		return false,nil
+	}
+	return true,nil
+
+}
+func EditComment(database *sql.DB) gin.HandlerFunc{
+	return func(context *gin.Context) {
+		// i dont know how to parse the commentid, lets just assume
+		commentID, err := strconv.ParseUint(context.Param("id"), 10, 64)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"message": "invalid comment id"})
+			return
+		}
+		var input struct {
+    		Content string `json:"content" binding:"required,min=2,max=300"`
+		}
+		userIDVal, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized user"})
+			return
+		}
+		userID := userIDVal.(uint64)
+		if err:=context.ShouldBindJSON(&input); err!=nil{
+			context.JSON(http.StatusBadRequest,gin.H{
+				"message": "Invalid user input",
+			})
+			return
+		}
+		if isOwner,err := userAuthorizedToMakeChangesThisNamingIsFuck(database,userID,commentID); !isOwner&& err==nil{
+			context.JSON(http.StatusForbidden,gin.H{
+				"message": "Forbidden to edit comment, kamu bukan orangnya",
+			})
+			return
+		} else if err != nil {
+			context.JSON(http.StatusInternalServerError,gin.H{
+				"message":"Internal Status Error",
+			})
+			return
+		}
+		if _, err := database.Exec(`UPDATE comments SET content = ? WHERE id = ?`, input.Content,commentID); err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"message": "Database update failed"})
+			return
+		}
+
+		context.JSON(http.StatusOK,gin.H{
+			"message":"Comment has been updated",
+		})
+	}
+
 }
