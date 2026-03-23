@@ -842,7 +842,7 @@ func ImportMovie(database *sql.DB) func(*gin.Context) {
 		}
 		userID := userIDVal.(uint64)
 
-		var createdIDs []int64
+		var errorsList []string
 
 		for _, title := range request.Titles {
 			title = strings.TrimSpace(title)
@@ -851,45 +851,36 @@ func ImportMovie(database *sql.DB) func(*gin.Context) {
 			}
 
 			var filmID int64
-			// Check if film exists (case-insensitive)
 			err := database.QueryRow(
 				"SELECT id FROM films WHERE LOWER(title) = LOWER(?)",
 				title,
 			).Scan(&filmID)
 
-			if err != nil && err != sql.ErrNoRows {
-				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
-				fmt.Println(err)
-				return
-			}
-
-			if err == sql.ErrNoRows {
-				// Film doesn't exist → create it
-				res, err := database.Exec("INSERT INTO films (title) VALUES (?)", title)
-				if err != nil {
-					context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert '%s': %s", title, err)})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					errorsList = append(errorsList, title)
+					continue
+				} else {
+					context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
 					fmt.Println(err)
 					return
 				}
-				filmID, _ = res.LastInsertId()
-				createdIDs = append(createdIDs, filmID)
 			}
 
-			// Add to favorites (ignore if already exists)
 			_, err = database.Exec(
 				"INSERT IGNORE INTO favorites (user_id, film_id) VALUES (?, ?)",
 				userID, filmID,
 			)
 			if err != nil {
-				context.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert favorite"})
+				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert favorite for '%s'", title)})
 				fmt.Println(err)
 				return
 			}
 		}
 
-		context.JSON(http.StatusCreated, gin.H{
-			"message":     "movies processed",
-			"created_ids": createdIDs,
+		context.JSON(http.StatusOK, gin.H{
+			"message":       "movies processed",
+			"missing_titles": errorsList,
 		})
 	}
 }
