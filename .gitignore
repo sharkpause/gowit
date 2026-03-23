@@ -29,12 +29,10 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-<<<<<<< HEAD
 # .vscode/
-src/server/.env.example
-=======
 .vscode/
 src/server/auth/authtester.go
 src/server/setup/scripts/__pycache__/
+
 src/client/gowit/public/media
->>>>>>> d8dc3cf66488facdeaa47641f82abf3aacaf5d0d
+!src/client/gowit/public/media/profile_pictures/default_profile_picture.webp
