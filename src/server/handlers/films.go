@@ -58,8 +58,13 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 
 	film.Description = description
 
-	releaseDateYear := int64(releaseDate.Year())
-	film.ReleaseYear = &releaseDateYear
+	var releaseDateYear *int64
+	if releaseDate != nil {
+    	year := int64(releaseDate.Year())
+    	releaseDateYear = &year
+	}
+	
+	film.ReleaseYear = releaseDateYear
 	film.PosterImageURL = posterURL
 	film.TrailerURL = trailerURL
 	film.AverageRating = averageRating
