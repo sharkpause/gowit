@@ -154,6 +154,96 @@ Returns a single film by ID with full details.
 }
 ```
 
+## **📌 `/api/films/coming-soon`**
+
+### **GET**
+
+Returns a list of upcoming films — i.e., films with a release date after today — up to 20 results sorted by release date in ascending order (soonest first).
+
+### **Description**
+
+Retrieves films from the database whose release date is in the future. Useful for displaying “Coming Soon” or “Upcoming Releases” sections in your frontend app.
+
+### **URL**
+
+```
+GET /api/films/coming-soon
+```
+
+---
+
+### **Success Response**
+
+**Status:** `200 OK`
+**Content type:** `application/json`
+
+```json
+{
+  "coming_soon": [
+    {
+      "title": "Example Film",
+      "thumbnail_url": "https://image.tmdb.org/t/p/w500/abc123.jpg",
+      "runtime": 120,
+      "release_year": 2027
+    }
+  ],
+  "metadata": {
+    "amount": 1
+  }
+}
+```
+
+**Fields:**
+
+| Field             | Type   | Description                                   |
+| ----------------- | ------ | --------------------------------------------- |
+| `title`           | string | The film title                                |
+| `thumbnail_url`   | string | URL to the film’s poster/thumbnail image      |
+| `runtime`         | int    | Film duration in minutes                      |
+| `release_date`    | int    | The year the film is scheduled to be released |
+| `metadata.amount` | int    | The number of coming soon films returned      |
+
+---
+
+### **Error Responses**
+
+#### **500 – Internal Server Error**
+
+Returned if the database query fails.
+
+Response example:
+
+```json
+{
+  "error": "internal db error"
+}
+```
+
+---
+
+### **Notes**
+
+* No query parameters are supported currently — this endpoint always returns *the next up to 20 upcoming films*.
+* It helps frontend quickly populate an upcoming movies section without having to filter and sort on the client.
+* Recommended for use wherever you want users to browse titles that haven’t released yet.([Devzery Latest][1])
+
+---
+
+# Comments
+## POST /api/films/{id}/comments
+create a comment, by parsing parameter of film_id, taking the body of 
+```
+  ParentID *uint64 `json:"parent_id,omitempty"`
+
+  Content   string `json:"content"`
+```
+
+If the comment will be at the top or root of the comment, dont need to send parent_id. parent_id itself is nullable
+
+
+if you are replying, yes, the parent_id is needed
+it will return 200 and the comment_id
+
 ---
 
 # Favorites
@@ -326,99 +416,65 @@ Removes a film from the authenticated user's favorites.
 
 ---
 
-## **📌 `/api/films/coming-soon`**
+## POST `/api/films/add`
 
-### **GET**
+Imports a list of existing films into the authenticated user’s favorites.
+If a title does not exist in the database, it will **not** be created, and will be listed in `missing_titles` in the response.
 
-Returns a list of upcoming films — i.e., films with a release date after today — up to 20 results sorted by release date in ascending order (soonest first).
+**Authentication required:** User must be logged in.
 
----
-
-### **Description**
-
-Retrieves films from the database whose release date is in the future. Useful for displaying “Coming Soon” or “Upcoming Releases” sections in your frontend app.
-
----
-
-### **URL**
-
-```
-GET /api/films/coming-soon
-```
-
----
-
-### **Success Response**
-
-**Status:** `200 OK`
-**Content type:** `application/json`
+### Request Body
 
 ```json
 {
-  "coming_soon": [
-    {
-      "title": "Example Film",
-      "thumbnail_url": "https://image.tmdb.org/t/p/w500/abc123.jpg",
-      "runtime": 120,
-      "release_year": 2027
-    }
-  ],
-  "metadata": {
-    "amount": 1
-  }
+  "titles": [
+    "The Godfather",
+    "Inception",
+    "Nonexistent Movie"
+  ]
 }
 ```
 
-**Fields:**
-
-| Field             | Type   | Description                                   |
-| ----------------- | ------ | --------------------------------------------- |
-| `title`           | string | The film title                                |
-| `thumbnail_url`   | string | URL to the film’s poster/thumbnail image      |
-| `runtime`         | int    | Film duration in minutes                      |
-| `release_date`    | int    | The year the film is scheduled to be released |
-| `metadata.amount` | int    | The number of coming soon films returned      |
-
----
-
-### **Error Responses**
-
-#### **500 – Internal Server Error**
-
-Returned if the database query fails.
-
-Response example:
+### Success Response (200)
 
 ```json
 {
-  "error": "internal db error"
+  "message": "movies processed",
+  "created_ids": [],
+  "missing_titles": ["Nonexistent Movie"]
+}
+```
+
+* `created_ids`: List of IDs of films that were newly created (empty in this version since no new films are inserted).
+* `missing_titles`: List of titles that were not found in the database.
+
+### Error Responses
+
+#### 400 – Invalid Request Body
+
+```json
+{
+  "error": "invalid request body"
+}
+```
+
+#### 401 – User Unauthorized
+
+```json
+{
+  "error": "user unauthorized"
+}
+```
+
+#### 500 – Database Error
+
+```json
+{
+  "error": "failed to insert favorite for 'The Godfather'"
 }
 ```
 
 ---
-
-### **Notes**
-
-* No query parameters are supported currently — this endpoint always returns *the next up to 20 upcoming films*.
-* It helps frontend quickly populate an upcoming movies section without having to filter and sort on the client.
-* Recommended for use wherever you want users to browse titles that haven’t released yet.([Devzery Latest][1])
-
----
-
-# Comments
-## POST /api/films/{id}/comments
-create a comment, by parsing parameter of film_id, taking the body of 
-```
-  ParentID *uint64 `json:"parent_id,omitempty"`
-
-  Content   string `json:"content"`
-```
-
-If the comment will be at the top or root of the comment, dont need to send parent_id. parent_id itself is nullable
-
-
-if you are replying, yes, the parent_id is needed
-it will return 200 and the comment_id
 
 
 ## POST /api/comments/like
