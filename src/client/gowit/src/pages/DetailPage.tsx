@@ -160,7 +160,9 @@ export default function DetailPage() {
 
   const fetchComment = async () => {
     try {
-      const response = await serverApi.get(`/api/films/${id}/comments`);
+      const response = await serverApi.get(
+        `/api/films/${id}/comments?sort=created_at&order=DESC`,
+      );
       console.log(response.data);
 
       setDataComment(response.data);
@@ -181,6 +183,32 @@ export default function DetailPage() {
       setActive(false);
     } catch (error) {
       console.log("Error at Post Comment", error);
+    }
+  };
+
+  const likeDislikeComment = async (comment_id: number, score: number) => {
+    try {
+      const response = await serverApi.post("/api/comments/like", {
+        comment_id: comment_id,
+        score: score,
+      });
+      fetchComment();
+    } catch (error) {
+      console.log("Error at likeDislikeComment Function", error);
+    }
+  };
+
+  const editComment = async (comment_id: number, content: string) => {
+    try {
+      const response = await serverApi.post(
+        `/api/comments/${comment_id}/edits`,
+        {
+          content: content,
+        },
+      );
+      fetchComment();
+    } catch (error) {
+      console.log("Error at editComment Function", error);
     }
   };
 
@@ -451,7 +479,14 @@ export default function DetailPage() {
               <div className="mt-8 space-y-6">
                 {dataComment.length > 0 ? (
                   dataComment.map((el) => {
-                    return <Comment key={el.id} comment={el} />;
+                    return (
+                      <Comment
+                        key={el.id}
+                        comment={el}
+                        likeDislikeComment={likeDislikeComment}
+                        editComment={editComment}
+                      />
+                    );
                   })
                 ) : (
                   <p className="text-gray-400 text-sm">

@@ -67,8 +67,6 @@ export default function FavoritePage() {
         container.push(element.title);
       }
 
-      console.log(container);
-
       setFileImport(container);
     };
     setFileName(file.name);
@@ -140,14 +138,6 @@ export default function FavoritePage() {
 
     XLSX.writeFile(workbook, "my-watchlist.xlsx", {
       compression: true,
-    });
-  };
-
-  const formatYear = (dateString: string) => {
-    const date = new Date(dateString);
-
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
     });
   };
 

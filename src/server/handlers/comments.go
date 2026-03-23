@@ -50,6 +50,8 @@ func CreateComment(database *sql.DB) gin.HandlerFunc {
 		`INSERT INTO comments (film_id,user_id,parent_id,content) VALUES (?,?,?,?)`,
 		comment.FilmID,comment.UserID,comment.ParentID,comment.Content,)
 		if err != nil {
+			fmt.Println(err)
+			
 			context.JSON(500,gin.H{
 				"message": "Internal server error",
 			})
