@@ -1,9 +1,27 @@
 import { User, Calendar } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useParams } from "react-router";
+import { serverApi } from "../api";
+import { useEffect, useState } from "react";
+import type { OtherUser } from "../type";
+import { toDateInputValue } from "../helper/helper";
 
 export default function UserProfilePage() {
+  const [dataUser, setDataUser] = useState<OtherUser>();
   const { userId } = useParams();
+
+  const fetchUser = async () => {
+    try {
+      const response = await serverApi.get(`/api/user/${userId}`);
+      setDataUser(response.data);
+    } catch (error) {
+      console.log("Error at fetchUser function", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   return (
     <>
@@ -24,7 +42,7 @@ export default function UserProfilePage() {
           <div className="absolute left-1/2 -top-12 sm:-top-14 md:-top-16 lg:-top-20 -translate-x-1/2">
             <div className="relative">
               <img
-                src="http://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
+                src={dataUser?.profile_picture_url}
                 alt="Profile"
                 className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full border-3 sm:border-4 border-[#0F1115] shadow-xl object-cover"
               />
@@ -41,7 +59,7 @@ export default function UserProfilePage() {
               </label>
               <input
                 type="text"
-                //   value={name}
+                value={dataUser?.name}
                 readOnly
                 disabled
                 className={`w-full bg-[#1C1E22] px-3 sm:px-4 py-2 sm:py-3 rounded-lg border text-sm sm:text-base transition-colors text-white border-white/10 cursor-not-allowed`}
@@ -55,7 +73,7 @@ export default function UserProfilePage() {
               </label>
               <input
                 type="date"
-                //   value={toDateInputValue(profile?.created)}
+                value={toDateInputValue(dataUser?.created_at)}
                 onChange={() => {}}
                 readOnly
                 className="w-full bg-[#1C1E22] px-3 sm:px-4 py-2 sm:py-3 rounded-lg border text-sm sm:text-base transition-colors text-white border-white/10 cursor-not-allowed outline-none"

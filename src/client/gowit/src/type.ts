@@ -55,6 +55,12 @@ export type ComingMovie = {
   trailer_duration: number;
 };
 
+export type OtherUser = {
+  name: string;
+  profile_picture_url: string;
+  created_at: string;
+};
+
 export type CommentType = {
   id: number;
   film_id: number;

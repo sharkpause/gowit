@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"net/mail"
 	"os"
+	"path"
+	"strconv"
 	"strings"
 	"time"
-	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,10 +21,11 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
+
 	"github.com/chai2010/webp"
-    "image"
-    _ "image/jpeg"
-    _ "image/png"
 )
 
 type registerRequest struct {
@@ -276,6 +278,48 @@ func GetUserDetail(database *sql.DB) gin.HandlerFunc{
 			//     "profile": "nulnot"
 			// 		"uhh": "uhh"
 			//  	also returning like this, map. im too rude you know what he said to me, he was like 'you are so rude' and i was like boy does it look like i could care i couldnt even care less rude
+		})
+	}
+	
+}
+
+func GetOtherUserDetail(database *sql.DB) gin.HandlerFunc{
+	return func(context *gin.Context) {
+		userID, err := strconv.ParseUint(context.Param("id"), 10, 64)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+			return
+		}
+		
+		var name string
+		var profilePictureURL *string
+		var createdAt time.Time
+		query := `
+			SELECT
+				users.name,
+				users.profile_picture_url,
+				users.created_at
+			FROM users
+			WHERE users.id = ?
+		`
+
+		err = database.QueryRow(query, userID).Scan(
+			&name,
+			&profilePictureURL,
+			&createdAt,
+		)
+
+		
+		if err != nil{
+			context.JSON(500, gin.H{"message": "Internal Database Error"})
+			fmt.Println(err);
+
+			return
+		}
+		context.JSON(http.StatusOK, gin.H{
+			"name":    name,
+			"profile_picture_url": profilePictureURL,
+			"created_at": createdAt.Format(time.RFC3339),
 		})
 	}
 	
