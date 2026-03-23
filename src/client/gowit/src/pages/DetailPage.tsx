@@ -175,6 +175,7 @@ export default function DetailPage() {
     try {
       if (!commentText.trim()) return;
       // TODO: POST comment to API
+
       const response = await serverApi.post(`/api/films/${id}/comments`, {
         content: commentText,
       });

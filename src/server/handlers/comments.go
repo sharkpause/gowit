@@ -26,7 +26,7 @@ func CreateComment(database *sql.DB) gin.HandlerFunc {
 		userID := userIDVal.(uint64)
 		var userInput struct {
 			ParentID *uint64 `json:"parent_id,omitempty"`
-			Content  string  `json:"content" binding:"required,min=2,max=300"`
+			Content  string  `json:"content" binding:"required,min=1,max=300"`
 		}
 		if err:=context.ShouldBindJSON(&userInput); err!=nil{
 			fmt.Println(err)
