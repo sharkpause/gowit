@@ -22,7 +22,7 @@ type postFavoriteRequest struct {
 }
 
 type patchFavoriteRequest struct {
-	Notes string `json:"notes"`
+	Notes string `json:"notes" binding:"required"`
 }
 
 type importMovieRequest struct {
@@ -584,6 +584,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 		filmID, err := strconv.Atoi(context.Param("film_id"))
 		if err != nil {
 			context.JSON(http.StatusUnauthorized, gin.H{"error": "error while reading film id"})
+			fmt.Println(err)
 			return
 		}
 
@@ -598,6 +599,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid request body",
 			})
+			fmt.Println(err)
 			return
 		}
 
@@ -605,7 +607,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 			UPDATE favorites SET notes = ? WHERE film_id = ? AND user_id = ?
 		`
 
-		_, err = database.Exec(query, request.Notes, userID, filmID)
+		_, err = database.Exec(query, request.Notes, filmID, userID)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
 			return
