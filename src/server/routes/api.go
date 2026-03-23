@@ -79,7 +79,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.POST("/films/:id/comments", handlers.CreateComment(database))
 			protected.POST("/comments/like", handlers.LikeComment(database))
 			protected.POST("/comments/:id/edits", handlers.EditComment(database))
-			
+			protected.DELETE("/comments/:id/delete", handlers.DeleteComment(database))
 		}
 		
 		api.Use(auth.Middleware())
