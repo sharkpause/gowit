@@ -184,7 +184,7 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc { // this will only li
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE film_id = ? AND parent_id IS NULL 
-			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at,c.is_deleted
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at,c.is_updated,c.is_deleted
 			ORDER BY %s %s`, sort, order)
 			rows, err = database.Query(query, film_id)
 		} else {
@@ -208,7 +208,7 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc { // this will only li
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE film_id = ? AND parent_id IS NULL 
-			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at,c.is_deleted
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at,c.is_updated,c.is_deleted
 			ORDER BY %s %s
 				`, sort, order)
 			rows, err = database.Query(query, userID, userID, film_id)
@@ -290,7 +290,7 @@ func GetReplies(database *sql.DB) gin.HandlerFunc {
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE c.parent_id = ? 
-			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at,c.is_updated,c.is_deleted
 			ORDER BY created_at ASC`, parent_id) // given the parent_id IS nullable, please on models.comment.parentid, please. make it a pointer
 		} else {
 			rows, err = database.Query(
@@ -312,7 +312,7 @@ func GetReplies(database *sql.DB) gin.HandlerFunc {
 			JOIN users u ON u.id = c.user_id
 			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
 			WHERE c.parent_id = ? 
-			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at,c.is_updated,c.is_deleted
 			ORDER BY created_at ASC`, userID, userID, parent_id)
 
 		}
@@ -352,7 +352,7 @@ func GetReplies(database *sql.DB) gin.HandlerFunc {
 	}
 }
 
-var ErrCommentDeleted = errors.New("Deleted")
+var ErrCommentDeleted = errors.New("Deleted") // this is to return the error used in userAuthorizedToMakechangesThisNamingISFuck. comment was deleted and the action wont be proceed.
 
 func userAuthorizedToMakeChangesThisNamingIsFuck(database *sql.DB, userID uint64, commentID uint64) (bool, error) {
 	var ownerID uint64
