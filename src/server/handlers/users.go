@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"net/mail"
 	"os"
+	"path"
+	"strconv"
 	"strings"
 	"time"
-	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,10 +21,11 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
+
 	"github.com/chai2010/webp"
-    "image"
-    _ "image/jpeg"
-    _ "image/png"
 )
 
 type registerRequest struct {
@@ -289,28 +291,24 @@ func GetOtherUserDetail(database *sql.DB) gin.HandlerFunc{
 			return
 		}
 		
-		var name, email string
-		var profile_picture_url *string
-		var created_at time.Time
-		var favoritecount *int
-		query := `SELECT
-			users.name,
-			users.email,
-			users.profile_picture_url,
-			users.created_at,
-			COUNT(favorites.film_id) AS total_favorites
-		FROM users
-		LEFT JOIN favorites ON users.id = favorites.user_id
-		WHERE users.id = ?
-		GROUP BY users.id, users.name, users.email, users.created_at, users.profile_picture_url;`
+		var name string
+		var profilePictureURL *string
+		var createdAt time.Time
+		query := `
+			SELECT
+				users.name,
+				users.profile_picture_url,
+				users.created_at
+			FROM users
+			WHERE users.id = ?
+		`
 
-		err:=database.QueryRow(query, userID).Scan(
+		err = database.QueryRow(query, userID).Scan(
 			&name,
-			&email,
-			&profile_picture_url,
-			&created_at,
-			&favoritecount,
+			&profilePictureURL,
+			&createdAt,
 		)
+
 		
 		if err != nil{
 			context.JSON(500, gin.H{"message": "Internal Database Error"})
@@ -318,14 +316,10 @@ func GetOtherUserDetail(database *sql.DB) gin.HandlerFunc{
 
 			return
 		}
-		context.JSON(200, gin.H{
-			"name": name,
-			"email": email,
-			"profile": profile_picture_url,
-			// Convert to standard timezone aware UTC format needed to send data in a consistent
-			// format to the frontend
-			"created": created_at.Format(time.RFC3339),
-			"favorite_count": favoritecount,
+		context.JSON(http.StatusOK, gin.H{
+			"name":    name,
+			"profile_picture_url": profilePictureURL,
+			"created_at": createdAt.Format(time.RFC3339),
 		})
 	}
 	

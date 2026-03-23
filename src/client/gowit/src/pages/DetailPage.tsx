@@ -124,24 +124,6 @@ export default function DetailPage() {
     }
   };
 
-  const checkFavoriteMovie = async () => {
-    try {
-      const response = await serverApi.get("/api/favorites/" + id);
-      setIsFavorited(response.data.isFavorite);
-    } catch (error) {
-      console.log("Error at CheckFavoriteMovie function:", error);
-    }
-  };
-
-  const checkUser = async () => {
-    try {
-      const response = await serverApi.get("/api/me");
-      setIsLogin(response.data);
-    } catch (error) {
-      console.log("Error at checkUser function:", error);
-    }
-  };
-
   const addMovieToFavorites = async () => {
     try {
       await serverApi.post("/api/favorites", {
