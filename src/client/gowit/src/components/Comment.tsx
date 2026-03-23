@@ -446,7 +446,7 @@ export default function Comment({
               />
             </div>
           </button>
-        )}
+        )} */}
 
         {showReplies && (
           <div className="mt-3 ml-3 border-l border-gray-700 pl-4 space-y-4">

@@ -54,7 +54,7 @@ export default function FavoritePage() {
     const file = e.target.files?.[0];
 
     if (!file) return;
-    reader.readAsBinaryString(file);
+    reader.readAsBinaryString(file); // Deprecated
     reader.onload = (e) => {
       const container = [];
       const data = e.target?.result;
@@ -65,6 +65,9 @@ export default function FavoritePage() {
 
       for (const element of parsedData) {
         container.push(element.title);
+        // Can push empty titles because excel conversion is case-sensitive
+        // So for example if on the excel spreadsheet it's Title, nothing
+        // Will be pushed, only if the column is spelled title instead 
       }
 
       setFileImport(container);
