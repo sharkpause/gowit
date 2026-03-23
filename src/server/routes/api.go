@@ -44,10 +44,10 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 		
 		filmsAPI.GET("/:id/rating", handlers.GetRating(database))
 
-		filmsAPI.GET("/:id/comments", handlers.GetCommentByFilmID(database))
+		filmsAPI.GET("/:id/comments",auth.OptionalAuth(), handlers.GetCommentByFilmID(database))
 		api.POST("/register", handlers.RegisterUser(database))
 		api.POST("/login", handlers.LoginUser(database))
-		api.GET("/comments/:id/replies", handlers.GetReplies(database))
+		api.GET("/comments/:id/replies", auth.OptionalAuth(), handlers.GetReplies(database))
 
 		// TODO: Later change so that protected APIs are still accessed through {URL}/api and not {URL}/
 		// to keep API consistency
@@ -65,15 +65,18 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.PATCH("/updateuser", handlers.UpdateUserDetail(database))
 			
 			protected.GET("/favorites/:id", handlers.FavoriteListCheck(database)) // please think a better naming, i have no idea
-			protected.POST("/favorites/add", handlers.AddMultipleFilmsToFavorite(database))
+			// protected.POST("/favorites/add", handlers.AddMultipleFilmsToFavorite(database))
 			
 			protected.POST("/contact", handlers.Sendmail())
 
-			protected.POST("/films/add", handlers.CreateMovie(database))
+			protected.POST("/films/add", handlers.ImportMovie(database))
 
 			protected.POST("/films/:id/rating", handlers.Rate(database))
 			protected.DELETE("/films/:id/rating", handlers.DeleteRating(database))
+			protected.POST("/films/:id/comments", handlers.CreateComment(database))
 			protected.POST("/comments/like", handlers.LikeComment(database))
+			protected.POST("/comments/:id/edits", handlers.EditComment(database))
+			
 		}
 		
 		api.Use(auth.Middleware())

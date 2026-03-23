@@ -47,3 +47,41 @@ func Middleware() gin.HandlerFunc {
 		c.AbortWithStatusJSON(401, gin.H{"error": "invalid token"})
 	}
 }
+
+func OptionalAuth() gin.HandlerFunc {
+	return func(c *gin.Context){
+		tokenString, err := c.Cookie("token")
+		if err != nil {
+			c.Next()
+			return
+		}
+		
+		
+
+		if tokenString == "" {
+			c.Next()
+			return
+		}
+
+		token, err := jwt.Parse(
+			tokenString, 
+			func(t *jwt.Token) (interface{}, error) {
+				return []byte(os.Getenv("JWT_SECRET")), nil
+			},
+		)
+
+		if err != nil {
+			c.Next()
+			return
+		}
+		
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			userID := uint64(claims["user_id"].(float64))
+			c.Set("user_id", userID)
+			c.Next()
+			return
+		}
+
+		c.Next()
+	}
+}

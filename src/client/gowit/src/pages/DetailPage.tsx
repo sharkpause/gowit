@@ -1,28 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import type { MovieType, UserType } from "../type";
+import type { CommentType, MovieType, RatingType, UserType } from "../type";
 import { serverApi } from "../api";
 import { errorAlert } from "../helper/errorAlert";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { capitalizeEachWord } from "../helper/helper";
 import Navbar from "../components/Navbar";
-import { Star } from "lucide-react";
-
-type CommentType = {
-  username: string;
-  comment: string;
-  date: string;
-  likes: number;
-  dislikes: number;
-  userVote?: "like" | "dislike" | null;
-};
+import { MoreVertical, Star, Users } from "lucide-react";
+import Comment from "../components/Comment";
 
 export default function DetailPage() {
   const [detailMovie, setDetailMovie] = useState<MovieType>();
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLogin, setIsLogin] = useState<UserType>();
   const [rating, setRating] = useState(0);
+  const [dataRating, setDataRating] = useState<RatingType>();
+  const [dataComment, setDataComment] = useState<CommentType[]>([]);
+  const [open, setOpen] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [active, setActive] = useState(false);
+  const [isEditRating, setIsEditRating] = useState(false);
 
   let { id } = useParams();
   const navigate = useNavigate();
@@ -33,6 +31,96 @@ export default function DetailPage() {
       setDetailMovie(response.data);
     } catch (error) {
       console.log("Error at Detail Page ", error);
+    }
+  };
+
+  const fetchRating = async () => {
+    try {
+      const response = await serverApi.get(`/api/films/${id}/rating`);
+      console.log(response.data);
+      const hasUserRating = response.data.user_rating != null;
+      setIsEditRating(!hasUserRating);
+
+      setDataRating(response.data);
+      setRating(response.data.user_rating);
+    } catch (error) {
+      console.log("Error at Fetch Rating", error);
+    }
+  };
+
+  const postRating = async () => {
+    try {
+      if (rating < 1) {
+        throw new Error("Please select a rating first!");
+      }
+
+      await serverApi.post(`/api/films/${id}/rating`, {
+        rating: rating,
+      });
+
+      fetchRating();
+      setOpen(false);
+      Swal.fire({
+        title: "Rating saved!",
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
+      });
+    } catch (error: unknown) {
+      let errorMessage = "Something went wrong!";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorAlert(errorMessage);
+
+      console.log("Error at Post Rating", error);
+    }
+  };
+
+  const deleteRating = async () => {
+    try {
+      await serverApi.delete(`/api/films/${id}/rating`);
+      fetchRating();
+      Swal.fire({
+        title: "Rating removed!",
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
+      });
+    } catch (error) {
+      console.log("Error at Delete Rating", error);
+    }
+  };
+
+  const checkFavoriteMovie = async () => {
+    try {
+      const response = await serverApi.get("/api/favorites/" + id);
+      setIsFavorited(response.data.isFavorite);
+    } catch (error) {
+      console.log("Error at CheckFavoriteMovie function:", error);
+    }
+  };
+
+  const checkUser = async () => {
+    try {
+      const response = await serverApi.get("/api/me");
+      setIsLogin(response.data);
+    } catch (error) {
+      console.log("Error at checkUser function:", error);
     }
   };
 
@@ -83,10 +171,71 @@ export default function DetailPage() {
     }
   };
 
+  const onCancel = () => {
+    setCommentText("");
+    setActive(false);
+  };
+
+  const fetchComment = async () => {
+    try {
+      const response = await serverApi.get(
+        `/api/films/${id}/comments?sort=created_at&order=DESC`,
+      );
+      console.log(response.data);
+
+      setDataComment(response.data);
+    } catch (error) {
+      console.log("Error at Fetch Comment", error);
+    }
+  };
+
+  const postComment = async () => {
+    try {
+      if (!commentText.trim()) return;
+      // TODO: POST comment to API
+      const response = await serverApi.post(`/api/films/${id}/comments`, {
+        content: commentText,
+      });
+      fetchComment();
+      setCommentText("");
+      setActive(false);
+    } catch (error) {
+      console.log("Error at Post Comment", error);
+    }
+  };
+
+  const likeDislikeComment = async (comment_id: number, score: number) => {
+    try {
+      const response = await serverApi.post("/api/comments/like", {
+        comment_id: comment_id,
+        score: score,
+      });
+      fetchComment();
+    } catch (error) {
+      console.log("Error at likeDislikeComment Function", error);
+    }
+  };
+
+  const editComment = async (comment_id: number, content: string) => {
+    try {
+      const response = await serverApi.post(
+        `/api/comments/${comment_id}/edits`,
+        {
+          content: content,
+        },
+      );
+      fetchComment();
+    } catch (error) {
+      console.log("Error at editComment Function", error);
+    }
+  };
+
   useEffect(() => {
     checkUser();
     fetchMovie();
     checkFavoriteMovie();
+    fetchRating();
+    fetchComment();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [id]);
 
@@ -146,37 +295,103 @@ export default function DetailPage() {
                     {detailMovie?.title}
                   </h1>
                   {isLogin ? (
-                    <div className="flex gap-4">
+                    <div className="flex gap-3 items-center">
                       <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map((el) => {
+                        {[1, 2, 3, 4, 5].map((el, idx) => {
+                          const isStarDisabled =
+                            !isEditRating && dataRating?.user_rating != null;
+
                           return (
                             <Star
-                              onClick={() => setRating(el)}
-                              className={`w-7 h-7 cursor-pointer ${
+                              key={idx}
+                              onClick={() => {
+                                if (isStarDisabled) return;
+                                setRating(el);
+                              }}
+                              className={`w-7 h-7 ${
                                 el <= rating
                                   ? "fill-yellow-400 text-yellow-400"
                                   : "text-gray-300"
+                              } ${
+                                isStarDisabled
+                                  ? "cursor-not-allowed opacity-60"
+                                  : "cursor-pointer"
                               }`}
                             />
                           );
                         })}
                       </div>
-                      <button className="bg-[#E8630A] text-base text-white font-bold rounded-lg px-2 py-1 hover:bg-[#C75409] transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105">
-                        Submit
-                      </button>
+                      {!isEditRating ? (
+                        <div className="relative inline-block text-left">
+                          <button
+                            onClick={() => setOpen(!open)}
+                            className="p-2 rounded-full hover:bg-gray-700"
+                          >
+                            <MoreVertical className="w-5 h-5 text-white" />
+                          </button>
+
+                          {open && (
+                            <div className="absolute text-white right-0 mt-2 w-40 bg-[#0F1115] border border-gray-700 rounded-lg shadow-lg z-50">
+                              <button
+                                onClick={() => setIsEditRating(true)}
+                                className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                              >
+                                Edit Rating
+                              </button>
+                              <button
+                                onClick={deleteRating}
+                                className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                              >
+                                Delete Rating
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={postRating}
+                            className="bg-[#E8630A] text-base text-white font-bold rounded-lg px-3 py-1 hover:bg-[#C75409] transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105"
+                          >
+                            {dataRating?.user_rating != null
+                              ? "Update Rating"
+                              : "Rate"}
+                          </button>
+                          {isEditRating && dataRating?.user_rating != null && (
+                            <button
+                              onClick={() => {
+                                setIsEditRating(false);
+                                setRating(dataRating.user_rating);
+                                setOpen(false);
+                              }}
+                              className="border border-gray-600 text-base text-white font-bold rounded-lg px-3 py-1 hover:bg-gray-700 transition-all"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </>
+                      )}
                     </div>
                   ) : (
                     ""
                   )}
 
-                  <div className="flex items-center gap-2 text-lg sm:text-xl py-2">
-                    <span className="text-yellow-400 text-lg sm:text-2xl">
-                      <Star />
-                    </span>
-                    <span className="text-white font-semibold">
-                      {detailMovie?.average_rating}
-                    </span>
-                    <span className="text-gray-400 text-sm">/5</span>
+                  <div className="flex items-center gap-3 text-lg sm:text-xl py-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-400 text-lg sm:text-2xl">
+                        <Star />
+                      </span>
+                      <span className="text-white font-semibold">
+                        {dataRating?.average_rating || 0}
+                      </span>
+                      <span className="text-gray-400 text-sm">/5</span>
+                    </div>
+                    <div className="flex gap-1 items-center">
+                      <Users className="text-gray-400" />
+                      <span className="text-gray-400 text-sm">
+                        {dataRating?.rating_count}
+                      </span>
+                    </div>
                   </div>
                   <p className="text-gray-300 text-sm sm:text-base text-justify leading-relaxed">
                     {detailMovie?.description}
@@ -226,6 +441,76 @@ export default function DetailPage() {
                     </p>
                   </div>
                 </div>
+              </div>
+              {/* Comment Section */}
+              <div className="mt-10">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-6 sm:mb-8">
+                  Comments ({dataComment.length})
+                </h3>
+
+                {isLogin ? (
+                  <div className="flex gap-4">
+                    <img
+                      src="https://assets-a1.kompasiana.com/items/album/2021/03/24/blank-profile-picture-973460-1280-605aadc08ede4874e1153a12.png?t=o&v=780"
+                      className="w-10 h-10 rounded-full"
+                      alt="Profile"
+                    />
+
+                    <div className="flex-1">
+                      <input
+                        className="w-full text-white bg-transparent border-b border-gray-700 focus:outline-none focus:border-white pb-2"
+                        placeholder="Add a Comment..."
+                        value={commentText}
+                        onClick={() => setActive(true)}
+                        onChange={(e) => setCommentText(e.target.value)}
+                      />
+
+                      {active && (
+                        <div className="flex justify-end gap-4 mt-3">
+                          <button
+                            onClick={onCancel}
+                            className="text-gray-400 hover:text-white hover:bg-white/20 px-4 py-2 rounded-full text-sm transition"
+                          >
+                            Cancel
+                          </button>
+
+                          <button
+                            onClick={postComment}
+                            className={`px-4 py-2 rounded-full text-sm ${
+                              commentText
+                                ? "bg-[#E8630A] text-white font-bold text-lg rounded-full hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105"
+                                : "bg-[#C75409] text-gray-400"
+                            }`}
+                          >
+                            Comment
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+              </div>
+
+              {/* Comments List */}
+              <div className="mt-8 space-y-6">
+                {dataComment.length > 0 ? (
+                  dataComment.map((el) => {
+                    return (
+                      <Comment
+                        key={el.id}
+                        comment={el}
+                        likeDislikeComment={likeDislikeComment}
+                        editComment={editComment}
+                      />
+                    );
+                  })
+                ) : (
+                  <p className="text-gray-400 text-sm">
+                    No comments yet. Be the first to comment!
+                  </p>
+                )}
               </div>
             </div>
           </div>

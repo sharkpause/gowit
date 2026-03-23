@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
@@ -49,6 +50,8 @@ func CreateComment(database *sql.DB) gin.HandlerFunc {
 		`INSERT INTO comments (film_id,user_id,parent_id,content) VALUES (?,?,?,?)`,
 		comment.FilmID,comment.UserID,comment.ParentID,comment.Content,)
 		if err != nil {
+			fmt.Println(err)
+			
 			context.JSON(500,gin.H{
 				"message": "Internal server error",
 			})
@@ -68,7 +71,6 @@ func LikeComment(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id
 			context.JSON(401, gin.H{"message": "Unauthorized",})
 			return
 		}
-
 		var vote models.CommentVote
 		if err:= context.ShouldBindJSON(&vote); err != nil{
 			context.JSON(http.StatusBadRequest, gin.H{
@@ -76,15 +78,29 @@ func LikeComment(database *sql.DB) gin.HandlerFunc{ //https://music.apple.com/id
 			})
 			return
 		}
-
+		
+		vote.UserID = userID.(uint64)
+		if vote.Score == 0{
+			_,err:=database.Exec(`
+			DELETE FROM comments_vote WHERE comment_id = ? AND user_id = ?
+			`,vote.CommentID,vote.UserID)
+			if err != nil{
+				context.JSON(http.StatusInternalServerError,gin.H{
+					"message": "Database deletion failure",
+				})
+				return
+			}
+			context.JSON(http.StatusOK,gin.H{
+				"message":"Unvoted",
+			})
+			return
+		}
 		if vote.Score != -1 && vote.Score != 1{
 			context.JSON(http.StatusBadRequest, gin.H{
 				"message": "invalid score: must be the water -1 or 1",
 			})
 			return
 		}
-
-		vote.UserID = userID.(uint64)
 		_,err := database.Exec(`
 		INSERT INTO comments_vote (comment_id,user_id,score)
 		VALUES (
@@ -116,16 +132,64 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 			})
 			return
 		}
+		sort:="created_at"
+		order:="ASC"
+		if sortParam:=context.Query("sort"); sortParam!=""{
+			sortParam=strings.ToLower(sortParam)
+			switch sortParam{
+			case "created_at","vote_count","reply_count":
+				sort=sortParam
+			default:
+				context.JSON(http.StatusBadRequest,gin.H{
+					"error":"invalid sort parameter",
+				})
+				return
+			}
+		}
+		if orderParam:=context.Query("order"); orderParam!=""{
+			orderParam=strings.ToUpper(orderParam)
+			switch orderParam{
+			case "ASC", "DESC":
+				order=orderParam
+			default:
+				context.JSON(http.StatusBadRequest,gin.H{
+					"errro":"invalid order parameter",
+				})
+				return
+			}
+		}
+		userIDVal, exists := context.Get("user_id")
+        var userID uint64
+        if exists {
+            userID = userIDVal.(uint64)
+        }
+		var rows *sql.Rows
+		if !exists{
+			query:=fmt.Sprintf(
+				`
+			SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE film_id = ? AND parent_id IS NULL 
+			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
+			ORDER BY %s %s`,sort,order)
+			rows,err = database.Query(query, film_id)	
+		} else{
+			query:=fmt.Sprintf(
+				`
+			SELECT c.id, c.film_id, c.user_id, u.name, u.profile_picture_url, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state, (CASE WHEN c.user_id = ? THEN 1 ELSE 0 END) AS is_owner
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE film_id = ? AND parent_id IS NULL 
+			GROUP BY c.id, c.film_id, c.user_id, u.name, u.profile_picture_url,c.parent_id, c.content, c.created_at
+			ORDER BY %s %s
+				`,sort,order)
+			rows,err = database.Query(query,userID,userID, film_id)
+		}
 
-		rows,err := database.Query( // 																		reply count
-		`SELECT c.id, c.film_id, c.user_id, u.name, c.parent_id, c.content, c.created_at, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) AS reply_count, COALESCE(SUM(cv.score),0) AS vote_count
-		FROM comments c 
-		JOIN users u ON u.id = c.user_id
-		LEFT JOIN comments_vote cv ON cv.comment_id = c.id
-		WHERE film_id = ? AND parent_id IS NULL 
-		GROUP BY c.id, c.film_id, c.user_id, u.name, c.parent_id, c.content, c.created_at
-		ORDER BY created_at ASC`, film_id)
-
+		
 		if err != nil {
 			fmt.Println(err)
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -138,8 +202,13 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc{ // this will only lis
 		var comments []models.Comment
 		for rows.Next() {
 			var c models.Comment
-			err := rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount)
+			if !exists{
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount)
+			} else {
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.ReplyCount,&c.VoteCount,&c.VoteState,&c.IsOwner)
+			}
 			if err != nil{
+				fmt.Println(err)
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Internal server error",
 				})
@@ -171,15 +240,33 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 			})
 			return
 		}
+		userIDVal, exists := context.Get("user_id")
+        var userID uint64
+        if exists {
+            userID = userIDVal.(uint64)
+        }
+		var rows *sql.Rows
 		// just realised, is returning film_id in this case will benefit have anything good?
-		rows,err := database.Query(
-		`SELECT c.id, c.film_id, c.user_id, u.name, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count
-		FROM comments c 
-		JOIN users u ON u.id = c.user_id
-		LEFT JOIN comments_vote cv ON cv.comment_id = c.id
-		WHERE c.parent_id = ? 
-		GROUP BY c.id, c.film_id, c.user_id, u.name, c.parent_id, c.content, c.created_at
-		ORDER BY created_at ASC`, parent_id) // given the parent_id IS nullable, please on models.comment.parentid, please. make it a pointer
+		if !exists{
+			rows,err = database.Query(
+			`SELECT c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE c.parent_id = ? 
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
+			ORDER BY created_at ASC`, parent_id) // given the parent_id IS nullable, please on models.comment.parentid, please. make it a pointer
+		} else {
+			rows,err = database.Query(
+			`SELECT c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at, COALESCE(SUM(cv.score),0) AS vote_count, COALESCE(MAX(CASE WHEN cv.user_id = ? THEN cv.score END),0) AS vote_state, (CASE WHEN c.user_id = ? THEN 1 ELSE 0 END) AS is_owner
+			FROM comments c 
+			JOIN users u ON u.id = c.user_id
+			LEFT JOIN comments_vote cv ON cv.comment_id = c.id
+			WHERE c.parent_id = ? 
+			GROUP BY c.id, c.film_id, c.user_id, u.name,u.profile_picture_url, c.parent_id, c.content, c.created_at
+			ORDER BY created_at ASC`,userID,userID, parent_id)
+
+		}
 		if err != nil {
 			fmt.Println(err)
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -192,7 +279,11 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 		var comments []models.Comment
 		for rows.Next() {
 			var c models.Comment
-			err := rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount)
+			if !exists{
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount)
+			} else{
+				err = rows.Scan(&c.ID,&c.FilmID,&c.UserID,&c.UserName,&c.ProfilePict,&c.ParentID,&c.Content,&c.CreatedAt,&c.VoteCount,&c.VoteState,&c.IsOwner)
+			}
 			if err != nil{
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Internal server error",
@@ -210,4 +301,62 @@ func GetReplies(database *sql.DB) gin.HandlerFunc{
 		}
 		context.JSON(http.StatusOK, comments)
 	}
+}
+
+func userAuthorizedToMakeChangesThisNamingIsFuck(database *sql.DB,userID uint64,commentID uint64) (bool,error){
+	var ownerID uint64
+	err := database.QueryRow(`SELECT user_id FROM comments WHERE id =?`,commentID).Scan(&ownerID)
+	if err != nil{
+		return false,err
+	}
+	if ownerID != userID{
+		return false,nil
+	}
+	return true,nil
+
+}
+func EditComment(database *sql.DB) gin.HandlerFunc{
+	return func(context *gin.Context) {
+		// i dont know how to parse the commentid, lets just assume
+		commentID, err := strconv.ParseUint(context.Param("id"), 10, 64)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"message": "invalid comment id"})
+			return
+		}
+		var input struct {
+    		Content string `json:"content" binding:"required,min=2,max=300"`
+		}
+		userIDVal, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized user"})
+			return
+		}
+		userID := userIDVal.(uint64)
+		if err:=context.ShouldBindJSON(&input); err!=nil{
+			context.JSON(http.StatusBadRequest,gin.H{
+				"message": "Invalid user input",
+			})
+			return
+		}
+		if isOwner,err := userAuthorizedToMakeChangesThisNamingIsFuck(database,userID,commentID); !isOwner&& err==nil{
+			context.JSON(http.StatusForbidden,gin.H{
+				"message": "Forbidden to edit comment, kamu bukan orangnya",
+			})
+			return
+		} else if err != nil {
+			context.JSON(http.StatusInternalServerError,gin.H{
+				"message":"Internal Status Error",
+			})
+			return
+		}
+		if _, err := database.Exec(`UPDATE comments SET content = ? WHERE id = ?`, input.Content,commentID); err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"message": "Database update failed"})
+			return
+		}
+
+		context.JSON(http.StatusOK,gin.H{
+			"message":"Comment has been updated",
+		})
+	}
+
 }

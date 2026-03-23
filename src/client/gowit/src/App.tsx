@@ -8,6 +8,7 @@ import FavoritePage from "./pages/FavoritePage";
 import DetailPage from "./pages/DetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
+import UserProfilePage from "./pages/UserProfilePage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/movies/:id" element={<DetailPage />} />
+          <Route path="/profile/:userId" element={<UserProfilePage />} />
           <Route path="/" element={<Layout />}>
             <Route path="watchlist" element={<FavoritePage />} />
             <Route path="profile" element={<ProfilePage />} />
