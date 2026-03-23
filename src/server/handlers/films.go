@@ -53,13 +53,19 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 		&tagline,
 	)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
 	film.Description = description
 
-	releaseDateYear := int64(releaseDate.Year())
-	film.ReleaseYear = &releaseDateYear
+	var releaseDateYear *int64
+	if releaseDate != nil {
+    	year := int64(releaseDate.Year())
+    	releaseDateYear = &year
+	}
+	film.ReleaseYear = releaseDateYear
+	
 	film.PosterImageURL = posterURL
 	film.TrailerURL = trailerURL
 	film.AverageRating = averageRating
@@ -670,7 +676,6 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 			}
 		}
 
-		// optional search by title
 		conditions := []string{"favorite.user_id = ?"}
 		args := []any{userID}
 
@@ -686,7 +691,6 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 
 		offset := (page - 1) * limit
 
-		// --- query ---
 		query := fmt.Sprintf(
 			`SELECT
 				favorite.id, favorite.notes,
@@ -708,7 +712,6 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 		}
 		defer rows.Close()
 
-		// --- scanning ---
 		var favorites []models.Favorite
 		var releaseDate sql.NullTime
 
@@ -734,6 +737,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				fmt.Println(err)
 				return
 			}
 
