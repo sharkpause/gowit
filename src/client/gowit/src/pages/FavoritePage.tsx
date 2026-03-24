@@ -180,12 +180,11 @@ export default function FavoritePage() {
               Sort:
             </label>
             <select
+              value={sort}
               onChange={(e) => setSort(e.target.value)}
               className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             >
-              <option selected value="title">
-                Title
-              </option>
+              <option value="title">Title</option>
               <option value="average_rating">Rating</option>
               <option value="release_year">Year</option>
               <option value="popularity">Popularity</option>
@@ -198,12 +197,11 @@ export default function FavoritePage() {
               Order:
             </label>
             <select
+              value={order}
               onChange={(e) => setOrder(e.target.value)}
               className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
             >
-              <option selected value="ASC">
-                Ascending
-              </option>
+              <option value="ASC">Ascending</option>
               <option value="DESC">Descending</option>
             </select>
           </div>
@@ -239,10 +237,8 @@ export default function FavoritePage() {
         <div className="min-h-screen flex flex-wrap gap-6 sm:gap-8 md:gap-10 lg:gap-16 justify-start md:justify-center">
           {favorite.map((el) => {
             return (
-              <div className="relative flex-shrink-0" keymin-h-screen={el.id}>
+              <div className="relative" key={el.id}>
                 <button
-                  justify-center
-                  items-center
                   onClick={() => deleteFavorite(el.film_id)}
                   className="absolute top-2 right-2 z-10 bg-[#E8630A] hover:bg-[#C75409] text-white rounded-full p-2 transition-all shadow-lg hover:scale-110 cursor-pointer"
                 >
