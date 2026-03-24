@@ -38,9 +38,9 @@ export default function MovieCard({
         <p className="mt-2 font-bold">{title}</p>
 
         <p className="mt-1 text-gray-400">
-          {description.length <= 100
+          {description?.length <= 100
             ? description
-            : description.substring(0, 100) + "..."}
+            : description?.substring(0, 100) + "..."}
         </p>
         <p className="text-sm mt-5 mb-2 text-[#F5F2F2]">{year}</p>
       </div>

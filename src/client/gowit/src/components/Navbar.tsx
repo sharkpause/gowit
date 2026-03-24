@@ -157,13 +157,17 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-6">
-          <Link
-            to="/watchlist"
-            className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
-          >
-            <Plus size={20} className="border border-white/40 rounded" />
-            <span className="font-medium hidden lg:inline">Watch List</span>
-          </Link>
+          {user ? (
+            <Link
+              to="/watchlist"
+              className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
+            >
+              <Plus size={20} className="border border-white/40 rounded" />
+              <span className="font-medium hidden lg:inline">Watch List</span>
+            </Link>
+          ) : (
+            ""
+          )}
 
           {user ? (
             <Link

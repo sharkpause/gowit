@@ -22,7 +22,7 @@ type postFavoriteRequest struct {
 }
 
 type patchFavoriteRequest struct {
-	Notes string `json:"notes"`
+	Notes string `json:"notes" binding:"required"`
 }
 
 type importMovieRequest struct {
@@ -53,6 +53,7 @@ func scanFilm(database *sql.DB, row Scanner) (*models.Film, error) {
 		&tagline,
 	)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -583,6 +584,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 		filmID, err := strconv.Atoi(context.Param("film_id"))
 		if err != nil {
 			context.JSON(http.StatusUnauthorized, gin.H{"error": "error while reading film id"})
+			fmt.Println(err)
 			return
 		}
 
@@ -597,6 +599,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid request body",
 			})
+			fmt.Println(err)
 			return
 		}
 
@@ -604,7 +607,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 			UPDATE favorites SET notes = ? WHERE film_id = ? AND user_id = ?
 		`
 
-		_, err = database.Exec(query, request.Notes, userID, filmID)
+		_, err = database.Exec(query, request.Notes, filmID, userID)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
 			return
@@ -675,7 +678,6 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 			}
 		}
 
-		// optional search by title
 		conditions := []string{"favorite.user_id = ?"}
 		args := []any{userID}
 
@@ -691,7 +693,6 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 
 		offset := (page - 1) * limit
 
-		// --- query ---
 		query := fmt.Sprintf(
 			`SELECT
 				favorite.id, favorite.notes,
@@ -713,7 +714,6 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 		}
 		defer rows.Close()
 
-		// --- scanning ---
 		var favorites []models.Favorite
 		var releaseDate sql.NullTime
 
@@ -739,6 +739,7 @@ func GetFavorites(database *sql.DB) func(*gin.Context) {
 
 			if err != nil {
 				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				fmt.Println(err)
 				return
 			}
 
@@ -841,7 +842,7 @@ func ImportMovie(database *sql.DB) func(*gin.Context) {
 		}
 		userID := userIDVal.(uint64)
 
-		var createdIDs []int64
+		var errorsList []string
 
 		for _, title := range request.Titles {
 			title = strings.TrimSpace(title)
@@ -850,45 +851,36 @@ func ImportMovie(database *sql.DB) func(*gin.Context) {
 			}
 
 			var filmID int64
-			// Check if film exists (case-insensitive)
 			err := database.QueryRow(
 				"SELECT id FROM films WHERE LOWER(title) = LOWER(?)",
 				title,
 			).Scan(&filmID)
 
-			if err != nil && err != sql.ErrNoRows {
-				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
-				fmt.Println(err)
-				return
-			}
-
-			if err == sql.ErrNoRows {
-				// Film doesn't exist → create it
-				res, err := database.Exec("INSERT INTO films (title) VALUES (?)", title)
-				if err != nil {
-					context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert '%s': %s", title, err)})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					errorsList = append(errorsList, title)
+					continue
+				} else {
+					context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("db error: %s", err)})
 					fmt.Println(err)
 					return
 				}
-				filmID, _ = res.LastInsertId()
-				createdIDs = append(createdIDs, filmID)
 			}
 
-			// Add to favorites (ignore if already exists)
 			_, err = database.Exec(
 				"INSERT IGNORE INTO favorites (user_id, film_id) VALUES (?, ?)",
 				userID, filmID,
 			)
 			if err != nil {
-				context.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert favorite"})
+				context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert favorite for '%s'", title)})
 				fmt.Println(err)
 				return
 			}
 		}
 
-		context.JSON(http.StatusCreated, gin.H{
-			"message":     "movies processed",
-			"created_ids": createdIDs,
+		context.JSON(http.StatusOK, gin.H{
+			"message":       "movies processed",
+			"missing_titles": errorsList,
 		})
 	}
 }

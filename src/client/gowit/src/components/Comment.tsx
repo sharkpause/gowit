@@ -15,10 +15,12 @@ export default function Comment({
   comment,
   likeDislikeComment,
   editComment,
+  deleteComment,
 }: {
   comment: CommentType;
   likeDislikeComment: (comment_id: number, score: number) => Promise<void>;
   editComment: (comment_id: number, content: string) => Promise<void>;
+  deleteComment: (comment_id: number) => Promise<void>;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [active, setActive] = useState(false);
@@ -93,20 +95,6 @@ export default function Comment({
     setEditText("");
   };
 
-  // const handleEditSubmit = async (id: number) => {
-  //   try {
-  //     if (!editText.trim()) return;
-  //     await serverApi.patch(`/api/comments/${id}`, {
-  //       content: editText,
-  //     });
-  //     setEditingId(null);
-  //     setEditText("");
-  //     fetchReply();
-  //   } catch (error) {
-  //     console.log("Error at handleEditSubmit function", error);
-  //   }
-  // };
-
   useEffect(() => {
     fetchUser();
     fetchReply();
@@ -114,30 +102,54 @@ export default function Comment({
 
   return (
     <div className="flex gap-4">
-      <Link
-        to={`/profile${userId === comment.user_id ? "" : "/" + comment.user_id}`}
-      >
+      {comment.is_deleted ? (
         <img
           src={
             comment.profile_picture_url ||
             "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
           }
-          className="w-10 h-10 rounded-full mt-0.5"
+          className="w-10 h-10 rounded-full mt-0.5 opacity-50 cursor-not-allowed"
           alt="Profile"
         />
-      </Link>
+      ) : (
+        <Link
+          to={`/profile${userId === comment.user_id ? "" : "/" + comment.user_id}`}
+        >
+          <img
+            src={
+              comment.profile_picture_url ||
+              "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
+            }
+            className="w-10 h-10 rounded-full mt-0.5"
+            alt="Profile"
+          />
+        </Link>
+      )}
 
       <div className="flex-1">
         <div className="flex items-center justify-between gap-2 text-sm text-white mt-0">
           <div className="flex items-center gap-2">
-            <Link to={`/profile/${comment.user_id}`}>
-              <span className="font-semibold">{comment.username}</span>
-            </Link>
+            {comment.is_deleted ? (
+              <span className="font-semibold text-gray-400">
+                {comment.username}
+              </span>
+            ) : (
+              <Link
+                to={`/profile${userId === comment.user_id ? "" : "/" + comment.user_id}`}
+              >
+                <span className="font-semibold">{comment.username}</span>
+              </Link>
+            )}
             <span className="text-gray-400 text-xs">
               {commentDate(comment.created_at)}
             </span>
+            {comment.is_updated && !comment.is_deleted ? (
+              <span className="text-gray-400 text-xs">(edited)</span>
+            ) : (
+              ""
+            )}
           </div>
-          {comment.is_owner ? (
+          {comment.is_owner && !comment.is_deleted ? (
             <div className="relative">
               <button
                 onClick={() =>
@@ -159,7 +171,13 @@ export default function Comment({
                   >
                     Edit
                   </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition border-t border-gray-700">
+                  <button
+                    onClick={() => {
+                      deleteComment(comment.id);
+                      setOpenMenuKey(null);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition border-t border-gray-700"
+                  >
                     Delete
                   </button>
                 </div>
@@ -202,7 +220,11 @@ export default function Comment({
             </div>
           </div>
         ) : (
-          <p className="text-gray-300 text-sm mt-1">{comment.content}</p>
+          <p
+            className={`${comment.is_deleted ? "text-gray-400" : "text-gray-300"} text-sm mt-1 `}
+          >
+            {comment.content}
+          </p>
         )}
         <div className="flex items-center gap-6 text-sm text-gray-400 mt-1">
           <button
@@ -244,12 +266,16 @@ export default function Comment({
               }`}
             />
           </button>
-          <button
-            onClick={() => setActive(!active)}
-            className="text-white font-bold hover:text-white hover:bg-white/20 px-3 py-2 rounded-full text-sm transition"
-          >
-            Reply
-          </button>
+          {userId ? (
+            <button
+              onClick={() => setActive(!active)}
+              className="text-white font-bold hover:text-white hover:bg-white/20 px-3 py-2 rounded-full text-sm transition"
+            >
+              Reply
+            </button>
+          ) : (
+            ""
+          )}
         </div>
 
         {active && (
@@ -288,30 +314,59 @@ export default function Comment({
               .filter((el) => el.user_id === userId)
               .map((reply) => (
                 <div key={reply.id} className="flex gap-4">
-                  <Link to={`/profile/${reply.user_id}`}>
+                  {reply.is_deleted ? (
                     <img
                       src={
                         reply.profile_picture_url ||
                         "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
                       }
-                      className="w-8 h-8 rounded-full mt-0.5"
+                      className="w-10 h-10 rounded-full mt-0.5 opacity-50 cursor-not-allowed"
                       alt="Profile"
                     />
-                  </Link>
+                  ) : (
+                    <Link
+                      to={`/profile${userId === reply.user_id ? "" : "/" + reply.user_id}`}
+                    >
+                      <img
+                        src={
+                          reply.profile_picture_url ||
+                          "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
+                        }
+                        className="w-10 h-10 rounded-full mt-0.5"
+                        alt="Profile"
+                      />
+                    </Link>
+                  )}
 
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-2 text-sm text-white mt-0">
                       <div className="flex items-center gap-2">
-                        <Link to={`/profile/${reply.user_id}`}>
-                          <span className="font-semibold text-sm">
+                        {reply.is_deleted ? (
+                          <span className="font-semibold text-gray-400">
                             {reply.username}
                           </span>
-                        </Link>
+                        ) : (
+                          <Link
+                            to={`/profile${userId === reply.user_id ? "" : "/" + reply.user_id}`}
+                          >
+                            <span className="font-semibold">
+                              {reply.username}
+                            </span>
+                          </Link>
+                        )}
                         <span className="text-gray-400 text-xs">
                           {commentDate(reply.created_at)}
                         </span>
+                        {reply.is_updated && !reply.is_deleted ? (
+                          <span className="text-gray-400 text-xs">
+                            (Edited)
+                          </span>
+                        ) : (
+                          ""
+                        )}
+                        <span></span>
                       </div>
-                      {reply.is_owner ? (
+                      {reply.is_owner && !reply.is_deleted ? (
                         <div className="relative">
                           <button
                             onClick={() =>
@@ -335,7 +390,14 @@ export default function Comment({
                               >
                                 Edit
                               </button>
-                              <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition border-t border-gray-700">
+                              <button
+                                onClick={async () => {
+                                  await deleteComment(reply.id);
+                                  await fetchReply();
+                                  setOpenMenuKey(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition border-t border-gray-700"
+                              >
                                 Delete
                               </button>
                             </div>
@@ -377,7 +439,9 @@ export default function Comment({
                         </div>
                       </div>
                     ) : (
-                      <p className="text-gray-300 text-sm mt-1">
+                      <p
+                        className={`${reply.is_deleted ? "text-gray-400" : "text-gray-300"} text-sm mt-1 `}
+                      >
                         {reply.content}
                       </p>
                     )}
@@ -452,30 +516,56 @@ export default function Comment({
           <div className="mt-3 ml-3 border-l border-gray-700 pl-4 space-y-4">
             {dataReply.map((reply) => (
               <div key={reply.id} className="flex gap-4">
-                <Link to={`/profile/${reply.user_id}`}>
+                {reply.is_deleted ? (
                   <img
                     src={
                       reply.profile_picture_url ||
                       "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
                     }
-                    className="w-8 h-8 rounded-full mt-0.5"
+                    className="w-10 h-10 rounded-full mt-0.5 opacity-50 cursor-not-allowed"
                     alt="Profile"
                   />
-                </Link>
+                ) : (
+                  <Link
+                    to={`/profile${userId === reply.user_id ? "" : "/" + reply.user_id}`}
+                  >
+                    <img
+                      src={
+                        reply.profile_picture_url ||
+                        "https://res.cloudinary.com/degghm3hf/image/upload/v1772528750/profile-icon-design-free-vector_jas9j3.jpg"
+                      }
+                      className="w-10 h-10 rounded-full mt-0.5"
+                      alt="Profile"
+                    />
+                  </Link>
+                )}
 
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-2 text-sm text-white mt-0">
                     <div className="flex items-center gap-2">
-                      <Link to={`/profile/${reply.user_id}`}>
-                        <span className="font-semibold text-sm">
+                      {reply.is_deleted ? (
+                        <span className="font-semibold text-gray-400">
                           {reply.username}
                         </span>
-                      </Link>
+                      ) : (
+                        <Link
+                          to={`/profile${userId === reply.user_id ? "" : "/" + reply.user_id}`}
+                        >
+                          <span className="font-semibold">
+                            {reply.username}
+                          </span>
+                        </Link>
+                      )}
                       <span className="text-gray-400 text-xs">
                         {commentDate(reply.created_at)}
                       </span>
+                      {reply.is_updated && !reply.is_deleted ? (
+                        <span className="text-gray-400 text-xs">(Edited)</span>
+                      ) : (
+                        ""
+                      )}
                     </div>
-                    {reply.is_owner ? (
+                    {reply.is_owner && !reply.is_deleted ? (
                       <div className="relative">
                         <button
                           onClick={() =>
@@ -499,7 +589,14 @@ export default function Comment({
                             >
                               Edit
                             </button>
-                            <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition border-t border-gray-700">
+                            <button
+                              onClick={async () => {
+                                await deleteComment(reply.id);
+                                await fetchReply();
+                                setOpenMenuKey(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition border-t border-gray-700"
+                            >
                               Delete
                             </button>
                           </div>
@@ -541,7 +638,9 @@ export default function Comment({
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-300 text-sm mt-1">
+                    <p
+                      className={`${reply.is_deleted ? "text-gray-400" : "text-gray-300"} text-sm mt-1 `}
+                    >
                       {reply.content}
                     </p>
                   )}

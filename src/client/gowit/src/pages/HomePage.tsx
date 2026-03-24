@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import LightRays from "../components/LightRays";
 import { ArrowLeft, ArrowRight, Mail, MapPin, Phone } from "lucide-react";
 // import MovieCard from "../components/MovieCard";
@@ -22,24 +22,23 @@ import { capitalizeEachWord } from "../helper/helper";
 export default function HomePage() {
   const [topMovie, setTopMovie] = useState<MovieType[]>([]);
   const [movieFeatured, setMovieFeatured] = useState<MovieType[]>([]);
-  const [index, setIndex] = useState<number>(0);
-  const [visibleFeatured, setVisibleFeatured] = useState(0);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const [isBeginningCS, setIsBeginningCS] = useState(true);
+  const [isBeginningFeatured, setIsBeginningFeatured] = useState(true);
+  const [isEndFeatured, setIsEndFeatured] = useState(false);
   const [isEndCS, setIsEndCS] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [loadingMail, setLoadingMail] = useState(false);
   const [movieComingSoon, setMovieComingSoon] = useState<ComingMovie[]>([]);
+  const [swiperFeatured, setSwiperFeatured] = useState(true);
   const [swiperTop, setSwiperTop] = useState(true);
   const [swiperComing, setSwiperComing] = useState(true);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [loadingTop, setLoadingTop] = useState(true);
   const [loadingComingSoon, setLoadingComingSoon] = useState(true);
-
-  console.log(swiperTop);
 
   const location = useLocation();
 
@@ -66,6 +65,11 @@ export default function HomePage() {
   const syncEdgesCS = (swiper: SwiperType) => {
     setIsBeginningCS(swiper.isBeginning);
     setIsEndCS(swiper.isEnd);
+  };
+
+  const syncEdgesFeatured = (swiper: SwiperType) => {
+    setIsBeginningFeatured(swiper.isBeginning);
+    setIsEndFeatured(swiper.isEnd);
   };
 
   async function fetchMovieComingSoon() {
@@ -155,10 +159,46 @@ export default function HomePage() {
     </div>;
   }
 
-  const checkTopMovies = () => {
+  const checkFeaturedMovie = () => {
     let w = window.innerWidth;
 
     if (w >= 1024) {
+      if (movieFeatured.length < 4) {
+        setSwiperFeatured(false);
+      } else {
+        setSwiperFeatured(true);
+      }
+    } else if (w >= 640) {
+      if (movieFeatured.length < 3) {
+        console.log("bd");
+
+        setSwiperFeatured(false);
+      } else {
+        setSwiperFeatured(true);
+      }
+    } else {
+      console.log("cd");
+
+      if (movieFeatured.length < 2) {
+        setSwiperFeatured(false);
+      } else {
+        setSwiperFeatured(true);
+      }
+    }
+  };
+
+  const checkTopMovies = () => {
+    let w = window.innerWidth;
+
+    if (w >= 1280) {
+      if (topMovie.length < 5) {
+        console.log("1280");
+
+        setSwiperTop(false);
+      } else {
+        setSwiperTop(true);
+      }
+    } else if (w >= 1024) {
       if (topMovie.length < 4) {
         console.log("a");
 
@@ -175,8 +215,6 @@ export default function HomePage() {
         setSwiperTop(true);
       }
     } else {
-      console.log("c");
-
       if (topMovie.length < 2) {
         setSwiperTop(false);
       } else {
@@ -210,24 +248,6 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const calc = () => {
-      const w = window.innerWidth;
-      if (w >= 1280) return setVisibleFeatured(5); // xl
-      if (w >= 1024) return setVisibleFeatured(4); // lg
-      if (w >= 768) return setVisibleFeatured(3); // md
-      return setVisibleFeatured(2); // sm / hp
-    };
-
-    calc();
-
-    window.addEventListener("resize", calc);
-
-    return () => {
-      window.removeEventListener("resize", calc);
-    };
-  }, []);
-
-  useEffect(() => {
     checkTopMovies();
   }, [topMovie]);
 
@@ -235,21 +255,9 @@ export default function HomePage() {
     checkComingMovies();
   }, [movieComingSoon]);
 
-  const wFeatured = 208;
-  const gapFeatured = 40;
-  let total = 6;
-  const step = wFeatured + gapFeatured;
-  if (Array.isArray(movieFeatured)) {
-    total = movieFeatured.length;
-  }
-  const maxIndex = Math.max(0, total - visibleFeatured);
-
-  const prevFeatured = () => setIndex((i) => i - 1);
-  const nextFeatured = () => setIndex((i) => i + 1);
-
-  const translateX = useMemo(() => {
-    return -(index * step);
-  }, [index, step]);
+  useEffect(() => {
+    checkFeaturedMovie();
+  }, [movieFeatured]);
 
   return (
     <>
@@ -310,49 +318,88 @@ export default function HomePage() {
             Featured Today
           </h1>
 
-          <div className="relative overflow-hidden">
-            <div
-              className="flex gap-10 transition-transform duration-300 ease-out"
-              style={{
-                transform: `translateX(${translateX}px)`,
-              }}
+          <div className="flex gap-8 relative">
+            <button
+              className={[
+                "prev-btn-featured absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isBeginningFeatured
+                  ? "opacity-0 pointer-events-none"
+                  : "hover:scale-110",
+              ].join(" ")}
             >
-              {movieFeatured.length
-                ? movieFeatured.map((el) => {
-                    return (
-                      <Link
-                        key={el.id}
-                        to={`/movies/${el.id}`}
-                        className="inline-block shrink-0"
-                      >
-                        <img
-                          key={el.id}
-                          src={el.poster_image_url}
-                          alt="Movie Poster"
-                          className="h-72 w-52 shrink-0 grow object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-102 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110 "
-                        />
-                      </Link>
-                    );
-                  })
-                : ""}
-            </div>
+              <ArrowLeft className="text-white w-8 h-8" />
+            </button>
+            <button
+              className={[
+                "next-btn-featured absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                isEndFeatured
+                  ? "opacity-0 pointer-events-none"
+                  : "hover:scale-110",
+              ].join(" ")}
+            >
+              <ArrowRight className="text-white w-8 h-8" />
+            </button>
 
-            {index > 0 && (
-              <button
-                className="absolute top-1/2 -translate-y-1/2 left-4 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full hover:scale-110 transform transition cursor-pointer"
-                onClick={prevFeatured}
+            {swiperFeatured ? (
+              <Swiper
+                modules={[Navigation]}
+                spaceBetween={16}
+                slidesPerView={2}
+                navigation={{
+                  prevEl: ".prev-btn-featured",
+                  nextEl: ".next-btn-featured",
+                }}
+                breakpoints={{
+                  640: { slidesPerView: 3 },
+                  1024: { slidesPerView: 4 },
+                  1280: { slidesPerView: 5 },
+                }}
+                loop={false}
+                onSwiper={syncEdgesFeatured}
+                onSlideChange={syncEdgesFeatured}
+                observer
+                observeParents
+                updateOnWindowResize
+                onResize={syncEdgesFeatured}
+                className="w-full"
               >
-                <ArrowLeft className="text-white w-8 h-8" />
-              </button>
-            )}
-
-            {index < maxIndex && (
-              <button
-                className="absolute top-1/2 -translate-y-1/2 right-4 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full hover:scale-110 transform transition cursor-pointer"
-                onClick={nextFeatured}
-              >
-                <ArrowRight className="text-white w-8 h-8" />
-              </button>
+                {movieFeatured.length
+                  ? movieFeatured.map((el) => {
+                      return (
+                        <SwiperSlide key={el.id}>
+                          <Link
+                            to={`/movies/${el.id}`}
+                            className="inline-block"
+                          >
+                            <img
+                              src={el.poster_image_url}
+                              alt="Movie Poster"
+                              className="h-72 w-52 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110"
+                            />
+                          </Link>
+                        </SwiperSlide>
+                      );
+                    })
+                  : ""}
+              </Swiper>
+            ) : movieFeatured.length ? (
+              movieFeatured.map((el) => {
+                return (
+                  <Link
+                    key={el.id}
+                    to={`/movies/${el.id}`}
+                    className="inline-block"
+                  >
+                    <img
+                      src={el.poster_image_url}
+                      alt="Movie Poster"
+                      className="h-72 w-52 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110"
+                    />
+                  </Link>
+                );
+              })
+            ) : (
+              ""
             )}
           </div>
         </div>

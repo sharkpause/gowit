@@ -27,7 +27,6 @@ export default function FavoritePage() {
       const response = await serverApi.get(
         `/api/favorites?sort=${sort}&order=${order}&search=${search}`,
       );
-      console.log(response.data);
 
       setFavorite(response.data.favorites || []);
     } catch (error) {
@@ -67,7 +66,7 @@ export default function FavoritePage() {
         container.push(element.title);
         // Can push empty titles because excel conversion is case-sensitive
         // So for example if on the excel spreadsheet it's Title, nothing
-        // Will be pushed, only if the column is spelled title instead 
+        // Will be pushed, only if the column is spelled title instead
       }
 
       setFileImport(container);
@@ -118,7 +117,7 @@ export default function FavoritePage() {
         Title: el.title,
         Description: el.description,
         "Poster URL": el.poster_image_url,
-        "Average Rating": el.average_rating,
+        "Average Rating": el.average_rating ?? 0,
         "Release Year": el.release_year,
         "Duration (Minutes)": el.runtime,
         Note: el.notes,
@@ -142,6 +141,29 @@ export default function FavoritePage() {
     XLSX.writeFile(workbook, "my-watchlist.xlsx", {
       compression: true,
     });
+  };
+
+  const updateNote = async (id: number, note: string) => {
+    try {
+      const response = await serverApi.patch("/api/favorites/" + id, {
+        notes: note,
+      });
+      Swal.fire({
+        title: "Note Updated Successful!",
+        icon: "success",
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-white",
+          confirmButton:
+            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+        },
+      });
+      fetchFavorite();
+    } catch (error) {
+      console.log("Error at Watch List Card: ", error);
+    }
   };
 
   useEffect(() => {
@@ -230,12 +252,13 @@ export default function FavoritePage() {
                 <WatchListCard
                   id={el.film_id}
                   title={el.title}
-                  rating={el.average_rating}
+                  rating={el.average_rating ?? 0}
                   description={el.description}
                   poster_url={el.poster_image_url}
                   year={el.release_year}
                   minute={el.runtime}
                   notes={el.notes}
+                  updateNote={updateNote}
                 />
               </div>
             );

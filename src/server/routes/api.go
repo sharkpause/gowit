@@ -52,6 +52,8 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 
 		api.GET("/user/:id", handlers.GetOtherUserDetail(database))
 
+		api.POST("/contact", handlers.Sendmail())
+
 		// TODO: Later change so that protected APIs are still accessed through {URL}/api and not {URL}/
 		// to keep API consistency
 
@@ -69,8 +71,6 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			
 			protected.GET("/favorites/:id", handlers.FavoriteListCheck(database)) // please think a better naming, i have no idea
 			// protected.POST("/favorites/add", handlers.AddMultipleFilmsToFavorite(database))
-			
-			protected.POST("/contact", handlers.Sendmail())
 
 			protected.POST("/films/add", handlers.ImportMovie(database))
 
@@ -79,7 +79,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 			protected.POST("/films/:id/comments", handlers.CreateComment(database))
 			protected.POST("/comments/like", handlers.LikeComment(database))
 			protected.POST("/comments/:id/edits", handlers.EditComment(database))
-			
+			protected.DELETE("/comments/:id/delete", handlers.DeleteComment(database))
 		}
 		
 		api.Use(auth.Middleware())

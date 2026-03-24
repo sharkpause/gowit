@@ -12,6 +12,7 @@ export default function WatchListCard({
   year,
   minute,
   notes,
+  updateNote,
 }: {
   id: number;
   poster_url: string;
@@ -21,33 +22,10 @@ export default function WatchListCard({
   year: number;
   minute: number;
   notes: string;
+  updateNote: (id: number, note: string) => Promise<void>;
 }) {
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState(notes);
-  const updateNote = async () => {
-    try {
-      console.log(note, "aaa", id);
-
-      const response = await serverApi.patch("/api/favorites/" + id, {
-        notes: note,
-      });
-      Swal.fire({
-        title: "Note Updated Successful!",
-        icon: "success",
-        buttonsStyling: false,
-        background: "#0F1115",
-        color: "#F5F2F2",
-        customClass: {
-          title: "text-white",
-          confirmButton:
-            "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
-        },
-      });
-      setShowNote(false);
-    } catch (error) {
-      console.log("Error at Watch List Card: ", error);
-    }
-  };
 
   return (
     <>
@@ -70,9 +48,9 @@ export default function WatchListCard({
           <p className="mt-2 font-bold">{title}</p>
 
           <p className="mt-1 text-gray-400">
-            {description.length <= 100
+            {(description ?? "").length <= 100
               ? description
-              : description.substring(0, 100) + "..."}
+              : (description ?? "").substring(0, 100) + "..."}
           </p>
 
           <div className="flex items-center text-sm mt-5 mb-2 text-[#F5F2F2]">
@@ -126,7 +104,10 @@ export default function WatchListCard({
                 Cancel
               </button>
               <button
-                onClick={updateNote}
+                onClick={() => {
+                  updateNote(id, note);
+                  setShowNote(false);
+                }}
                 className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
               >
                 Save Note
