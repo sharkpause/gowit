@@ -37,7 +37,7 @@ export default function DetailPage() {
   const fetchRating = async () => {
     try {
       const response = await serverApi.get(`/api/films/${id}/rating`);
-      console.log(response.data);
+
       const hasUserRating = response.data.user_rating != null;
       setIsEditRating(!hasUserRating);
 
@@ -163,7 +163,6 @@ export default function DetailPage() {
       const response = await serverApi.get(
         `/api/films/${id}/comments?sort=created_at&order=DESC`,
       );
-      console.log(response.data);
 
       setDataComment(response.data);
     } catch (error) {

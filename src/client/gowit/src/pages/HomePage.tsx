@@ -76,7 +76,6 @@ export default function HomePage() {
     try {
       setLoadingComingSoon(true);
       const response = await serverApi.get("/api/films/coming-soon");
-      console.log(response.data);
 
       setMovieComingSoon(response.data.coming_soon);
     } catch (error) {
@@ -90,7 +89,6 @@ export default function HomePage() {
     e.preventDefault();
     try {
       setLoadingMail(true);
-      console.log(message);
 
       await serverApi.post("/api/contact", {
         name,
@@ -170,15 +168,11 @@ export default function HomePage() {
       }
     } else if (w >= 640) {
       if (movieFeatured.length < 3) {
-        console.log("bd");
-
         setSwiperFeatured(false);
       } else {
         setSwiperFeatured(true);
       }
     } else {
-      console.log("cd");
-
       if (movieFeatured.length < 2) {
         setSwiperFeatured(false);
       } else {
@@ -192,24 +186,18 @@ export default function HomePage() {
 
     if (w >= 1280) {
       if (topMovie.length < 5) {
-        console.log("1280");
-
         setSwiperTop(false);
       } else {
         setSwiperTop(true);
       }
     } else if (w >= 1024) {
       if (topMovie.length < 4) {
-        console.log("a");
-
         setSwiperTop(false);
       } else {
         setSwiperTop(true);
       }
     } else if (w >= 640) {
       if (topMovie.length < 3) {
-        console.log("b");
-
         setSwiperTop(false);
       } else {
         setSwiperTop(true);
@@ -629,7 +617,7 @@ export default function HomePage() {
                       <Phone className="w-5 h-5" />
                     </div>
                     <div className="pt-2">
-                      <p className="text-gray-300">+62-823-1222-7255</p>
+                      <p className="text-gray-300">+62 813-3150-9003</p>
                     </div>
                   </div>
 
