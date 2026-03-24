@@ -137,8 +137,8 @@ export default function ProfilePage() {
       >
         <div className="absolute inset-x-0 bottom-0 h-12 sm:h-16 md:h-24 lg:h-32 bg-gradient-to-t from-[#0F1115] to-transparent" />
       </div>
-      <div className="absolute left-1/2 top-20 sm:top-24 md:top-32 lg:top-40 h-fit w-full max-w-lg mx-auto rounded-2xl -translate-x-1/2 px-4 sm:px-6 md:px-8 py-6 sm:py-8 bg-[#0F1115] shadow-2xl shadow-black/50 border border-white/10">
-        <div className="absolute left-1/2 -top-12 sm:-top-14 md:-top-16 lg:-top-20 -translate-x-1/2">
+      <div className="absolute mt-10 sm:mt-0 left-1/2 top-20 sm:top-24 md:top-32 lg:top-40 h-fit w-full max-w-lg mx-auto rounded-2xl -translate-x-1/2 px-4 sm:px-6 md:px-8 py-6 sm:py-8 bg-[#0F1115] shadow-2xl shadow-black/50 border border-white/10">
+        <div className="absolute left-1/2 -top-12 sm:-top-14 md:-top-16 lg:-top-20 -translate-x-1/2 ">
           <div className="relative">
             <img
               src={

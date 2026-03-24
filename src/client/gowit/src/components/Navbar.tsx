@@ -278,14 +278,18 @@ export default function Navbar() {
             >
               Contact Us
             </a>
-            <Link
-              to="/watchlist"
-              className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Plus size={20} className="border border-white/40 rounded" />
-              Watch List
-            </Link>
+            {user ? (
+              <Link
+                to="/watchlist"
+                className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Plus size={20} className="border border-white/40 rounded" />
+                Watch List
+              </Link>
+            ) : (
+              ""
+            )}
           </div>
 
           <div className="px-4 py-4 border-t border-white/10">
@@ -293,6 +297,7 @@ export default function Navbar() {
               <Link
                 to="/profile"
                 className="text-white hover:text-gray-300 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 {user.profile_picture_url ? (
                   <img
