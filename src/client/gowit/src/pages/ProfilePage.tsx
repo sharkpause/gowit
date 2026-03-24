@@ -233,7 +233,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="email"
-              value={profile?.email}
+              value={profile?.email ?? ""}
               onChange={() => {}}
               readOnly
               disabled={!isEdit}
@@ -247,7 +247,7 @@ export default function ProfilePage() {
             </label>
             <input
               type="date"
-              value={toDateInputValue(profile?.created)}
+              value={toDateInputValue(profile?.created) ?? ""}
               onChange={() => {}}
               readOnly
               className="w-full bg-[#1C1E22] px-3 sm:px-4 py-2 sm:py-3 rounded-lg border text-sm sm:text-base transition-colors text-gray-500 border-white/10 cursor-not-allowed opacity-60 outline-none"
