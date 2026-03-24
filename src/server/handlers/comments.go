@@ -116,6 +116,7 @@ func LikeComment(database *sql.DB) gin.HandlerFunc { //https://music.apple.com/i
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Database update failed",
 			})
+			fmt.Println(err)
 			return
 		}
 		context.JSON(200, gin.H{
