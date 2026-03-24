@@ -80,7 +80,6 @@ export default function FavoritePage() {
       if (fileImport.length < 1) {
         errorAlert("Please Input Excel File First!");
       }
-      console.log(fileImport, "ISIMPORT");
 
       const response = await serverApi.post("/api/films/add", {
         titles: fileImport,

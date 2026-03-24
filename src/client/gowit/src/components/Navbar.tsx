@@ -14,8 +14,6 @@ export default function Navbar() {
 
   const fetchMovieSearch = async () => {
     try {
-      console.log(search);
-
       const response = await serverApi.get(
         "/api/films?search=" + search + "&limit=5",
       );

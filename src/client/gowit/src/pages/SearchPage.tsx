@@ -17,7 +17,6 @@ export default function SearchPage() {
 
       const response = await serverApi.get("/api/films?search=" + query);
       setMovies(response.data.films);
-      console.log(response.data.films);
 
       setLoading(false);
     };

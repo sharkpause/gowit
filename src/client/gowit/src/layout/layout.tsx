@@ -36,8 +36,6 @@ export default function Layout() {
   }
 
   if (!id) {
-    console.log(id);
-
     return <Navigate to="/login?loginFirst=true" />;
   }
 
