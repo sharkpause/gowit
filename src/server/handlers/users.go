@@ -125,11 +125,12 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 		}
 
 		result, err := database.Exec(
-			`INSERT INTO users (name, email, password_hash)
-			VALUES (
-				?, ?, ?
-			)`,
-			request.Name, request.Email, hashedPassword,
+			`INSERT INTO users (name, email, password_hash, profile_picture_url)
+			VALUES (?, ?, ?, ?)`,
+			request.Name,
+			request.Email,
+			hashedPassword,
+			"/media/profile_pictures/default_profile_picture.webp",
 		)
 
 		if err != nil {
@@ -154,7 +155,6 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 		})
 	}
 }
-
 
 func LoginUser(database *sql.DB) func(*gin.Context) {
 	return func(context *gin.Context) {
@@ -473,16 +473,17 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 
 		res, err := database.Exec(
 			`
-			INSERT INTO users (name, email, google_id)
-			VALUES (?, ?, ?)
+			INSERT INTO users (name, email, google_id, profile_picture_url)
+			VALUES (?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
 				name = VALUES(name),
 				google_id = VALUES(google_id),
 				id = LAST_INSERT_ID(id)
-			`, 
+			`,
 			userInfo.Name,
 			userInfo.Email,
 			userInfo.ID,
+			"/media/profile_pictures/default_profile_picture.webp",
 		)
 		if err != nil {
 			requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
