@@ -354,7 +354,7 @@ func GetReplies(database *sql.DB) gin.HandlerFunc {
 
 var ErrCommentDeleted = errors.New("Deleted") // this is to return the error used in userAuthorizedToMakechangesThisNamingISFuck. comment was deleted and the action wont be proceed.
 
-func userAuthorizedToMakeChangesThisNamingIsFuck(database *sql.DB, userID uint64, commentID uint64) (bool, error) {
+func allowedToEdit(database *sql.DB, userID uint64, commentID uint64) (bool, error) {
 	var ownerID uint64
 	var isDeleted bool
 
@@ -380,7 +380,7 @@ func EditComment(database *sql.DB) gin.HandlerFunc {
 			return
 		}
 		var input struct {
-			Content string `json:"content" binding:"required,min=2,max=300"`
+			Content string `json:"content" binding:"required,min=1,max=300"`
 		}
 		userIDVal, exists := context.Get("user_id")
 		if !exists {
@@ -394,7 +394,7 @@ func EditComment(database *sql.DB) gin.HandlerFunc {
 			})
 			return
 		}
-		if isOwner, err := userAuthorizedToMakeChangesThisNamingIsFuck(database, userID, commentID); !isOwner && err == nil {
+		if isOwner, err := allowedToEdit(database, userID, commentID); !isOwner && err == nil {
 			context.JSON(http.StatusForbidden, gin.H{
 				"message": "Forbidden to edit comment, kamu bukan orangnya",
 			})
@@ -435,7 +435,7 @@ func DeleteComment(database *sql.DB) gin.HandlerFunc {
 			return
 		}
 		userID := userIDVal.(uint64)
-		if isOwner, err := userAuthorizedToMakeChangesThisNamingIsFuck(database, userID, commentID); !isOwner && err == nil {
+		if isOwner, err := allowedToEdit(database, userID, commentID); !isOwner && err == nil {
 			context.JSON(http.StatusForbidden, gin.H{
 				"message": "Forbidden to edit comment, kamu bukan orangnya",
 			})
