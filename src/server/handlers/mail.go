@@ -12,43 +12,45 @@ import (
 type ContactRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Question string `json:"question" binding:"required,min=1	,max=200"` //please frontend limit question to x-amount of character
+	Question string `json:"question" binding:"required,min=1,max=200"` //please frontend limit question to x-amount of character
 }
 func Sendmail() gin.HandlerFunc{
 	return func(context *gin.Context){
-	var req ContactRequest
-	if err:= context.ShouldBindJSON(&req); err!=nil{
-		context.JSON(400,gin.H{"Error": "Please provide a valid field"})
-		return
-	}
-	
-	mail := gomail.NewMessage()
-	system:= struct {
-		SystemEmail string 
-		EmailSecret string
-		EmailServer string
-		EmailPort int
-		BccMailingList []string
-	}{
-		SystemEmail: os.Getenv("ADMIN_EMAIL"), //<Email>
-		EmailSecret: os.Getenv("ADMIN_SECRET"), //<Google app password to the corresponding account>
-		EmailServer: os.Getenv("EMAIL_SERVER"), //<smtp.gmail.com> if using google, yea 
-		EmailPort: func()int{
-			p,_:= strconv.Atoi(os.Getenv("EMAIL_PORT")) //587
-			return p
-		}(),
-		BccMailingList: strings.Split(os.Getenv("MAILING_LIST"),","), //<Bcc> can be null, depends
-	}
-	mail.SetHeader("From", system.SystemEmail)
-	mail.SetHeader("To", req.Email)
-	mail.SetHeader("Cc", system.SystemEmail)
-	mail.SetHeader("Subject", "Your question has been received")
-	if len(system.BccMailingList) > 0{
-		mail.SetHeader("Bcc", system.BccMailingList...)
-	}
-	mail.SetHeader("Reply-To", req.Email)
-	body:= fmt.Sprintf(`
-Dear %s,
+		var req ContactRequest
+		if err:= context.ShouldBindJSON(&req); err!=nil{
+			context.JSON(400,gin.H{"Error": "Please provide a valid field"})
+			return
+		}
+		
+		mail := gomail.NewMessage()
+		
+		system:= struct {
+			SystemEmail string 
+			EmailSecret string
+			EmailServer string
+			EmailPort int
+			BccMailingList []string
+		}{
+			SystemEmail: os.Getenv("ADMIN_EMAIL"), //<Email>
+			EmailSecret: os.Getenv("ADMIN_SECRET"), //<Google app password to the corresponding account>
+			EmailServer: os.Getenv("EMAIL_SERVER"), //<smtp.gmail.com> if using google, yea 
+			EmailPort: func()int{
+				p,_:= strconv.Atoi(os.Getenv("EMAIL_PORT")) //587
+				return p
+			}(),
+			BccMailingList: strings.Split(os.Getenv("MAILING_LIST"),","), //<Bcc> can be null, depends
+		}
+
+		mail.SetHeader("From", system.SystemEmail)
+		mail.SetHeader("To", req.Email)
+		mail.SetHeader("Cc", system.SystemEmail)
+		mail.SetHeader("Subject", "Your question has been received")
+		if len(system.BccMailingList) > 0{
+			mail.SetHeader("Bcc", system.BccMailingList...)
+		}
+		mail.SetHeader("Reply-To", req.Email)
+		body:= fmt.Sprintf(`
+			Dear %s,
 
 			Thank you for contacting Gowit.
 
