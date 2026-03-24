@@ -218,7 +218,7 @@ export default function FavoritePage() {
             className="bg-[#1C1E22] text-[#F5F2F2] px-3 sm:px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Export</span>
+            <span className=" sm:inline">Export</span>
           </button>
 
           <button
@@ -226,7 +226,7 @@ export default function FavoritePage() {
             className="bg-[#1C1E22] text-[#F5F2F2] px-3 sm:px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
           >
             <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Import</span>
+            <span className=" sm:inline">Import</span>
           </button>
         </div>
       ) : (
