@@ -16,7 +16,6 @@ export function toDateInputValue(s?: string | null) {
 export function commentDate(created_at: string) {
   const nowDate = new Date();
   const created_at_length = created_at.length - 1;
-  console.log();
 
   const dateComment = new Date(
     created_at.slice(0, created_at_length) + "+07:00",
