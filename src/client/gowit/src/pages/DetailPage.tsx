@@ -449,7 +449,7 @@ export default function DetailPage() {
                 {isLogin ? (
                   <div className="flex gap-4">
                     <img
-                      src="https://assets-a1.kompasiana.com/items/album/2021/03/24/blank-profile-picture-973460-1280-605aadc08ede4874e1153a12.png?t=o&v=780"
+                      src={isLogin.profile_picture_url}
                       className="w-10 h-10 rounded-full"
                       alt="Profile"
                     />
