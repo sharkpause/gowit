@@ -74,6 +74,8 @@ export type CommentType = {
   vote_state: number;
   vote_count: number;
   is_owner: boolean;
+  is_deleted: boolean;
+  is_updated: boolean;
 };
 
 export type RatingType = {

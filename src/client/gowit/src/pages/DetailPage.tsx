@@ -213,6 +213,18 @@ export default function DetailPage() {
     }
   };
 
+  const deleteComment = async (comment_id: number) => {
+    try {
+      const response = await serverApi.delete(
+        `/api/comments/${comment_id}/delete`,
+      );
+
+      fetchComment();
+    } catch (error) {
+      console.log("Error at deleteComment function", error);
+    }
+  };
+
   useEffect(() => {
     checkUser();
     fetchMovie();
@@ -251,26 +263,30 @@ export default function DetailPage() {
                     onError={(e) => (e.currentTarget.src = "/profilicon.png")}
                   />
                   <div className="flex gap-3 w-full mt-4">
-                    <button
-                      onClick={addMovieToFavorites}
-                      className={`flex-1 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg transition flex justify-center items-center gap-2 font-bold text-sm sm:text-base ${
-                        isFavorited
-                          ? "bg-[#E8630A]/60 hover:bg-[#E8630A]/50 text-white/60 cursor-not-allowed"
-                          : "bg-[#E8630A] hover:bg-[#C75409] text-white cursor-pointer"
-                      }`}
-                      disabled={isFavorited}
-                    >
-                      <img
-                        src="/watchlisticon.png"
-                        alt="Watchlist"
-                        className="w-4 h-4"
-                      />
-                      <span>
-                        {isFavorited
-                          ? "Added to Watchlist"
-                          : "Add to Watchlist"}
-                      </span>
-                    </button>
+                    {isLogin ? (
+                      <button
+                        onClick={addMovieToFavorites}
+                        className={`flex-1 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg transition flex justify-center items-center gap-2 font-bold text-sm sm:text-base ${
+                          isFavorited
+                            ? "bg-[#E8630A]/60 hover:bg-[#E8630A]/50 text-white/60 cursor-not-allowed"
+                            : "bg-[#E8630A] hover:bg-[#C75409] text-white cursor-pointer"
+                        }`}
+                        disabled={isFavorited}
+                      >
+                        <img
+                          src="/watchlisticon.png"
+                          alt="Watchlist"
+                          className="w-4 h-4"
+                        />
+                        <span>
+                          {isFavorited
+                            ? "Added to Watchlist"
+                            : "Add to Watchlist"}
+                        </span>
+                      </button>
+                    ) : (
+                      ""
+                    )}
                   </div>
                 </div>
                 <div className="md:col-span-2 space-y-4">
@@ -486,6 +502,7 @@ export default function DetailPage() {
                         comment={el}
                         likeDislikeComment={likeDislikeComment}
                         editComment={editComment}
+                        deleteComment={deleteComment}
                       />
                     );
                   })
