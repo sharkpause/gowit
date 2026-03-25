@@ -46,7 +46,7 @@ export default function Navbar() {
 
     const option = {
       threshold: 0.2,
-      rootMargin: "-120px 0px 0px 0px",
+      rootMargin: "-120px 0px -20% 0px",
     };
 
     const observer = new IntersectionObserver((entries) => {
