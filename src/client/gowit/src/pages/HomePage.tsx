@@ -293,284 +293,286 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div
-          id="movies"
-          className="px-3 sm:px-4 md:px-8 lg:px-32 pt-16 sm:pt-24 md:pt-32 pb-12 sm:pb-16"
-        >
-          <h1
-            className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold mb-4 sm:mb-5"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-            }}
-          >
-            Featured Today
-          </h1>
-
-          <div className="flex gap-8 relative">
-            <button
-              className={[
-                "prev-btn-featured absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
-                isBeginningFeatured
-                  ? "opacity-0 pointer-events-none"
-                  : "hover:scale-110",
-              ].join(" ")}
+        <section id="movies">
+          <div className="px-3 sm:px-4 md:px-8 lg:px-32 pt-16 sm:pt-24 md:pt-32 pb-12 sm:pb-16">
+            <h1
+              className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold mb-4 sm:mb-5"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+              }}
             >
-              <ArrowLeft className="text-white w-8 h-8" />
-            </button>
-            <button
-              className={[
-                "next-btn-featured absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
-                isEndFeatured
-                  ? "opacity-0 pointer-events-none"
-                  : "hover:scale-110",
-              ].join(" ")}
-            >
-              <ArrowRight className="text-white w-8 h-8" />
-            </button>
+              Featured Today
+            </h1>
 
-            {swiperFeatured ? (
-              <Swiper
-                modules={[Navigation]}
-                spaceBetween={16}
-                slidesPerView={2}
-                navigation={{
-                  prevEl: ".prev-btn-featured",
-                  nextEl: ".next-btn-featured",
-                }}
-                breakpoints={{
-                  640: { slidesPerView: 3 },
-                  1024: { slidesPerView: 4 },
-                  1280: { slidesPerView: 5 },
-                }}
-                loop={false}
-                onSwiper={syncEdgesFeatured}
-                onSlideChange={syncEdgesFeatured}
-                observer
-                observeParents
-                updateOnWindowResize
-                onResize={syncEdgesFeatured}
-                className="w-full"
+            <div className="flex gap-8 relative">
+              <button
+                className={[
+                  "prev-btn-featured absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                  isBeginningFeatured
+                    ? "opacity-0 pointer-events-none"
+                    : "hover:scale-110",
+                ].join(" ")}
               >
-                {movieFeatured.length
-                  ? movieFeatured.map((el) => {
-                      return (
-                        <SwiperSlide key={el.id}>
-                          <Link
-                            to={`/movies/${el.id}`}
-                            className="inline-block"
-                          >
-                            <img
-                              src={el.poster_image_url}
-                              alt="Movie Poster"
-                              className="h-72 w-52 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110"
-                            />
-                          </Link>
-                        </SwiperSlide>
-                      );
-                    })
-                  : ""}
-              </Swiper>
-            ) : movieFeatured.length ? (
-              movieFeatured.map((el) => {
-                return (
-                  <Link
-                    key={el.id}
-                    to={`/movies/${el.id}`}
-                    className="inline-block"
-                  >
-                    <img
-                      src={el.poster_image_url}
-                      alt="Movie Poster"
-                      className="h-72 w-52 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110"
-                    />
-                  </Link>
-                );
-              })
-            ) : (
-              ""
-            )}
-          </div>
-        </div>
-
-        <div
-          className="px-3 sm:px-4 md:px-8 lg:px-32 h-full pt-16 sm:pt-24 md:pt-24 pb-12 sm:pb-16 z-10"
-          id="top"
-        >
-          <h1
-            className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-            }}
-          >
-            Top Rating Movies
-          </h1>
-          <p className="text-[#F5F2F2] mt-2 sm:mt-3 mb-6 sm:mb-8 md:mb-12 font-light text-sm sm:text-base">
-            TV Shows and Movies Just For You
-          </p>
-          <div className="flex gap-8 relative">
-            <button
-              className={[
-                "prev-btn absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
-                isBeginning
-                  ? "opacity-0 pointer-events-none"
-                  : "hover:scale-110",
-              ].join(" ")}
-            >
-              <ArrowLeft className="text-white w-8 h-8" />
-            </button>
-            <button
-              className={[
-                "next-btn absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
-                isEnd ? "opacity-0 pointer-events-none" : "hover:scale-110",
-              ].join(" ")}
-            >
-              <ArrowRight className="text-white w-8 h-8" />
-            </button>
-
-            {swiperTop ? (
-              <Swiper
-                modules={[Navigation]}
-                spaceBetween={18}
-                slidesPerView={2}
-                navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
-                breakpoints={{
-                  640: { slidesPerView: 3 },
-                  1024: { slidesPerView: 4 },
-                }}
-                loop={false}
-                onSwiper={syncEdges}
-                onSlideChange={syncEdges}
-                observer
-                observeParents
-                updateOnWindowResize
-                onResize={syncEdges}
+                <ArrowLeft className="text-white w-8 h-8" />
+              </button>
+              <button
+                className={[
+                  "next-btn-featured absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                  isEndFeatured
+                    ? "opacity-0 pointer-events-none"
+                    : "hover:scale-110",
+                ].join(" ")}
               >
-                {topMovie.length
-                  ? topMovie.map((el, idx) => {
-                      return (
-                        <SwiperSlide key={el.id}>
-                          <Link
-                            to={`/movies/${el.id}`}
-                            className="inline-block"
-                          >
-                            <MovieCard
-                              poster_url={el.poster_image_url}
-                              rating={el.average_rating}
-                              title={el.title}
-                              description={el.description}
-                              year={el.release_year}
-                              rank={idx + 1}
-                            />
-                          </Link>
-                        </SwiperSlide>
-                      );
-                    })
-                  : ""}
-              </Swiper>
-            ) : topMovie.length ? (
-              topMovie.map((el, idx) => {
-                return (
-                  <Link
-                    to={`/movies/${el.id}`}
-                    key={el.id}
-                    className="inline-block"
-                  >
-                    <MovieCard
-                      poster_url={el.poster_image_url}
-                      rating={el.average_rating}
-                      title={el.title}
-                      description={el.description}
-                      year={el.release_year}
-                      rank={idx + 1}
-                    />
-                  </Link>
-                );
-              })
-            ) : (
-              ""
-            )}
-          </div>
-        </div>
+                <ArrowRight className="text-white w-8 h-8" />
+              </button>
 
-        <div className="px-3 sm:px-4 md:px-8 lg:px-32 h-full pt-16 sm:pt-24 md:pt-24 pb-12 sm:pb-16 z-10">
-          <h1
-            className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-            }}
-          >
-            Coming Soon
-          </h1>
-          <p className="text-[#F5F2F2] mt-2 sm:mt-3 mb-6 sm:mb-8 md:mb-12 font-light text-sm sm:text-base">
-            Trailers For Upcoming Releases
-          </p>
-          <div className="flex gap-8 relative">
-            <button
-              className={[
-                "prev-btn-cs absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
-                isBeginningCS
-                  ? "opacity-0 pointer-events-none"
-                  : "hover:scale-110",
-              ].join(" ")}
-            >
-              <ArrowLeft className="text-white w-8 h-8" />
-            </button>
-            <button
-              className={[
-                "next-btn-cs absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
-                isEndCS ? "opacity-0 pointer-events-none" : "hover:scale-110",
-              ].join(" ")}
-            >
-              <ArrowRight className="text-white w-8 h-8" />
-            </button>
-            {swiperComing ? (
-              <Swiper
-                modules={[Navigation]}
-                spaceBetween={48}
-                slidesPerView={1.2}
-                navigation={{ prevEl: ".prev-btn-cs", nextEl: ".next-btn-cs" }}
-                breakpoints={{
-                  640: { slidesPerView: 2 },
-                  1024: { slidesPerView: 4 },
-                }}
-                loop={false}
-                onSwiper={syncEdgesCS}
-                onSlideChange={syncEdgesCS}
-                observer
-                observeParents
-                updateOnWindowResize
-                onResize={syncEdgesCS}
-              >
-                {movieComingSoon?.map((el, idx) => {
+              {swiperFeatured ? (
+                <Swiper
+                  modules={[Navigation]}
+                  spaceBetween={16}
+                  slidesPerView={2}
+                  navigation={{
+                    prevEl: ".prev-btn-featured",
+                    nextEl: ".next-btn-featured",
+                  }}
+                  breakpoints={{
+                    640: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
+                    1280: { slidesPerView: 5 },
+                  }}
+                  loop={false}
+                  onSwiper={syncEdgesFeatured}
+                  onSlideChange={syncEdgesFeatured}
+                  observer
+                  observeParents
+                  updateOnWindowResize
+                  onResize={syncEdgesFeatured}
+                  className="w-full"
+                >
+                  {movieFeatured.length
+                    ? movieFeatured.map((el) => {
+                        return (
+                          <SwiperSlide key={el.id}>
+                            <Link
+                              to={`/movies/${el.id}`}
+                              className="inline-block"
+                            >
+                              <img
+                                src={el.poster_image_url}
+                                alt="Movie Poster"
+                                className="h-72 w-52 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110"
+                              />
+                            </Link>
+                          </SwiperSlide>
+                        );
+                      })
+                    : ""}
+                </Swiper>
+              ) : movieFeatured.length ? (
+                movieFeatured.map((el) => {
                   return (
-                    <SwiperSlide key={idx}>
-                      <TrailerCard
-                        image_url={el.thumbnail_url}
-                        duration={el.trailer_duration}
-                        date={el.release_date}
-                        title={el.title}
-                        trailer_url={el.trailer_url}
+                    <Link
+                      key={el.id}
+                      to={`/movies/${el.id}`}
+                      className="inline-block"
+                    >
+                      <img
+                        src={el.poster_image_url}
+                        alt="Movie Poster"
+                        className="h-72 w-52 object-cover rounded-lg cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/30 hover:brightness-110"
                       />
-                    </SwiperSlide>
+                    </Link>
                   );
-                })}
-              </Swiper>
-            ) : (
-              movieComingSoon?.map((el, idx) => {
-                return (
-                  <TrailerCard
-                    key={idx}
-                    image_url={el.thumbnail_url}
-                    duration={el.trailer_duration}
-                    date={el.release_date}
-                    title={el.title}
-                    trailer_url={el.trailer_url}
-                  />
-                );
-              })
-            )}
+                })
+              ) : (
+                ""
+              )}
+            </div>
           </div>
-        </div>
+
+          <div
+            className="px-3 sm:px-4 md:px-8 lg:px-32 h-full pt-16 sm:pt-24 md:pt-24 pb-12 sm:pb-16 z-10"
+            id="top"
+          >
+            <h1
+              className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              Top Rating Movies
+            </h1>
+            <p className="text-[#F5F2F2] mt-2 sm:mt-3 mb-6 sm:mb-8 md:mb-12 font-light text-sm sm:text-base">
+              TV Shows and Movies Just For You
+            </p>
+            <div className="flex gap-8 relative">
+              <button
+                className={[
+                  "prev-btn absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                  isBeginning
+                    ? "opacity-0 pointer-events-none"
+                    : "hover:scale-110",
+                ].join(" ")}
+              >
+                <ArrowLeft className="text-white w-8 h-8" />
+              </button>
+              <button
+                className={[
+                  "next-btn absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                  isEnd ? "opacity-0 pointer-events-none" : "hover:scale-110",
+                ].join(" ")}
+              >
+                <ArrowRight className="text-white w-8 h-8" />
+              </button>
+
+              {swiperTop ? (
+                <Swiper
+                  modules={[Navigation]}
+                  spaceBetween={18}
+                  slidesPerView={2}
+                  navigation={{ prevEl: ".prev-btn", nextEl: ".next-btn" }}
+                  breakpoints={{
+                    640: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
+                  }}
+                  loop={false}
+                  onSwiper={syncEdges}
+                  onSlideChange={syncEdges}
+                  observer
+                  observeParents
+                  updateOnWindowResize
+                  onResize={syncEdges}
+                >
+                  {topMovie.length
+                    ? topMovie.map((el, idx) => {
+                        return (
+                          <SwiperSlide key={el.id}>
+                            <Link
+                              to={`/movies/${el.id}`}
+                              className="inline-block"
+                            >
+                              <MovieCard
+                                poster_url={el.poster_image_url}
+                                rating={el.average_rating}
+                                title={el.title}
+                                description={el.description}
+                                year={el.release_year}
+                                rank={idx + 1}
+                              />
+                            </Link>
+                          </SwiperSlide>
+                        );
+                      })
+                    : ""}
+                </Swiper>
+              ) : topMovie.length ? (
+                topMovie.map((el, idx) => {
+                  return (
+                    <Link
+                      to={`/movies/${el.id}`}
+                      key={el.id}
+                      className="inline-block"
+                    >
+                      <MovieCard
+                        poster_url={el.poster_image_url}
+                        rating={el.average_rating}
+                        title={el.title}
+                        description={el.description}
+                        year={el.release_year}
+                        rank={idx + 1}
+                      />
+                    </Link>
+                  );
+                })
+              ) : (
+                ""
+              )}
+            </div>
+          </div>
+
+          <div className="px-3 sm:px-4 md:px-8 lg:px-32 h-full pt-16 sm:pt-24 md:pt-24 pb-12 sm:pb-16 z-10">
+            <h1
+              className="text-[#F5F2F2] text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              Coming Soon
+            </h1>
+            <p className="text-[#F5F2F2] mt-2 sm:mt-3 mb-6 sm:mb-8 md:mb-12 font-light text-sm sm:text-base">
+              Trailers For Upcoming Releases
+            </p>
+            <div className="flex gap-8 relative">
+              <button
+                className={[
+                  "prev-btn-cs absolute top-1/2 -translate-y-1/2 left-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                  isBeginningCS
+                    ? "opacity-0 pointer-events-none"
+                    : "hover:scale-110",
+                ].join(" ")}
+              >
+                <ArrowLeft className="text-white w-8 h-8" />
+              </button>
+              <button
+                className={[
+                  "next-btn-cs absolute top-1/2 -translate-y-1/2 right-4 z-20 p-2 bg-black/60 border-2 border-white/80 backdrop-blur-sm rounded-full transition",
+                  isEndCS ? "opacity-0 pointer-events-none" : "hover:scale-110",
+                ].join(" ")}
+              >
+                <ArrowRight className="text-white w-8 h-8" />
+              </button>
+              {swiperComing ? (
+                <Swiper
+                  modules={[Navigation]}
+                  spaceBetween={48}
+                  slidesPerView={1.2}
+                  navigation={{
+                    prevEl: ".prev-btn-cs",
+                    nextEl: ".next-btn-cs",
+                  }}
+                  breakpoints={{
+                    640: { slidesPerView: 2 },
+                    1024: { slidesPerView: 4 },
+                  }}
+                  loop={false}
+                  onSwiper={syncEdgesCS}
+                  onSlideChange={syncEdgesCS}
+                  observer
+                  observeParents
+                  updateOnWindowResize
+                  onResize={syncEdgesCS}
+                >
+                  {movieComingSoon?.map((el, idx) => {
+                    return (
+                      <SwiperSlide key={idx}>
+                        <TrailerCard
+                          image_url={el.thumbnail_url}
+                          duration={el.trailer_duration}
+                          date={el.release_date}
+                          title={el.title}
+                          trailer_url={el.trailer_url}
+                        />
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
+              ) : (
+                movieComingSoon?.map((el, idx) => {
+                  return (
+                    <TrailerCard
+                      key={idx}
+                      image_url={el.thumbnail_url}
+                      duration={el.trailer_duration}
+                      date={el.release_date}
+                      title={el.title}
+                      trailer_url={el.trailer_url}
+                    />
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </section>
 
         <div className="relative min-h-screen px-3 sm:px-4 md:px-8 lg:px-32 py-12 sm:py-16 md:py-20 lg:py-28">
           <div

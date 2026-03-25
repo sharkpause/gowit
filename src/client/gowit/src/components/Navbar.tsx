@@ -1,5 +1,5 @@
 import { Search, Plus, Menu, X, CircleUserRound } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { serverApi } from "../api";
 import type { MovieType, UserType } from "../type";
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [mobileSearch, setMobileSearch] = useState("");
   const [user, setUser] = useState<UserType>();
   const [loading, setLoading] = useState(true);
+  const [isIntersect, setIsIntersect] = useState("");
 
   const fetchMovieSearch = async () => {
     try {
@@ -39,6 +40,51 @@ export default function Navbar() {
     fetchUser();
     fetchMovieSearch();
   }, [search]);
+
+  useEffect(() => {
+    const sections = ["home", "movies", "contact-us"];
+
+    const option = {
+      threshold: 0.2,
+      rootMargin: "-120px 0px 0px 0px",
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsIntersect(entry.target.id);
+        }
+      });
+    }, option);
+
+    sections.forEach((section) => {
+      const element = document.getElementById(section);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      sections.forEach((section) => {
+        const element = document.getElementById(section);
+        if (element) {
+          observer.unobserve(element);
+        }
+      });
+    };
+  });
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/watchlist") {
+      setIsIntersect("watchlist");
+    } else if (location.pathname === "/profile") {
+      setIsIntersect("profile");
+    } else if (location.pathname === "/") {
+      setIsIntersect("home");
+    }
+  }, [location.pathname]);
 
   if (loading) {
     return (
@@ -78,21 +124,42 @@ export default function Navbar() {
         <div className="flex gap-6">
           <a
             href="/#home"
-            className="text-white hover:text-gray-300 transition-colors font-medium"
+            className={`font-medium transition-all relative pb-2 ${
+              isIntersect === "home"
+                ? "text-[#E8630A]"
+                : "text-white hover:text-gray-300"
+            }`}
           >
             Home
+            {isIntersect === "home" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E8630A] rounded-full" />
+            )}
           </a>
           <a
             href="/#movies"
-            className="text-white hover:text-gray-300 transition-colors font-medium"
+            className={`font-medium transition-all relative pb-2 ${
+              isIntersect === "movies"
+                ? "text-[#E8630A]"
+                : "text-white hover:text-gray-300"
+            }`}
           >
             Movies
+            {isIntersect === "movies" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E8630A] rounded-full" />
+            )}
           </a>
           <a
             href="/#contact-us"
-            className="text-white hover:text-gray-300 transition-colors font-medium"
+            className={`font-medium transition-all relative pb-2 ${
+              isIntersect === "contact-us"
+                ? "text-[#E8630A]"
+                : "text-white hover:text-gray-300"
+            }`}
           >
             Contact Us
+            {isIntersect === "contact-us" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E8630A] rounded-full" />
+            )}
           </a>
         </div>
 
@@ -158,7 +225,11 @@ export default function Navbar() {
           {user ? (
             <Link
               to="/watchlist"
-              className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
+              className={`flex items-center gap-2 font-medium transition-all ${
+                isIntersect === "watchlist"
+                  ? "text-[#E8630A]"
+                  : "text-white hover:text-gray-300"
+              }`}
             >
               <Plus size={20} className="border border-white/40 rounded" />
               <span className="font-medium hidden lg:inline">Watch List</span>
@@ -170,7 +241,11 @@ export default function Navbar() {
           {user ? (
             <Link
               to="/profile"
-              className="text-white hover:text-gray-300 transition-colors"
+              className={`transition-all ${
+                isIntersect === "profile"
+                  ? "ring-2 ring-[#E8630A] rounded-full"
+                  : "hover:opacity-80"
+              }`}
             >
               {user.profile_picture_url ? (
                 <img
@@ -259,21 +334,33 @@ export default function Navbar() {
           <div className="flex flex-col py-2">
             <a
               href="/"
-              className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium"
+              className={`px-6 py-3 font-medium transition-colors ${
+                isIntersect === "home"
+                  ? "text-[#E8630A] bg-white/5 border-l-2 border-[#E8630A]"
+                  : "text-white hover:bg-white/10"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </a>
             <a
               href="/#movies"
-              className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium"
+              className={`px-6 py-3 font-medium transition-colors ${
+                isIntersect === "movies"
+                  ? "text-[#E8630A] bg-white/5 border-l-2 border-[#E8630A]"
+                  : "text-white hover:bg-white/10"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Movies
             </a>
             <a
               href="/#contact-us"
-              className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium"
+              className={`px-6 py-3 font-medium transition-colors ${
+                isIntersect === "contact-us"
+                  ? "text-[#E8630A] bg-white/5 border-l-2 border-[#E8630A]"
+                  : "text-white hover:bg-white/10"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact Us
@@ -281,7 +368,11 @@ export default function Navbar() {
             {user ? (
               <Link
                 to="/watchlist"
-                className="text-white hover:bg-white/10 transition-colors px-6 py-3 font-medium flex items-center gap-2"
+                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                  isIntersect === "watchlist"
+                    ? "text-[#E8630A] bg-white/5 border-l-2 border-[#E8630A]"
+                    : "text-white hover:bg-white/10"
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Plus size={20} className="border border-white/40 rounded" />
@@ -296,7 +387,11 @@ export default function Navbar() {
             {user ? (
               <Link
                 to="/profile"
-                className="text-white hover:text-gray-300 transition-colors"
+                className={`inline-block transition-all ${
+                  isIntersect === "profile"
+                    ? "ring-2 ring-[#E8630A] rounded-full"
+                    : "hover:opacity-80"
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {user.profile_picture_url ? (
