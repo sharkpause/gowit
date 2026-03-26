@@ -57,6 +57,25 @@ export default function HomePage() {
     }
   }, [location]);
 
+  useEffect(() => {
+    if (location.hash === "#contact-us") {
+      const timer = setTimeout(() => {
+        const el = document.getElementById("contact-us");
+
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY - 50;
+
+          window.scrollTo({
+            top: y,
+            behavior: "smooth",
+          });
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
+
   const syncEdges = (swiper: SwiperType) => {
     setIsBeginning(swiper.isBeginning);
     setIsEnd(swiper.isEnd);
@@ -574,125 +593,124 @@ export default function HomePage() {
           </div>
         </section>
 
-        <div className="relative min-h-screen px-3 sm:px-4 md:px-8 lg:px-32 py-12 sm:py-16 md:py-20 lg:py-28">
-          <div
-            className="absolute inset-0 z-0 opacity-30 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://res.cloudinary.com/degghm3hf/image/upload/v1771170387/background_netflix_quf4jz.png')",
-            }}
-          />
+        <section id="contact-us">
+          <div className="relative min-h-screen px-3 sm:px-4 md:px-8 lg:px-32 py-12 sm:py-16 md:py-20 lg:py-28">
+            <div
+              className="absolute inset-0 z-0 opacity-30 bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "url('https://res.cloudinary.com/degghm3hf/image/upload/v1771170387/background_netflix_quf4jz.png')",
+              }}
+            />
 
-          <div
-            id="contact-us"
-            className="relative z-10 flex flex-col lg:flex-row items-start gap-8 sm:gap-10 md:gap-12 lg:gap-20 text-[#F5F2F2]"
-          >
-            <div className="flex-1 align-top space-y-6 sm:space-y-8">
-              <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
-                  Contact Us
-                </h1>
-                <p className="text-gray-300 text-base sm:text-lg">
-                  Having a Problem? We're ready to help!
-                </p>
-              </div>
+            <div className="relative z-10 flex flex-col lg:flex-row items-start gap-8 sm:gap-10 md:gap-12 lg:gap-20 text-[#F5F2F2]">
+              <div className="flex-1 align-top space-y-6 sm:space-y-8">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
+                    Contact Us
+                  </h1>
+                  <p className="text-gray-300 text-base sm:text-lg">
+                    Having a Problem? We're ready to help!
+                  </p>
+                </div>
 
-              <div className="space-y-4 sm:space-y-6">
-                <h3 className="font-bold text-base sm:text-lg md:text-xl text-white">
-                  Get in Touch
-                </h3>
+                <div className="space-y-4 sm:space-y-6">
+                  <h3 className="font-bold text-base sm:text-lg md:text-xl text-white">
+                    Get in Touch
+                  </h3>
 
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 group">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
-                      <MapPin className="w-5 h-5" />
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4 group">
+                      <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-gray-300 leading-relaxed">
+                          Jl. Anu Gatau Atur Aja Bang No 1, Batam, Indonesia
+                        </p>
+                      </div>
                     </div>
-                    <div className="pt-2">
-                      <p className="text-gray-300 leading-relaxed">
-                        Jl. Anu Gatau Atur Aja Bang No 1, Batam, Indonesia
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-4 group">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
-                      <Phone className="w-5 h-5" />
+                    <div className="flex items-center gap-4 group">
+                      <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
+                        <Phone className="w-5 h-5" />
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-gray-300">+62 813-3150-9003</p>
+                      </div>
                     </div>
-                    <div className="pt-2">
-                      <p className="text-gray-300">+62 813-3150-9003</p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-4 group">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
-                      <Mail className="w-5 h-5" />
-                    </div>
-                    <div className="pt-2">
-                      <p className="text-gray-300">gowitofficial@gmail.com</p>
+                    <div className="flex items-center gap-4 group">
+                      <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
+                        <Mail className="w-5 h-5" />
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-gray-300">gowitofficial@gmail.com</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="w-full lg:max-w-xl">
-              <div className="bg-[#0F1115]/95 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-2xl border border-white/20 shadow-2xl">
-                <h2 className="text-white text-center text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8">
-                  Question...?
-                </h2>
+              <div className="w-full lg:max-w-xl">
+                <div className="bg-[#0F1115]/95 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-2xl border border-white/20 shadow-2xl">
+                  <h2 className="text-white text-center text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8">
+                    Question...?
+                  </h2>
 
-                <form onSubmit={postMail} className="space-y-4 sm:space-y-5">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Name..."
-                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
+                  <form onSubmit={postMail} className="space-y-4 sm:space-y-5">
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Name..."
+                        className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </div>
 
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Email..."
-                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Email..."
+                        className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
 
-                  <div>
-                    <textarea
-                      placeholder="Messages..."
-                      rows={5}
-                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl resize-none focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                    />
-                  </div>
+                    <div>
+                      <textarea
+                        placeholder="Messages..."
+                        rows={5}
+                        className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-white/10 text-white placeholder-gray-400 rounded-xl resize-none focus:outline-none border border-white/20 hover:border-white/40 focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all font-medium text-sm sm:text-base"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                      />
+                    </div>
 
-                  <div className="flex justify-end pt-2 sm:pt-3">
-                    <button
-                      type="submit"
-                      disabled={loadingMail}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-[#E8630A] text-white font-bold text-base sm:text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                    >
-                      {loadingMail ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        "Submit"
-                      )}
-                    </button>
-                  </div>
-                </form>
+                    <div className="flex justify-end pt-2 sm:pt-3">
+                      <button
+                        type="submit"
+                        disabled={loadingMail}
+                        className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-[#E8630A] text-white font-bold text-base sm:text-lg rounded-xl hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                      >
+                        {loadingMail ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          "Submit"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         <Footer />
       </section>

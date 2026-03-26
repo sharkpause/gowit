@@ -142,8 +142,7 @@ export default function DetailPage() {
             "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
         },
       });
-
-      navigate("/watchlist");
+      checkFavoriteMovie();
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
