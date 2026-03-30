@@ -13,11 +13,13 @@ import type { CommentType } from "../type";
 
 export default function Comment({
   comment,
+  fetchComment,
   likeDislikeComment,
   editComment,
   deleteComment,
 }: {
   comment: CommentType;
+  fetchComment: () => Promise<void>;
   likeDislikeComment: (comment_id: number, score: number) => Promise<void>;
   editComment: (comment_id: number, content: string) => Promise<void>;
   deleteComment: (comment_id: number) => Promise<void>;
@@ -69,6 +71,7 @@ export default function Comment({
         },
       );
       fetchReply();
+      fetchComment();
       setText("");
       setActive(false);
     } catch (error) {
