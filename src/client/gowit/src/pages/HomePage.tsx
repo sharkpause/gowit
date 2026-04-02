@@ -310,7 +310,6 @@ export default function HomePage() {
     <>
       <Navbar />
       <main className="bg-[#050608] overflow-x-hidden">
-
         {/* HERO SECTION */}
         <section id="home">
           <div className="relative min-h-screen flex items-center justify-center pt-8">
@@ -318,35 +317,35 @@ export default function HomePage() {
               <AnimatePresence mode="popLayout">
                 <motion.div
                   key={heroSlides[bgIndex].image}
-                  initial={{ 
-                    y: bgIndex === 0 ? "10%" : 0, 
+                  initial={{
+                    y: bgIndex === 0 ? "10%" : 0,
                     x: bgIndex === 0 ? 0 : "100%",
                     opacity: 0,
                     scale: 1.05,
-                    filter: "blur(15px) brightness(0.5)" // Mulai dari gelap & blur
+                    filter: "blur(15px) brightness(0.5)", // Mulai dari gelap & blur
                   }}
-                  animate={{ 
-                    y: 0, 
-                    x: 0, 
+                  animate={{
+                    y: 0,
+                    x: 0,
                     // Herobg1 dibuat paling terang (0.7), Herobg 2-3 sedikit di bawahnya (0.5)
                     // Nilai ini jauh lebih terang dari 0.3 yang lama
-                    opacity: bgIndex === 0 ? 0.7 : 0.5, 
+                    opacity: bgIndex === 0 ? 0.7 : 0.5,
                     scale: 1,
                     // brightness(1.2) memberikan efek lampu tambahan pada gambar
-                    filter: "blur(0px) brightness(1.3)", 
+                    filter: "blur(0px) brightness(1.3)",
                   }}
-                  exit={{ 
-                    x: "-50%", 
+                  exit={{
+                    x: "-50%",
                     opacity: 0,
                     filter: "blur(10px) brightness(0.5)",
-                    transition: { 
-                      duration: 2.2, 
-                      ease: [0.4, 0, 0.2, 1] 
-                    } 
+                    transition: {
+                      duration: 2.2,
+                      ease: [0.4, 0, 0.2, 1],
+                    },
                   }}
-                  transition={{ 
-                    duration: bgIndex === 0 ? 4.0 : 3.0, 
-                    ease: [0.16, 1, 0.3, 1] 
+                  transition={{
+                    duration: bgIndex === 0 ? 4.0 : 3.0,
+                    ease: [0.16, 1, 0.3, 1],
                   }}
                   className="absolute inset-0 bg-cover bg-center"
                   style={{
@@ -360,55 +359,45 @@ export default function HomePage() {
 
             <div className="relative flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left">
               <AnimatePresence mode="wait">
-  <motion.div
-    key={bgIndex}
-    initial={{ y: 20, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    exit={{ y: -20, opacity: 0 }}
-    transition={{ duration: 0.8, ease: "easeOut" }}
-    className="flex flex-col items-start w-full max-w-2xl"
-  >
-    {heroSlides[bgIndex].isMovie && (
-      <div className="flex items-center gap-4 mb-4">
-        <span className="bg-[#E8630A] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-          Movie
-        </span>
-        
-        {/* BAGIAN RATING & TAHUN */}
-        <div className="flex items-center gap-3">
-          <span className="text-[#F5F2F2]/80 text-xs font-medium">
-            {heroSlides[bgIndex].year}
-          </span>
-          
-          {/* Garis pemisah kecil */}
-          <span className="w-[1px] h-3 bg-white/20"></span>
-          
-          <div className="flex items-center gap-1">
-            {/* Ikon Bintang (SVG) */}
-            <svg className="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            <span className="text-[#F5F2F2] text-xs font-bold">
-              {heroSlides[bgIndex].rating}
-            </span>
-          </div>
-        </div>
-      </div>
-    )}
+                <motion.div
+                  key={bgIndex}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="flex flex-col items-start w-full max-w-2xl"
+                >
+                  {heroSlides[bgIndex].isMovie && (
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="bg-[#E8630A] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                        Movie
+                      </span>
 
-    {heroSlides[bgIndex].logoImage && (
-      <img
-        src={heroSlides[bgIndex].logoImage}
-        alt="Movie Logo"
-        className={`h-auto w-auto mb-5 object-contain ${heroSlides[bgIndex].logoSize}`}
-      />
-    )}
+                      {/* BAGIAN RATING & TAHUN */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-[#F5F2F2]/80 text-xs font-medium">
+                          {heroSlides[bgIndex].year}
+                        </span>
 
-    <p className="text-[13px] md:text-[14px] text-[#F5F2F2]/70 max-w-lg leading-relaxed text-left">
-      {heroSlides[bgIndex].desc}
-    </p>
-  </motion.div>
-</AnimatePresence>
+                        {/* Garis pemisah kecil */}
+                        <span className="w-[1px] h-3 bg-white/20"></span>
+                      </div>
+                    </div>
+                  )}
+
+                  {heroSlides[bgIndex].logoImage && (
+                    <img
+                      src={heroSlides[bgIndex].logoImage}
+                      alt="Movie Logo"
+                      className={`h-auto w-auto mb-5 object-contain ${heroSlides[bgIndex].logoSize}`}
+                    />
+                  )}
+
+                  <p className="text-[13px] md:text-[14px] text-[#F5F2F2]/70 max-w-lg leading-relaxed text-left">
+                    {heroSlides[bgIndex].desc}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
             </div>
 
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center gap-2">
