@@ -42,8 +42,8 @@ export default function HomePage() {
   const location = useLocation();
   const [bgIndex, setBgIndex] = useState(0);
   const goToSlide = (index: number) => {
-  setBgIndex(index);
-};
+    setBgIndex(index);
+  };
 
   const heroSlides = [
     {
@@ -56,7 +56,7 @@ export default function HomePage() {
       isMovie: true,
     },
     {
-      image: "/Herobg2.jpeg", 
+      image: "/Herobg2.jpeg",
       logoImage: "/Herobg2logo.png",
       logoSize: "max-h-[65px] md:max-h-[95px]",
       desc: "In the wake of the devastating war against the RDA and the loss of their eldest son, Jake Sully and Neytiri face a new threat on Pandora: the Ash People, a violent and power hungry Na'vi tribe led by the ruthless Varang.",
@@ -78,7 +78,7 @@ export default function HomePage() {
   useEffect(() => {
     const interval = setInterval(() => {
       setBgIndex((prev) => (prev + 1) % heroSlides.length);
-    }, 8000); 
+    }, 8000);
     return () => clearInterval(interval);
   }, [heroSlides.length]);
 
@@ -309,94 +309,119 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main className="bg-[#0F1115] overflow-x-hidden">
-
-       {/* HERO SECTION */}
-        <section className="relative min-h-screen flex items-center justify-center">
-          <div className="absolute inset-0 z-0 overflow-hidden">
-            <AnimatePresence> 
-              <motion.div
-                key={heroSlides[bgIndex].image}
-                initial={{ 
-                  y: bgIndex === 0 ? 100 : 0, 
-                  x: bgIndex === 0 ? 0 : "100%", 
-                  opacity: 0 
-                }}
-                animate={{ y: 0, x: 0, opacity: 0.3 }}
-                exit={{ x: "-100%", opacity: 0 }}
-                transition={{ duration: 2, ease: "easeOut" }}
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url('${heroSlides[bgIndex].image}')` }}
-              />
-            </AnimatePresence>
-            
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0F1115] via-transparent to-transparent" />
-          </div>
-
-          <div
-            className="relative flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left"
-            id="home"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={bgIndex}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="flex flex-col items-start w-full max-w-2xl"
-              >
-                {heroSlides[bgIndex].isMovie && (
-                  <div className="flex items-center gap-4 mb-4">
-                    <span className="bg-[#E8630A] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                      Movie
-                    </span>
-                    <span className="text-[#F5F2F2]/80 text-xs font-medium">
-                      {heroSlides[bgIndex].year}
-                    </span>
-                    <span className="text-[#F5F2F2]/80 text-xs font-medium flex items-center gap-1">
-                      <span className="text-yellow-500">★</span> {heroSlides[bgIndex].rating}
-                    </span>
-                  </div>
-                )}
-
-                {heroSlides[bgIndex].logoImage && (
-                  <img 
-                    src={heroSlides[bgIndex].logoImage} 
-                    alt="Movie Logo" 
-                    // Kita panggil logoSize dari array di sini
-                    className={`h-auto w-auto mb-5 object-contain ${heroSlides[bgIndex].logoSize}`}
-                  />
-                )}
-
-                <p className="text-[13px] md:text-[14px] text-[#F5F2F2]/70 max-w-lg leading-relaxed text-left">
-                  {heroSlides[bgIndex].desc}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center gap-2">
-            {heroSlides.map((_, index) => (
-              <button
-                key={index}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setBgIndex(index);
-                }}
-                className="group relative p-4 cursor-pointer focus:outline-none"
-              >
-                <div 
-                  className={`transition-all duration-500 rounded-full ${
-                    bgIndex === index 
-                      ? "w-2 h-2 bg-[#E8630A]" 
-                      : "w-2 h-2 bg-white/20 group-hover:bg-white/50"
-                  }`}
+      <main className="bg-[#050608] overflow-x-hidden">
+        {/* HERO SECTION */}
+        <section id="home">
+          <div className="relative min-h-screen flex items-center justify-center pt-8">
+            <div className="absolute inset-0 z-0 overflow-hidden">
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  key={heroSlides[bgIndex].image}
+                  initial={{
+                    y: bgIndex === 0 ? "10%" : 0,
+                    x: bgIndex === 0 ? 0 : "100%",
+                    opacity: 0,
+                    scale: 1.05,
+                    filter: "blur(15px) brightness(0.5)", // Mulai dari gelap & blur
+                  }}
+                  animate={{
+                    y: 0,
+                    x: 0,
+                    // Herobg1 dibuat paling terang (0.7), Herobg 2-3 sedikit di bawahnya (0.5)
+                    // Nilai ini jauh lebih terang dari 0.3 yang lama
+                    opacity: bgIndex === 0 ? 0.7 : 0.5,
+                    scale: 1,
+                    // brightness(1.2) memberikan efek lampu tambahan pada gambar
+                    filter: "blur(0px) brightness(1.3)",
+                  }}
+                  exit={{
+                    x: "-50%",
+                    opacity: 0,
+                    filter: "blur(10px) brightness(0.5)",
+                    transition: {
+                      duration: 2.2,
+                      ease: [0.4, 0, 0.2, 1],
+                    },
+                  }}
+                  transition={{
+                    duration: bgIndex === 0 ? 4.0 : 3.0,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url('${heroSlides[bgIndex].image}')`,
+                  }}
                 />
-              </button>
-            ))}
-          </div>  
-        </section> 
+              </AnimatePresence>
+
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f1114] via-transparent to-transparent" />
+            </div>
+
+            <div className="relative flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={bgIndex}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="flex flex-col items-start w-full max-w-2xl"
+                >
+                  {heroSlides[bgIndex].isMovie && (
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="bg-[#E8630A] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                        Movie
+                      </span>
+
+                      {/* BAGIAN RATING & TAHUN */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-[#F5F2F2]/80 text-xs font-medium">
+                          {heroSlides[bgIndex].year}
+                        </span>
+
+                        {/* Garis pemisah kecil */}
+                        <span className="w-[1px] h-3 bg-white/20"></span>
+                      </div>
+                    </div>
+                  )}
+
+                  {heroSlides[bgIndex].logoImage && (
+                    <img
+                      src={heroSlides[bgIndex].logoImage}
+                      alt="Movie Logo"
+                      className={`h-auto w-auto mb-5 object-contain ${heroSlides[bgIndex].logoSize}`}
+                    />
+                  )}
+
+                  <p className="text-[13px] md:text-[14px] text-[#F5F2F2]/70 max-w-lg leading-relaxed text-left">
+                    {heroSlides[bgIndex].desc}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center gap-2">
+              {heroSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setBgIndex(index);
+                  }}
+                  className="group relative p-4 cursor-pointer focus:outline-none"
+                >
+                  <div
+                    className={`transition-all duration-500 rounded-full ${
+                      bgIndex === index
+                        ? "w-2 h-2 bg-[#E8630A]"
+                        : "w-2 h-2 bg-white/20 group-hover:bg-white/50"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <section id="movies">
           <div className="px-3 sm:px-4 md:px-8 lg:px-32 pt-16 sm:pt-24 md:pt-32 pb-12 sm:pb-16">
