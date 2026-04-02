@@ -21,6 +21,7 @@ export default function DetailPage() {
   const [commentText, setCommentText] = useState("");
   const [active, setActive] = useState(false);
   const [isEditRating, setIsEditRating] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
 
   let { id } = useParams();
   const navigate = useNavigate();
@@ -162,8 +163,8 @@ export default function DetailPage() {
       const response = await serverApi.get(
         `/api/films/${id}/comments?sort=created_at&order=DESC`,
       );
-
-      setDataComment(response.data);
+      setCommentCount(response.data.comment_count);
+      setDataComment(response.data.comments);
     } catch (error) {
       console.log("Error at Fetch Comment", error);
     }
@@ -442,7 +443,7 @@ export default function DetailPage() {
               {/* Comment Section */}
               <div className="mt-10">
                 <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-6 sm:mb-8">
-                  Comments ({dataComment.length})
+                  Comments ({commentCount})
                 </h3>
 
                 {isLogin ? (
@@ -498,6 +499,7 @@ export default function DetailPage() {
                       <Comment
                         key={el.id}
                         comment={el}
+                        fetchComment={fetchComment}
                         likeDislikeComment={likeDislikeComment}
                         editComment={editComment}
                         deleteComment={deleteComment}

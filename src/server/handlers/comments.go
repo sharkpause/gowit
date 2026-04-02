@@ -246,11 +246,17 @@ func GetCommentByFilmID(database *sql.DB) gin.HandlerFunc { // this will only li
 			context.JSON(http.StatusInternalServerError, gin.H{"message": "Error reading comments"})
 			return
 		}
-
+		var commentCount int
+		if err =database.QueryRow("SELECT COUNT(*) FROM comments WHERE film_id = ? AND is_deleted = 0",film_id).Scan(&commentCount); err != nil{
+			fmt.Println(err)
+		}
 		if comments == nil {
 			comments = []models.Comment{}
 		}
-		context.JSON(http.StatusOK, comments)
+		context.JSON(http.StatusOK ,gin.H{
+			"comments": comments,
+			"comment_count": commentCount,
+		})
 	}
 
 }
