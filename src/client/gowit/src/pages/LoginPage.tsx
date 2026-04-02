@@ -56,6 +56,14 @@ export default function LoginPage() {
   const loginSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      if (!email) {
+        throw new Error("Email is required!");
+      }
+
+      if (!password) {
+        throw new Error("Password is required!");
+      }
+
       const response = await serverApi.post("/api/login", { email, password });
 
       Swal.fire({
@@ -75,6 +83,8 @@ export default function LoginPage() {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else if (error instanceof Error) {
+        errorAlert(capitalizeEachWord(error.message));
       } else {
         console.log("Error at Login Page: ", error);
       }
