@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import LightRays from "../components/LightRays";
 import { ArrowLeft, ArrowRight, Mail, MapPin, Phone } from "lucide-react";
-// import MovieCard from "../components/MovieCard";
 import axios from "axios";
 import MovieCard from "../components/MovieCard";
 import TrailerCard from "../components/TrailerCard";
@@ -13,6 +11,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import { Navigation } from "swiper/modules";
 
+import { motion, AnimatePresence } from "framer-motion";
 import "swiper/swiper-bundle.css";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
@@ -41,6 +40,47 @@ export default function HomePage() {
   const [loadingComingSoon, setLoadingComingSoon] = useState(true);
 
   const location = useLocation();
+  const [bgIndex, setBgIndex] = useState(0);
+  const goToSlide = (index: number) => {
+  setBgIndex(index);
+};
+
+  const heroSlides = [
+    {
+      image: "/Herobg1.jpg",
+      logoImage: "/Herobg1logo.png",
+      logoSize: "max-h-[100px] md:max-h-[160px]",
+      desc: "In the heart of New York City, the powerful Corleone crime family faces rising tensions as rival gangs and dangerous business deals threaten their empire. When Don Vito Corleone is attacked, his reluctant son Michael is drawn into the violent underworld, setting him on a path that will change him forever. ",
+      rating: "7.3",
+      year: "1972",
+      isMovie: true,
+    },
+    {
+      image: "/Herobg2.jpeg", 
+      logoImage: "/Herobg2logo.png",
+      logoSize: "max-h-[65px] md:max-h-[95px]",
+      desc: "In the wake of the devastating war against the RDA and the loss of their eldest son, Jake Sully and Neytiri face a new threat on Pandora: the Ash People, a violent and power hungry Na'vi tribe led by the ruthless Varang.",
+      rating: "7.3",
+      year: "2025",
+      isMovie: true,
+    },
+    {
+      image: "/Herobg3.webp",
+      logoImage: "/Herobg3logo.png",
+      logoSize: "max-h-[100px] md:max-h-[160px]",
+      desc: "After the world has forgotten who he truly is, Peter Parker starts over in New York City—alone, anonymous, and determined to rebuild his life. But as new threats rise from the shadows and old enemies resurface, he must redefine what it means to be a hero without the support he once had.",
+      rating: "7.3",
+      year: "2026",
+      isMovie: true,
+    },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % heroSlides.length);
+    }, 8000); 
+    return () => clearInterval(interval);
+  }, [heroSlides.length]);
 
   useEffect(() => {
     if (location.hash === "#movies") {
@@ -269,48 +309,94 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <section className=" min-h-screen bg-[#0F1115] ">
-        {/* Background Image with Opacity */}
-        <div
-          className="absolute inset-0 z-0 opacity-30 bg-cover bg-center"
-          style={{ backgroundImage: "url('/netflix.jpg')" }}
-        />
+      <main className="bg-[#0F1115] overflow-x-hidden">
 
-        {/* Light Rays Effect */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <LightRays />
-        </div>
-
-        <div
-          className="relative flex flex-col z-10 min-h-screen justify-center items-center px-4 sm:px-6 md:px-8 text-center pt-20 sm:pt-24 md:pt-0"
-          id="home"
-        >
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#F5F2F2] mt-4 sm:mt-6 md:mt-8">
-            Discover Movies with Smarter Insights
-          </h1>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#F5F2F2] mt-3 sm:mt-4 md:mt-4">
-            Built for discovery, powered by data.
-          </h1>
-
-          <p className="text-base sm:text-lg md:text-xl text-[#F5F2F2]/80 mt-4 sm:mt-5 md:mt-6 max-w-2xl px-2">
-            Explore films, track your favorites, and never miss what to watch
-            next.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8 w-full sm:w-auto px-4 sm:px-0">
-            <a
-              href="#movies"
-              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-[#E8630A] text-white font-semibold rounded-full hover:bg-[#C75409] transition-all shadow-lg shadow-[#E8630A]/30 text-center"
-            >
-              Explore Movies
-            </a>
-            <a
-              href="#top"
-              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-white/10 text-[#F5F2F2] font-semibold rounded-full hover:bg-white/20 transition-all ring-1 ring-white/20 backdrop-blur-sm text-center"
-            >
-              Explore Top Films
-            </a>
+       {/* HERO SECTION */}
+        <section className="relative min-h-screen flex items-center justify-center">
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <AnimatePresence> 
+              <motion.div
+                key={heroSlides[bgIndex].image}
+                initial={{ 
+                  y: bgIndex === 0 ? 100 : 0, 
+                  x: bgIndex === 0 ? 0 : "100%", 
+                  opacity: 0 
+                }}
+                animate={{ y: 0, x: 0, opacity: 0.3 }}
+                exit={{ x: "-100%", opacity: 0 }}
+                transition={{ duration: 2, ease: "easeOut" }}
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url('${heroSlides[bgIndex].image}')` }}
+              />
+            </AnimatePresence>
+            
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0F1115] via-transparent to-transparent" />
           </div>
-        </div>
+
+          <div
+            className="relative flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left"
+            id="home"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={bgIndex}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="flex flex-col items-start w-full max-w-2xl"
+              >
+                {heroSlides[bgIndex].isMovie && (
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className="bg-[#E8630A] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                      Movie
+                    </span>
+                    <span className="text-[#F5F2F2]/80 text-xs font-medium">
+                      {heroSlides[bgIndex].year}
+                    </span>
+                    <span className="text-[#F5F2F2]/80 text-xs font-medium flex items-center gap-1">
+                      <span className="text-yellow-500">★</span> {heroSlides[bgIndex].rating}
+                    </span>
+                  </div>
+                )}
+
+                {heroSlides[bgIndex].logoImage && (
+                  <img 
+                    src={heroSlides[bgIndex].logoImage} 
+                    alt="Movie Logo" 
+                    // Kita panggil logoSize dari array di sini
+                    className={`h-auto w-auto mb-5 object-contain ${heroSlides[bgIndex].logoSize}`}
+                  />
+                )}
+
+                <p className="text-[13px] md:text-[14px] text-[#F5F2F2]/70 max-w-lg leading-relaxed text-left">
+                  {heroSlides[bgIndex].desc}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center gap-2">
+            {heroSlides.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setBgIndex(index);
+                }}
+                className="group relative p-4 cursor-pointer focus:outline-none"
+              >
+                <div 
+                  className={`transition-all duration-500 rounded-full ${
+                    bgIndex === index 
+                      ? "w-2 h-2 bg-[#E8630A]" 
+                      : "w-2 h-2 bg-white/20 group-hover:bg-white/50"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>  
+        </section> 
 
         <section id="movies">
           <div className="px-3 sm:px-4 md:px-8 lg:px-32 pt-16 sm:pt-24 md:pt-32 pb-12 sm:pb-16">
@@ -713,7 +799,7 @@ export default function HomePage() {
         </section>
 
         <Footer />
-      </section>
+      </main>
     </>
   );
 }
