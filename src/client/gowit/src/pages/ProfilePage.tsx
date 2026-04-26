@@ -57,6 +57,11 @@ export default function ProfilePage() {
         profile_picture_url: picture,
       });
 
+      if (!response.data) {
+        console.log("Update User gagal:", response.data.message);
+        return;
+      }
+
       Swal.fire({
         title: "Profile Updated Successful!",
 
@@ -86,7 +91,7 @@ export default function ProfilePage() {
 
   const logout = async () => {
     try {
-      const response = await serverApi.post("/api/logout");
+      await serverApi.post("/api/logout");
 
       Swal.fire({
         title: "Logout Successful!",

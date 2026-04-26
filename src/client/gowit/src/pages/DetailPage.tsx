@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import type { CommentType, MovieType, RatingType, UserType } from "../type";
 import { serverApi } from "../api";
 import { errorAlert } from "../helper/errorAlert";
@@ -22,9 +22,9 @@ export default function DetailPage() {
   const [active, setActive] = useState(false);
   const [isEditRating, setIsEditRating] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
+  const [alertComment, setAlertComment] = useState(true);
 
   let { id } = useParams();
-  const navigate = useNavigate();
 
   const fetchMovie = async () => {
     try {
@@ -173,9 +173,8 @@ export default function DetailPage() {
   const postComment = async () => {
     try {
       if (!commentText.trim()) return;
-      // TODO: POST comment to API
 
-      const response = await serverApi.post(`/api/films/${id}/comments`, {
+      await serverApi.post(`/api/films/${id}/comments`, {
         content: commentText,
       });
       fetchComment();
@@ -188,7 +187,7 @@ export default function DetailPage() {
 
   const likeDislikeComment = async (comment_id: number, score: number) => {
     try {
-      const response = await serverApi.post("/api/comments/like", {
+      await serverApi.post("/api/comments/like", {
         comment_id: comment_id,
         score: score,
       });
@@ -200,12 +199,9 @@ export default function DetailPage() {
 
   const editComment = async (comment_id: number, content: string) => {
     try {
-      const response = await serverApi.post(
-        `/api/comments/${comment_id}/edits`,
-        {
-          content: content,
-        },
-      );
+      await serverApi.post(`/api/comments/${comment_id}/edits`, {
+        content: content,
+      });
       fetchComment();
     } catch (error) {
       console.log("Error at editComment Function", error);
@@ -214,9 +210,7 @@ export default function DetailPage() {
 
   const deleteComment = async (comment_id: number) => {
     try {
-      const response = await serverApi.delete(
-        `/api/comments/${comment_id}/delete`,
-      );
+      await serverApi.delete(`/api/comments/${comment_id}/delete`);
 
       fetchComment();
     } catch (error) {
@@ -515,6 +509,60 @@ export default function DetailPage() {
             </div>
           </div>
         </div>
+        {alertComment ? (
+          <div
+            onClick={() => setAlertComment(false)}
+            className="fixed inset-0 z-50 flex justify-center items-center min-h-screen bg-black/60 backdrop-blur-sm"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0F1115] rounded-[2.5rem] p-10 max-w-sm w-full shadow-[0_0_50px_-12px_rgba(0,0,0,1)] animate-impact"
+            >
+              <div className="flex flex-col items-center mb-8">
+                {/* ICON */}
+                <div className="mb-3">
+                  <div className="bg-white/5 border border-rose-900/30 p-6 rounded-[2rem] transition-all duration-500 shadow-[0_0_60px_rgba(244,63,94,0.15)]">
+                    <svg
+                      className="w-10 h-10 text-rose-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              {/* TEXT */}
+              <div className="text-center mb-10">
+                <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">
+                  Comment Etiquette
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  We've detected language that may be inconsistent with our
+                  community guidelines. Let's keep the conversation professional
+                  and constructive.
+                </p>
+              </div>
+              {/* BUTTON */}
+              <div className="space-y-3">
+                <button className="w-full bg-[#E8630A] hover:bg-[#C75409] text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-[#E8630A]/20 active:scale-[0.98]">
+                  Edit Comment
+                </button>
+                <button className="w-full py-3 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm">
+                  Delete Comment
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          ""
+        )}
       </div>
     </>
   );
