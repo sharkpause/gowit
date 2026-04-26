@@ -1,7 +1,5 @@
 import { Dot, NotebookPen, Star, X } from "lucide-react";
 import { useState } from "react";
-import { serverApi } from "../api";
-import Swal from "sweetalert2";
 
 export default function WatchListCard({
   id,

@@ -1,4 +1,4 @@
-import { Heart, X, Download, Upload, Binary } from "lucide-react";
+import { Heart, X, Download, Upload } from "lucide-react";
 import { Link } from "react-router";
 
 import type { ImportType, WatchListType } from "../type";
@@ -36,7 +36,7 @@ export default function FavoritePage() {
 
   const deleteFavorite = async (id: number) => {
     try {
-      const response = await serverApi.delete("/api/favorites/" + id);
+      await serverApi.delete("/api/favorites/" + id);
 
       fetchFavorite();
     } catch (error) {
@@ -81,7 +81,7 @@ export default function FavoritePage() {
         errorAlert("Please Input Excel File First!");
       }
 
-      const response = await serverApi.post("/api/films/add", {
+      await serverApi.post("/api/films/add", {
         titles: fileImport,
       });
 
@@ -144,7 +144,7 @@ export default function FavoritePage() {
 
   const updateNote = async (id: number, note: string) => {
     try {
-      const response = await serverApi.patch("/api/favorites/" + id, {
+      await serverApi.patch("/api/favorites/" + id, {
         notes: note,
       });
       Swal.fire({

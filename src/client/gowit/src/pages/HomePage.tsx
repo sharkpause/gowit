@@ -41,9 +41,6 @@ export default function HomePage() {
 
   const location = useLocation();
   const [bgIndex, setBgIndex] = useState(0);
-  const goToSlide = (index: number) => {
-    setBgIndex(index);
-  };
 
   const heroSlides = [
     {

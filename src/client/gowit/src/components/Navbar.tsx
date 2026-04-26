@@ -1,4 +1,4 @@
-import { Search, Plus, Menu, X, CircleUserRound } from "lucide-react";
+import { Search, Plus, Menu, X, CircleUserRound, Film } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { serverApi } from "../api";
@@ -83,6 +83,8 @@ export default function Navbar() {
       setIsIntersect("profile");
     } else if (location.pathname === "/") {
       setIsIntersect("home");
+    } else if (location.pathname === "/movies") {
+      setIsIntersect("movielist");
     }
   }, [location.pathname]);
 
@@ -109,7 +111,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-black/95 backdrop-blur-sm fixed left-0 right-0 z-50 shadow-lg shadow-black/30">
-      <div className="h-16 flex items-center justify-between px-4 md:px-8 lg:px-32">
+      <div className="h-16 flex items-center justify-between px-4 md:px-6 lg:px-28">
         <div className="flex items-center gap-3">
           <img
             src="../logo.png"
@@ -121,12 +123,12 @@ export default function Navbar() {
           </h1>
         </div>
 
-        <div className="flex gap-6">
+        <div className="flex  gap-6">
           <a
             href="/#home"
-            className={`font-medium transition-all relative pb-2 ${
+            className={`font-medium transition-all relative  ${
               isIntersect === "home"
-                ? "text-[#E8630A]"
+                ? "text-[#E8630A] pb-2"
                 : "text-white hover:text-gray-300"
             }`}
           >
@@ -137,9 +139,9 @@ export default function Navbar() {
           </a>
           <a
             href="/#movies"
-            className={`font-medium transition-all relative pb-2 ${
+            className={`font-medium transition-all relative  ${
               isIntersect === "movies"
-                ? "text-[#E8630A]"
+                ? "text-[#E8630A] pb-2"
                 : "text-white hover:text-gray-300"
             }`}
           >
@@ -150,9 +152,9 @@ export default function Navbar() {
           </a>
           <a
             href="/#contact-us"
-            className={`font-medium transition-all relative pb-2 ${
+            className={`font-medium transition-all relative  ${
               isIntersect === "contact-us"
-                ? "text-[#E8630A]"
+                ? "text-[#E8630A] pb-2"
                 : "text-white hover:text-gray-300"
             }`}
           >
@@ -163,7 +165,7 @@ export default function Navbar() {
           </a>
         </div>
 
-        <div className="hidden md:block flex-1 max-w-md mx-2 lg:mx-6 relative">
+        <div className="hidden md:block flex-1 max-w-md mx-2 lg:mx-6 relative md:mx-5 lg:mx-0">
           <div>
             <input
               type="text"
@@ -221,50 +223,63 @@ export default function Navbar() {
           </button>
         </div>
 
-        <div className="hidden md:flex items-center gap-6">
-          {user ? (
-            <Link
-              to="/watchlist"
-              className={`flex items-center gap-2 font-medium transition-all ${
-                isIntersect === "watchlist"
-                  ? "text-[#E8630A]"
-                  : "text-white hover:text-gray-300"
-              }`}
-            >
-              <Plus size={20} className="border border-white/40 rounded" />
-              <span className="font-medium hidden lg:inline">Watch List</span>
-            </Link>
-          ) : (
-            ""
-          )}
+        <div className="flex md:gap-5 lg:gap-8">
+          <Link
+            to="/movies"
+            className={`hidden md:flex items-center gap-2 font-medium transition-all ${
+              isIntersect === "movielist"
+                ? "text-[#E8630A]"
+                : "text-white hover:text-gray-300"
+            }`}
+          >
+            <Film size={20} />
+            <span className="font-medium hidden lg:inline">Movie List</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-6">
+            {user ? (
+              <Link
+                to="/watchlist"
+                className={`flex items-center gap-2 font-medium transition-all ${
+                  isIntersect === "watchlist"
+                    ? "text-[#E8630A]"
+                    : "text-white hover:text-gray-300"
+                }`}
+              >
+                <Plus size={20} className="border border-white/40 rounded" />
+                <span className="font-medium hidden lg:inline">Watch List</span>
+              </Link>
+            ) : (
+              ""
+            )}
 
-          {user ? (
-            <Link
-              to="/profile"
-              className={`transition-all ${
-                isIntersect === "profile"
-                  ? "ring-2 ring-[#E8630A] rounded-full"
-                  : "hover:opacity-80"
-              }`}
-            >
-              {user.profile_picture_url ? (
-                <img
-                  className="w-10 h-10 rounded-full object-cover border-1"
-                  src={user.profile_picture_url}
-                  alt="profile_picture"
-                />
-              ) : (
-                <CircleUserRound size={28} />
-              )}
-            </Link>
-          ) : (
-            <Link
-              to="/login"
-              className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base"
-            >
-              Sign In
-            </Link>
-          )}
+            {user ? (
+              <Link
+                to="/profile"
+                className={`transition-all ${
+                  isIntersect === "profile"
+                    ? "ring-2 ring-[#E8630A] rounded-full"
+                    : "hover:opacity-80"
+                }`}
+              >
+                {user.profile_picture_url ? (
+                  <img
+                    className="w-10 h-10 rounded-full object-cover border-1"
+                    src={user.profile_picture_url}
+                    alt="profile_picture"
+                  />
+                ) : (
+                  <CircleUserRound size={28} />
+                )}
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-white text-black px-4 lg:px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all text-sm lg:text-base"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
 
         <button
@@ -365,6 +380,18 @@ export default function Navbar() {
             >
               Contact Us
             </a>
+            <Link
+              to="/movies"
+              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                isIntersect === "movielist"
+                  ? "text-[#E8630A] bg-white/5 border-l-2 border-[#E8630A]"
+                  : "text-white hover:bg-white/10"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Film size={20} />
+              Movie List
+            </Link>
             {user ? (
               <Link
                 to="/watchlist"

@@ -56,7 +56,7 @@ export default function RegisterPage() {
         return errorAlert("Passwords don't match");
       }
 
-      const response = await serverApi.post("/api/register", {
+      await serverApi.post("/api/register", {
         name,
         email,
         password,
