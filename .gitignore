@@ -37,4 +37,4 @@ src/server/setup/scripts/__pycache__/
 src/client/gowit/public/media
 !src/client/gowit/public/media/profile_pictures/default_profile_picture.webp
 
-gowit.pem
+Gowit.pem
