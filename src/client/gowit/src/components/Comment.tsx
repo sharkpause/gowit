@@ -63,13 +63,10 @@ export default function Comment({
   const postReply = async () => {
     try {
       if (!text.trim()) return;
-      const response = await serverApi.post(
-        `/api/films/${comment.film_id}/comments`,
-        {
-          content: text,
-          parent_id: comment.id,
-        },
-      );
+      await serverApi.post(`/api/films/${comment.film_id}/comments`, {
+        content: text,
+        parent_id: comment.id,
+      });
       fetchReply();
       fetchComment();
       setText("");

@@ -66,6 +66,11 @@ export default function LoginPage() {
 
       const response = await serverApi.post("/api/login", { email, password });
 
+      if (!response.data) {
+        console.log("Login gagal:", response.data.message);
+        return;
+      }
+
       Swal.fire({
         title: "Login Successful!",
         icon: "success",
