@@ -11,7 +11,7 @@ import (
 	"github.com/sharkpause/gowit/handlers"
 )
 
-func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
+func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[string]struct{}) {
 	router.Use(cors.New(cors.Config{
 		// Ganti origin sesuai frontend kamu
 		AllowOrigins: []string{
@@ -48,7 +48,9 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB) {
 		
 		api.POST("/register", handlers.RegisterUser(database))
 		api.POST("/login", handlers.LoginUser(database))
+		
 		api.GET("/comments/:id/replies", auth.OptionalAuth(), handlers.GetReplies(database))
+		api.POST("/comments/check", handlers.CheckWord(restrictedWords))
 
 		api.GET("/user/:id", handlers.GetOtherUserDetail(database))
 
