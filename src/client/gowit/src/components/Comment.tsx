@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   ArrowBigDown,
   ArrowBigUp,
@@ -17,12 +23,16 @@ export default function Comment({
   likeDislikeComment,
   editComment,
   deleteComment,
+  focusEditId,
+  setFocusEditId,
 }: {
   comment: CommentType;
   fetchComment: () => Promise<void>;
   likeDislikeComment: (comment_id: number, score: number) => Promise<void>;
   editComment: (comment_id: number, content: string) => Promise<void>;
   deleteComment: (comment_id: number) => Promise<void>;
+  focusEditId: number | null;
+  setFocusEditId: Dispatch<SetStateAction<number | null>>;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [active, setActive] = useState(false);
@@ -33,6 +43,7 @@ export default function Comment({
   const [dataReply, setDataReply] = useState<CommentType[]>([]);
   const [userId, setUserId] = useState(0);
   const [ownReply, setOwnReply] = useState(true);
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const cancelReply = () => {
     setText("");
@@ -63,6 +74,7 @@ export default function Comment({
   const postReply = async () => {
     try {
       if (!text.trim()) return;
+
       await serverApi.post(`/api/films/${comment.film_id}/comments`, {
         content: text,
         parent_id: comment.id,
@@ -94,6 +106,21 @@ export default function Comment({
     setEditingId(null);
     setEditText("");
   };
+
+  useEffect(() => {
+    if (focusEditId === comment.id) {
+      handleEditStart(comment.id, comment.content);
+      setFocusEditId(null);
+    }
+  }, [focusEditId]);
+
+  useEffect(() => {
+    if (editingId === comment.id) {
+      editTextareaRef.current?.focus();
+      const length = editTextareaRef.current?.value.length || 0;
+      editTextareaRef.current?.setSelectionRange(length, length);
+    }
+  }, [editingId]);
 
   useEffect(() => {
     fetchUser();
@@ -193,6 +220,7 @@ export default function Comment({
               className="w-full text-white bg-transparent border border-gray-600 text-sm focus:border-[#E8630A] focus:outline-none pb-2 px-2 py-2 rounded-lg"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
+              ref={editTextareaRef}
             />
             <div className="flex justify-end gap-3 mt-2">
               <button
@@ -202,6 +230,7 @@ export default function Comment({
                 Cancel
               </button>
               <button
+                disabled={!editText.trim()}
                 onClick={async () => {
                   await editComment(comment.id, editText);
 
@@ -210,9 +239,9 @@ export default function Comment({
                   setEditText("");
                 }}
                 className={`px-4 py-2 rounded-full text-xs ${
-                  editText
-                    ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40"
-                    : "bg-[#C75409] text-gray-400 text-sm"
+                  editText.trim()
+                    ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 cursor-pointer"
+                    : "bg-[#C75409] text-gray-400 text-sm cursor-not-allowed opacity-60"
                 }`}
               >
                 Save
@@ -422,16 +451,20 @@ export default function Comment({
                             Cancel
                           </button>
                           <button
+                            disabled={!editText.trim()}
                             onClick={async () => {
+                              if (!editText.trim()) {
+                                return;
+                              }
                               await editComment(reply.id, editText);
                               await fetchReply();
                               setEditingId(null);
                               setEditText("");
                             }}
                             className={`px-4 py-2 rounded-full text-xs ${
-                              editText
-                                ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40"
-                                : "bg-[#C75409] text-gray-400 text-sm"
+                              editText.trim()
+                                ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 cursor-pointer"
+                                : "bg-[#C75409] text-gray-400 text-sm cursor-not-allowed opacity-60"
                             }`}
                           >
                             Save
