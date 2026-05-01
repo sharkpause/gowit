@@ -83,3 +83,49 @@ func Sendmail() gin.HandlerFunc{
 		})
 	}
 }
+
+func SendTokeMail(email string ,token string) error{
+		
+		mail := gomail.NewMessage()
+		
+		system:= struct {
+			SystemEmail string 
+			EmailSecret string
+			EmailServer string
+			EmailPort int
+			BccMailingList []string
+		}{
+			SystemEmail: os.Getenv("ADMIN_EMAIL"), //<Email>
+			EmailSecret: os.Getenv("ADMIN_SECRET"), //<Google app password to the corresponding account>
+			EmailServer: os.Getenv("EMAIL_SERVER"), //<smtp.gmail.com> if using google, yea 
+			EmailPort: func()int{
+				p,_:= strconv.Atoi(os.Getenv("EMAIL_PORT")) //587
+				return p
+			}(),
+			BccMailingList: strings.Split(os.Getenv("MAILING_LIST"),","), //<Bcc> can be null, depends
+		}
+
+		mail.SetHeader("From", system.SystemEmail)
+		mail.SetHeader("To", email)
+		mail.SetHeader("Cc", system.SystemEmail)
+		mail.SetHeader("Subject", "Verify your account")
+		if len(system.BccMailingList) > 0{
+			mail.SetHeader("Bcc", system.BccMailingList...)
+		}
+		body:= fmt.Sprintf(`
+			Dear Our Beloved User,
+
+			Please verify your email by visiting the link below
+			http://localhost:8080/api/verify?token=%s
+			
+			Gowit Support Team`, 
+			token)
+		
+		mail.SetBody("text/plain", body)
+		dial := gomail.NewDialer(system.EmailServer,system.EmailPort,system.SystemEmail,system.EmailSecret)
+
+		e:=dial.DialAndSend(mail)
+		return e				
+	
+
+	}

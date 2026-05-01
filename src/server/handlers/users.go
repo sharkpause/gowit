@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/mail"
 	"os"
@@ -148,11 +149,111 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
 			})
 			return
 		}
+		token := fmt.Sprintf("%x", rand.Int63())
+        _, err = database.Exec(
+            `INSERT INTO verification_token (user_id, token, expires_at)
+            VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))`,
+            userID, token,
+        )
+        if err != nil {
+            context.JSON(http.StatusInternalServerError, gin.H{"error": "could not create verification token"})
+            fmt.Println(err)
+            return
+        }
 
-		context.JSON(http.StatusOK, gin.H{
-			"message": "user registered successfully",
-			"user_id": userID,
-		})
+		e:=SendTokeMail(request.Email,token)
+		if e != nil{
+			SendTokeMail(request.Email,token) // resend bruh, idk what to do if fail LOL, 'try again later'?? 
+		}
+        context.JSON(http.StatusOK, gin.H{
+            "message": "registered successfully, check your email to verify",
+            "user_id": userID,
+        })
+	}
+}
+func VerifyEmail(database *sql.DB) gin.HandlerFunc{
+	return func(context *gin.Context){
+		token := context.Query("token")
+		var userid uint64
+		err := database.QueryRow("SELECT user_id FROM verification_token WHERE token = ? AND expires_at > NOW()",token).Scan(&userid)
+		if err == sql.ErrNoRows {
+			context.JSON(http.StatusBadRequest,gin.H{
+				"message": "invalid or expired token",
+			})
+			return
+		}
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"message": "db error",
+			})
+			return
+		}
+		tx, err := database.Begin()
+        if err != nil {
+            context.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+            return
+        }
+		_, err = tx.Exec(`UPDATE users SET is_verified=true WHERE id=?`, userid)
+        if err != nil {
+            tx.Rollback()
+            context.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+            return
+        }
+
+        tx.Exec(`DELETE FROM verification_token WHERE user_id= ?`, userid)
+        tx.Commit()
+		context.JSON(http.StatusOK, gin.H{"message": "email verified, you can now log in"})
+	}
+
+}
+
+func ResendVerification(database *sql.DB) gin.HandlerFunc{
+	return func(context *gin.Context) {
+		var request struct{
+			Email string `json:"email"`
+		}
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+			return
+        }
+		var isVerified bool
+		var userid uint64
+		err := database.QueryRow(`SELECT id, is_verified FROM users WHERE email = ? `, request.Email).Scan(&userid,&isVerified)
+		if err == sql.ErrNoRows {
+			context.JSON(http.StatusNotFound, gin.H{"error": "email not found"})
+			return
+		}
+		if isVerified {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "email already verified"})
+			return
+		}
+		var canResend bool
+		err = database.QueryRow(
+			`SELECT last_sent_at < DATE_SUB(NOW(), INTERVAL 1 MINUTE)
+			FROM email_verification_tokens WHERE user_id=?`, userid,
+		).Scan(&canResend)
+
+		if err == nil && !canResend {
+			context.JSON(http.StatusTooManyRequests, gin.H{"error": "please wait before requesting another email"})
+			return
+		}
+		token := fmt.Sprintf("%x", rand.Int63())
+        _, err = database.Exec(
+            `UPDATE verification_token
+            SET token=?, expires_at=DATE_ADD(NOW(), INTERVAL 10 MINUTE), last_sent=NOW()
+            WHERE user_id=?`,
+            token, userid,
+        )
+        if err != nil {
+            context.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+            return
+        }
+
+        SendTokeMail(request.Email, token)
+
+        context.JSON(http.StatusOK, gin.H{
+			"message": "check your email"},
+		)
 	}
 }
 
@@ -168,12 +269,13 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 
 		var userID uint64
 		var passwordHash string
+		var is_verified bool
 
 		err := database.
 			QueryRow(
-				"SELECT id, password_hash FROM users WHERE email = ?",
+				"SELECT id, password_hash, is_verified FROM users WHERE email = ?",
 				request.Email,
-			).Scan(&userID, &passwordHash)
+			).Scan(&userID, &passwordHash, &is_verified)
 		
 		if err == sql.ErrNoRows {
 			context.JSON(http.StatusNotFound, gin.H{
@@ -195,6 +297,12 @@ func LoginUser(database *sql.DB) func(*gin.Context) {
 				"error": "invalid email or password",
 			})
 
+			return
+		}
+		if !is_verified {
+			context.JSON(http.StatusForbidden, gin.H{
+				"error": "email not verified",
+			})
 			return
 		}
 
@@ -473,8 +581,8 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 
 		res, err := database.Exec(
 			`
-			INSERT INTO users (name, email, google_id, profile_picture_url)
-			VALUES (?, ?, ?, ?)
+			INSERT INTO users (name, email, google_id, profile_picture_url, is_verified)
+			VALUES (?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
 				name = VALUES(name),
 				google_id = VALUES(google_id),
@@ -483,6 +591,7 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 			userInfo.Name,
 			userInfo.Email,
 			userInfo.ID,
+			1,
 			"/media/profile_pictures/default_profile_picture.webp",
 		)
 		if err != nil {
