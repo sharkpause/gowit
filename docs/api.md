@@ -547,3 +547,16 @@ edit will mark the tag `is_deleted` to `true`. an already deleted comments, cant
 ## DELETE /comments/{id}/delete
 
 tbh, just keeping up with the naming convention. also its not permitted to delete an already deleted comments, thus will return http status gone (410) as well 
+
+## api/register
+
+uhh when user register themself, it creates the account, but the account is not verified, technically cannot login if i remember
+
+## GET api/verify?token=
+
+it verify the token by having the token on the token field, it checks whether its expried or not on the database
+
+## POST api/verify/resend -> idk whhether change the name, but feels very counterintuitive
+
+resend and regenerate token, limited by 1 resend per minute. no limit throughout the day so technically you can send gazzilion of email everyday
+

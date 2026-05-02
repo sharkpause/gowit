@@ -7,10 +7,15 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
 )
+
+type CheckRequest struct {
+	Text string `json:"text"`
+}
 
 func CreateComment(database *sql.DB) gin.HandlerFunc {
 	return func(context *gin.Context) {
@@ -469,4 +474,55 @@ func DeleteComment(database *sql.DB) gin.HandlerFunc {
 
 	}
 
+}
+
+func normalizeText(input string) string {
+	var builder strings.Builder
+
+	for _, char := range input {
+		if unicode.IsLetter(char) || unicode.IsSpace(char) {
+			builder.WriteRune(unicode.ToLower(char))
+		} else {
+			// replace everything else with space
+			builder.WriteRune(' ')
+		}
+	}
+
+	return builder.String()
+}
+
+func tokenize(input string) []string {
+	return strings.Fields(input)
+}
+
+func containsRestrictedWords(input string, restrictedWordSet map[string]struct{}) bool {
+	normalized := normalizeText(input)
+	tokens := tokenize(normalized)
+
+	for _, token := range tokens {
+		if _, exists := restrictedWordSet[token]; exists {
+			return true
+		}
+	}
+
+	return false
+}
+
+func CheckWord(restrictedWordSet map[string]struct{}) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var requestBody struct {
+			Text string `json:"text"`
+		}
+
+		if err := c.ShouldBindJSON(&requestBody); err != nil {
+			c.JSON(400, gin.H{"error": "invalid request"})
+			return
+		}
+
+		blocked := containsRestrictedWords(requestBody.Text, restrictedWordSet)
+
+		c.JSON(200, gin.H{
+			"blocked": blocked,
+		})
+	}
 }
