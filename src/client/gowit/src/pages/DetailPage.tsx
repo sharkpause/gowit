@@ -229,7 +229,7 @@ export default function DetailPage() {
         setIsEditComment(true);
         setCommentId(comment_id);
         setAlertComment(true);
-        return;
+        return false;
       }
 
       await serverApi.post(`/api/comments/${comment_id}/edits`, {

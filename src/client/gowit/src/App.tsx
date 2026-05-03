@@ -10,24 +10,28 @@ import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import MoviesPage from "./pages/MoviesPage";
+import { UserProvider } from "./context";
 
 function App() {
   return (
     <>
       <BrowserRouter>
-        <Routes>
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<HomePage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/movies/:id" element={<DetailPage />} />
-          <Route path="/profile/:userId" element={<UserProfilePage />} />
-          <Route path="/movies" element={<MoviesPage />} />
-          <Route path="/" element={<Layout />}>
-            <Route path="watchlist" element={<FavoritePage />} />
-            <Route path="profile" element={<ProfilePage />} />
-          </Route>
-        </Routes>
+        <UserProvider>
+          <Routes>
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/movies/:id" element={<DetailPage />} />
+            <Route path="/profile/:userId" element={<UserProfilePage />} />
+            <Route path="/movies" element={<MoviesPage />} />
+
+            <Route path="/" element={<Layout />}>
+              <Route path="watchlist" element={<FavoritePage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
+          </Routes>
+        </UserProvider>
       </BrowserRouter>
     </>
   );

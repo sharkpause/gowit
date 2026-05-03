@@ -45,9 +45,9 @@ export default function MoviesPage() {
 
                   <span
                     className={`text-sm font-bold mt-1 ${
-                      movie.average_rating >= 7
+                      movie.average_rating >= 4
                         ? "text-green-400"
-                        : movie.average_rating >= 5
+                        : movie.average_rating >= 3
                           ? "text-yellow-400"
                           : "text-red-400"
                     }`}

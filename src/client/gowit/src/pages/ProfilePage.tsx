@@ -2,11 +2,12 @@ import Swal from "sweetalert2";
 import { serverApi } from "../api";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import type { ProfileType } from "../type";
+import type { ProfileType, UserType } from "../type";
 import { capitalizeEachWord, toDateInputValue } from "../helper/helper";
 import { Pencil } from "lucide-react";
 import { errorAlert } from "../helper/errorAlert";
 import axios from "axios";
+import { useUser } from "../context";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileType>();
@@ -15,6 +16,8 @@ export default function ProfilePage() {
 
   const [picture, setPicture] = useState("");
   const [loading, setLoading] = useState(false);
+  const { setUsers } = useUser();
+
   const navigate = useNavigate();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,12 +42,16 @@ export default function ProfilePage() {
           Accept: "application/json",
         },
       });
-
-      setPicture(res.data.url);
+      console.log(res.data);
+      setTimeout(() => {
+        setPicture(res.data.url);
+      }, 1000);
     } catch (error) {
       console.log("Error at Profile Picture: ", error);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     }
   };
 
@@ -92,6 +99,7 @@ export default function ProfilePage() {
   const logout = async () => {
     try {
       await serverApi.post("/api/logout");
+      setUsers(null);
 
       Swal.fire({
         title: "Logout Successful!",
@@ -119,6 +127,13 @@ export default function ProfilePage() {
       setName(response.data.name);
 
       setPicture(response.data.profile);
+      setUsers(
+        (prev) =>
+          ({
+            ...(prev ?? {}),
+            profile_picture_url: response.data.profile,
+          }) as UserType,
+      );
       setProfile(response.data);
     } catch (error) {
       console.log("Error at ProfilePage: ", error);
