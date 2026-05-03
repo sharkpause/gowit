@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -21,4 +22,34 @@ func Connect() (*sql.DB, error) {
 	)
 
 	return sql.Open("mysql", dsn)
+}
+
+func LoadRestrictedWords(database *sql.DB) (map[string]struct{}, error) {
+	rows, err := database.Query("SELECT word FROM restricted_words")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	restrictedWordSet := make(map[string]struct{})
+
+	for rows.Next() {
+		var word string
+
+		if err := rows.Scan(&word); err != nil {
+			return nil, err
+		}
+
+		cleanedWord := strings.ToLower(strings.TrimSpace(word))
+
+		if cleanedWord != "" {
+			restrictedWordSet[cleanedWord] = struct{}{}
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return restrictedWordSet, nil
 }

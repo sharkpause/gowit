@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import type { CommentType, MovieType, RatingType, UserType } from "../type";
 import { serverApi } from "../api";
@@ -22,9 +22,20 @@ export default function DetailPage() {
   const [active, setActive] = useState(false);
   const [isEditRating, setIsEditRating] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
-  const [alertComment, setAlertComment] = useState(true);
+  const [alertComment, setAlertComment] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [isEditComment, setIsEditComment] = useState(false);
+  const [commentId, setCommentId] = useState(0);
+  const [focusEditId, setFocusEditId] = useState<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   let { id } = useParams();
+
+  useEffect(() => {
+    if (alertComment) {
+      setShowAlert(true);
+    }
+  }, [alertComment]);
 
   const fetchMovie = async () => {
     try {
@@ -174,6 +185,15 @@ export default function DetailPage() {
     try {
       if (!commentText.trim()) return;
 
+      const responseCheck = await serverApi.post("/api/comments/check", {
+        text: commentText,
+      });
+
+      if (responseCheck.data.blocked) {
+        setAlertComment(true);
+        return;
+      }
+
       await serverApi.post(`/api/films/${id}/comments`, {
         content: commentText,
       });
@@ -199,6 +219,19 @@ export default function DetailPage() {
 
   const editComment = async (comment_id: number, content: string) => {
     try {
+      if (!content.trim()) return;
+
+      const responseCheck = await serverApi.post("/api/comments/check", {
+        text: content,
+      });
+
+      if (responseCheck.data.blocked) {
+        setIsEditComment(true);
+        setCommentId(comment_id);
+        setAlertComment(true);
+        return false;
+      }
+
       await serverApi.post(`/api/comments/${comment_id}/edits`, {
         content: content,
       });
@@ -453,6 +486,7 @@ export default function DetailPage() {
                         className="w-full text-white bg-transparent border-b border-gray-700 focus:outline-none focus:border-white pb-2"
                         placeholder="Add a Comment..."
                         value={commentText}
+                        ref={inputRef}
                         onClick={() => setActive(true)}
                         onChange={(e) => setCommentText(e.target.value)}
                       />
@@ -471,7 +505,7 @@ export default function DetailPage() {
                             className={`px-4 py-2 rounded-full text-sm ${
                               commentText
                                 ? "bg-[#E8630A] text-white font-bold text-lg rounded-full hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 hover:shadow-2xl hover:shadow-[#E8630A]/50 hover:scale-105"
-                                : "bg-[#C75409] text-gray-400"
+                                : "bg-[#C75409] text-gray-400 cursor-not-allowed"
                             }`}
                           >
                             Comment
@@ -497,6 +531,8 @@ export default function DetailPage() {
                         likeDislikeComment={likeDislikeComment}
                         editComment={editComment}
                         deleteComment={deleteComment}
+                        focusEditId={focusEditId}
+                        setFocusEditId={setFocusEditId}
                       />
                     );
                   })
@@ -509,14 +545,14 @@ export default function DetailPage() {
             </div>
           </div>
         </div>
-        {alertComment ? (
+        {alertComment && (
           <div
             onClick={() => setAlertComment(false)}
-            className="fixed inset-0 z-50 flex justify-center items-center min-h-screen bg-black/60 backdrop-blur-sm"
+            className={`fixed inset-0 z-50 flex justify-center items-center min-h-screen bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${showAlert ? "opacity-100" : "opacity-0"}`}
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#0F1115] rounded-[2.5rem] p-10 max-w-sm w-full shadow-[0_0_50px_-12px_rgba(0,0,0,1)] animate-impact"
+              className={`bg-[#0F1115] rounded-[2.5rem] p-10 max-w-sm w-full transition-all duration-300 ${showAlert ? "scale-100 opacity-100" : "scale-90 opacity-0"}`}
             >
               <div className="flex flex-col items-center mb-8">
                 {/* ICON */}
@@ -551,17 +587,46 @@ export default function DetailPage() {
               </div>
               {/* BUTTON */}
               <div className="space-y-3">
-                <button className="w-full bg-[#E8630A] hover:bg-[#C75409] text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-[#E8630A]/20 active:scale-[0.98]">
+                <button
+                  onClick={() => {
+                    if (isEditComment) {
+                      if (!commentId) {
+                        return;
+                      }
+                      setAlertComment(false);
+                      setFocusEditId(commentId);
+                    } else {
+                      setAlertComment(false);
+                      inputRef.current?.focus();
+                    }
+                  }}
+                  className="w-full bg-[#E8630A] hover:bg-[#C75409] text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-[#E8630A]/20 active:scale-[0.98]"
+                >
                   Edit Comment
                 </button>
-                <button className="w-full py-3 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm">
+                <button
+                  onClick={() => {
+                    if (isEditComment) {
+                      if (!commentId) {
+                        return;
+                      }
+                      deleteComment(commentId);
+                      setAlertComment(false);
+                      setIsEditComment(false);
+                      setCommentId(0);
+                    } else {
+                      setAlertComment(false);
+                      setCommentText("");
+                      setActive(false);
+                    }
+                  }}
+                  className="w-full py-3 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm"
+                >
                   Delete Comment
                 </button>
               </div>
             </div>
           </div>
-        ) : (
-          ""
         )}
       </div>
     </>

@@ -31,7 +31,12 @@ func main() {
 
 	fmt.Println("Connected successfully to database")
 
-	routes.SetupAPIRoutes(router, database)
+	restrictedWordsSet, err := db.LoadRestrictedWords(database)
+	if err != nil {
+		fmt.Println("Could ont load restricted words set from the database")
+	}
+
+	routes.SetupAPIRoutes(router, database, restrictedWordsSet)
 
 	router.Run(os.Getenv("SERVER_PORT"))
 }
