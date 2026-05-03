@@ -48,7 +48,8 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[st
 		
 		api.POST("/register", handlers.RegisterUser(database))
 		api.POST("/login", handlers.LoginUser(database))
-		
+		api.GET("/verify", handlers.VerifyEmail(database))
+		api.POST("/verify/resend", handlers.ResendVerification(database))
 		api.GET("/comments/:id/replies", auth.OptionalAuth(), handlers.GetReplies(database))
 		api.POST("/comments/check", handlers.CheckWord(restrictedWords))
 
