@@ -77,8 +77,11 @@ export default function FavoritePage() {
   const createImport = async () => {
     try {
       setLoadingImport(true);
+      console.log(fileImport.length);
+
       if (fileImport.length < 1) {
         errorAlert("Please Input Excel File First!");
+        return;
       }
 
       await serverApi.post("/api/films/add", {
@@ -99,6 +102,8 @@ export default function FavoritePage() {
             "px-4 py-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
         },
       });
+      setFileName("");
+      setFileImport([]);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
@@ -186,7 +191,7 @@ export default function FavoritePage() {
             >
               <option value="title">Title</option>
               <option value="average_rating">Rating</option>
-              <option value="release_year">Year</option>
+              <option value="release_date">Year</option>
               <option value="popularity">Popularity</option>
               <option value="runtime">Runtime</option>
             </select>
