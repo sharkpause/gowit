@@ -197,7 +197,7 @@ export default function HomePage() {
     // Simulate fetching featured movies\
     try {
       setLoadingFeatured(true);
-      const response = await serverApi.get("/api/films?limit=100");
+      const response = await serverApi.get("/api/films?limit=10");
       setMovieFeatured(response.data.films);
     } catch (error) {
       console.log("Error fetching featured movies:", error);
