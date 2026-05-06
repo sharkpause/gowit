@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   ArrowBigDown,
   ArrowBigUp,
@@ -17,12 +23,19 @@ export default function Comment({
   likeDislikeComment,
   editComment,
   deleteComment,
+  focusEditId,
+  setFocusEditId,
 }: {
   comment: CommentType;
   fetchComment: () => Promise<void>;
   likeDislikeComment: (comment_id: number, score: number) => Promise<void>;
-  editComment: (comment_id: number, content: string) => Promise<void>;
+  editComment: (
+    comment_id: number,
+    content: string,
+  ) => Promise<boolean | undefined>;
   deleteComment: (comment_id: number) => Promise<void>;
+  focusEditId: number | null;
+  setFocusEditId: Dispatch<SetStateAction<number | null>>;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [active, setActive] = useState(false);
@@ -33,6 +46,13 @@ export default function Comment({
   const [dataReply, setDataReply] = useState<CommentType[]>([]);
   const [userId, setUserId] = useState(0);
   const [ownReply, setOwnReply] = useState(true);
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [alertReply, setAlertReply] = useState(false);
+  const [showAlertReply, setShowAlertReply] = useState(false);
+  const [isEditReplyMode, setIsEditReplyMode] = useState(false);
+  const [alertReplyId, setAlertReplyId] = useState(0);
+  const [focusEditReplyId, setFocusEditReplyId] = useState<number | null>(null);
+  const replyInputRef = useRef<HTMLInputElement>(null);
 
   const cancelReply = () => {
     setText("");
@@ -63,6 +83,17 @@ export default function Comment({
   const postReply = async () => {
     try {
       if (!text.trim()) return;
+
+      const responseCheck = await serverApi.post("/api/comments/check", {
+        text: text,
+      });
+
+      if (responseCheck.data.blocked) {
+        setIsEditReplyMode(false); // mode posting, bukan editing
+        setAlertReply(true);
+        return;
+      }
+
       await serverApi.post(`/api/films/${comment.film_id}/comments`, {
         content: text,
         parent_id: comment.id,
@@ -94,6 +125,38 @@ export default function Comment({
     setEditingId(null);
     setEditText("");
   };
+
+  useEffect(() => {
+    if (focusEditId === comment.id) {
+      handleEditStart(comment.id, editText);
+      setFocusEditId(null);
+    }
+  }, [focusEditId]);
+
+  useEffect(() => {
+    if (alertReply) setShowAlertReply(true);
+  }, [alertReply]);
+
+  useEffect(() => {
+    if (focusEditReplyId !== null) {
+      const reply = dataReply.find((r) => r.id === focusEditReplyId);
+      if (reply) {
+        setEditingId(null);
+        setTimeout(() => {
+          handleEditStart(focusEditReplyId, editText);
+          setFocusEditReplyId(null);
+        }, 0);
+      }
+    }
+  }, [focusEditReplyId, dataReply]);
+
+  useEffect(() => {
+    if (editingId === comment.id) {
+      editTextareaRef.current?.focus();
+      const length = editTextareaRef.current?.value.length || 0;
+      editTextareaRef.current?.setSelectionRange(length, length);
+    }
+  }, [editingId]);
 
   useEffect(() => {
     fetchUser();
@@ -193,6 +256,7 @@ export default function Comment({
               className="w-full text-white bg-transparent border border-gray-600 text-sm focus:border-[#E8630A] focus:outline-none pb-2 px-2 py-2 rounded-lg"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
+              ref={editTextareaRef}
             />
             <div className="flex justify-end gap-3 mt-2">
               <button
@@ -202,17 +266,18 @@ export default function Comment({
                 Cancel
               </button>
               <button
+                disabled={!editText.trim()}
                 onClick={async () => {
-                  await editComment(comment.id, editText);
-
-                  await fetchReply();
+                  const success = await editComment(comment.id, editText);
                   setEditingId(null);
+                  if (!success) return;
+                  await fetchReply();
                   setEditText("");
                 }}
                 className={`px-4 py-2 rounded-full text-xs ${
-                  editText
-                    ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40"
-                    : "bg-[#C75409] text-gray-400 text-sm"
+                  editText.trim()
+                    ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 cursor-pointer"
+                    : "bg-[#C75409] text-gray-400 text-sm cursor-not-allowed opacity-60"
                 }`}
               >
                 Save
@@ -284,6 +349,7 @@ export default function Comment({
               className="w-full text-white bg-transparent border-b border-gray-600 text-sm focus:border-white focus:outline-none pb-2"
               placeholder="Reply to Comments..."
               value={text}
+              ref={replyInputRef}
               onChange={(e) => setText(e.target.value)}
             />
             <div className="flex justify-end gap-3 mt-2">
@@ -413,6 +479,11 @@ export default function Comment({
                           className="w-full text-white bg-transparent border border-gray-600 text-sm focus:border-[#E8630A] focus:outline-none pb-2 px-2 py-2 rounded-lg"
                           value={editText}
                           onChange={(e) => setEditText(e.target.value)}
+                          autoFocus
+                          onFocus={(e) => {
+                            const len = e.target.value.length;
+                            e.target.setSelectionRange(len, len);
+                          }}
                         />
                         <div className="flex justify-end gap-3 mt-2">
                           <button
@@ -422,16 +493,33 @@ export default function Comment({
                             Cancel
                           </button>
                           <button
+                            disabled={!editText.trim()}
                             onClick={async () => {
+                              if (!editText.trim()) return;
+
+                              const responseCheck = await serverApi.post(
+                                "/api/comments/check",
+                                {
+                                  text: editText,
+                                },
+                              );
+
+                              if (responseCheck.data.blocked) {
+                                setIsEditReplyMode(true); // mode editing
+                                setAlertReplyId(reply.id);
+                                setAlertReply(true);
+                                setOpenMenuKey(null);
+                                return;
+                              }
                               await editComment(reply.id, editText);
                               await fetchReply();
                               setEditingId(null);
                               setEditText("");
                             }}
                             className={`px-4 py-2 rounded-full text-xs ${
-                              editText
-                                ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40"
-                                : "bg-[#C75409] text-gray-400 text-sm"
+                              editText.trim()
+                                ? "bg-[#E8630A] text-white text-sm font-bold hover:bg-[#C75409] transition-all shadow-xl shadow-[#E8630A]/40 cursor-pointer"
+                                : "bg-[#C75409] text-gray-400 text-sm cursor-not-allowed opacity-60"
                             }`}
                           >
                             Save
@@ -612,6 +700,11 @@ export default function Comment({
                         className="w-full text-white bg-transparent border border-gray-600 text-sm focus:border-[#E8630A] focus:outline-none pb-2 px-2 py-2 rounded-lg"
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
+                        autoFocus
+                        onFocus={(e) => {
+                          const len = e.target.value.length;
+                          e.target.setSelectionRange(len, len);
+                        }}
                       />
                       <div className="flex justify-end gap-3 mt-2">
                         <button
@@ -622,6 +715,22 @@ export default function Comment({
                         </button>
                         <button
                           onClick={async () => {
+                            if (!editText.trim()) return;
+
+                            const responseCheck = await serverApi.post(
+                              "/api/comments/check",
+                              {
+                                text: editText,
+                              },
+                            );
+
+                            if (responseCheck.data.blocked) {
+                              setIsEditReplyMode(true); // mode editing
+                              setAlertReplyId(reply.id);
+                              setAlertReply(true);
+                              setOpenMenuKey(null);
+                              return;
+                            }
                             await editComment(reply.id, editText);
                             await fetchReply();
                             setEditingId(null);
@@ -693,6 +802,92 @@ export default function Comment({
           </div>
         )}
       </div>
+      {alertReply && (
+        <div
+          onClick={() => setAlertReply(false)}
+          className={`fixed inset-0 z-50 flex justify-center items-center min-h-screen bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+            showAlertReply ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`bg-[#0F1115] rounded-[2.5rem] p-10 max-w-sm w-full transition-all duration-300 ${
+              showAlertReply ? "scale-100 opacity-100" : "scale-90 opacity-0"
+            }`}
+          >
+            <div className="flex flex-col items-center mb-8">
+              <div className="mb-3">
+                <div className="bg-white/5 border border-rose-900/30 p-6 rounded-[2rem] shadow-[0_0_60px_rgba(244,63,94,0.15)]">
+                  <svg
+                    className="w-10 h-10 text-rose-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center mb-10">
+              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">
+                Comment Etiquette
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                We've detected language that may be inconsistent with our
+                community guidelines. Let's keep the conversation professional
+                and constructive.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  if (isEditReplyMode) {
+                    setAlertReply(false);
+                    setShowAlertReply(false);
+                    setFocusEditReplyId(alertReplyId);
+                  } else {
+                    setAlertReply(false);
+                    setShowAlertReply(false);
+                    setActive(true);
+                    setTimeout(() => replyInputRef.current?.focus(), 50);
+                  }
+                }}
+                className="w-full bg-[#E8630A] hover:bg-[#C75409] text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-[#E8630A]/20 active:scale-[0.98]"
+              >
+                Edit {isEditReplyMode ? "Reply" : "Reply"}
+              </button>
+              <button
+                onClick={async () => {
+                  if (isEditReplyMode && alertReplyId) {
+                    await deleteComment(alertReplyId);
+                    setEditingId(null);
+                    await fetchReply();
+                  } else {
+                    setText("");
+                    setActive(false);
+                  }
+
+                  setAlertReply(false);
+                  setShowAlertReply(false);
+                  setIsEditReplyMode(false);
+                  setAlertReplyId(0);
+                }}
+                className="w-full py-3 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm"
+              >
+                Delete {isEditReplyMode ? "Reply" : "Reply"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

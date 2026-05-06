@@ -422,6 +422,14 @@ func EditComment(database *sql.DB) gin.HandlerFunc {
 			})
 			return
 		}
+		var originalComment string
+		database.QueryRow(`SELECT content FROM comments WHERE id = ?`, commentID).Scan(&originalComment)
+		if originalComment == input.Content {
+			context.JSON(http.StatusNotModified, gin.H{
+				"message": "no changes made",
+			})
+			return
+		}
 		if _, err := database.Exec(`UPDATE comments SET content = ?,is_updated = TRUE WHERE id = ?`, input.Content, commentID); err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"message": "Database update failed"})
 			return

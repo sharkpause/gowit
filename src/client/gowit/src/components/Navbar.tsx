@@ -3,12 +3,12 @@ import { Link, useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { serverApi } from "../api";
 import type { MovieType, UserType } from "../type";
+import { useUser } from "../context";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [searchMovie, setSearchMovie] = useState<MovieType[]>([]);
-  const [mobileSearch, setMobileSearch] = useState("");
   const [user, setUser] = useState<UserType>();
   const [loading, setLoading] = useState(true);
   const [isIntersect, setIsIntersect] = useState("");
@@ -23,6 +23,8 @@ export default function Navbar() {
       console.log("Error at Fetch Movie Search:", error);
     }
   };
+
+  const { users } = useUser();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -192,7 +194,7 @@ export default function Navbar() {
                             {el.title}
                           </h4>
                           <p className="text-gray-400 text-sm">
-                            {el.release_year} • ⭐ {el.release_year}
+                            {el.release_year} • ⭐ {el.average_rating}
                           </p>
                         </div>
                       </Link>
@@ -261,10 +263,10 @@ export default function Navbar() {
                     : "hover:opacity-80"
                 }`}
               >
-                {user.profile_picture_url ? (
+                {user.profile_picture_url || users?.profile_picture_url ? (
                   <img
                     className="w-10 h-10 rounded-full object-cover border-1"
-                    src={user.profile_picture_url}
+                    src={users?.profile_picture_url || user.profile_picture_url}
                     alt="profile_picture"
                   />
                 ) : (
@@ -297,8 +299,9 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search Movies..."
-                className="w-full bg-white/10 text-white placeholder-gray-400 rounded-full px-5 py-2 pr-12 border-2 border-white/20 hover:border-white/40 focus:outline-none focus:border-white/40"
-                onChange={(e) => setMobileSearch(e.target.value)}
+                value={search}
+                className="w-full bg-white/10 text-white placeholder-gray-400 rounded-full px-5 py-2 pr-12 border-2 border-white/20 ..."
+                onChange={(e) => setSearch(e.target.value)}
               />
               <button className="absolute right-3 top-3 text-gray-400">
                 <Search size={18} />
@@ -306,38 +309,42 @@ export default function Navbar() {
             </div>
           </div>
 
-          {mobileSearch ? (
+          {search ? (
             <div className="bg-black/98 border-b border-white/10 max-h-72 overflow-y-auto">
               <div className="p-2">
-                <a
-                  href="/movie/1"
-                  className="flex items-center gap-3 p-2.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer "
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setMobileSearch("");
-                  }}
-                >
-                  <img
-                    src="https://via.placeholder.com/60x90"
-                    alt="Movie"
-                    className="w-10 h-14 object-cover rounded shadow-md"
-                  />
-                  <div className="flex-1">
-                    <h4 className="text-white text-sm font-medium group-hover:text-[#E8630A] transition-colors">
-                      Movie Title
-                    </h4>
-                    <p className="text-gray-400 text-xs">2024 • ⭐ 8.5</p>
-                  </div>
-                </a>
+                {searchMovie.map((el) => (
+                  <Link
+                    key={el.id}
+                    to={`/movies/${el.id}`}
+                    className="flex items-center gap-3 p-2.5 hover:bg-white/10 rounded-lg transition-colors"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setSearch("");
+                    }}
+                  >
+                    <img
+                      src={el.poster_image_url}
+                      alt={el.title}
+                      className="w-10 h-14 object-cover rounded shadow-md"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-white text-sm font-medium">
+                        {el.title}
+                      </h4>
+                      <p className="text-gray-400 text-xs">
+                        {el.release_year} • ⭐ {el.average_rating}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
-
               <div className="border-t border-white/10 p-2">
                 <Link
-                  to={`/search?query=${mobileSearch}`}
-                  className="block text-center text-[#E8630A] hover:text-[#E8630A]/80 text-sm font-medium transition-colors py-2"
+                  to={`/search?query=${search}`}
+                  className="block text-center text-[#E8630A] text-sm font-medium py-2"
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    setMobileSearch("");
+                    setSearch("");
                   }}
                 >
                   View all results →
@@ -421,10 +428,10 @@ export default function Navbar() {
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {user.profile_picture_url ? (
+                {user.profile_picture_url || users?.profile_picture_url ? (
                   <img
                     className="w-10 h-10 rounded-full object-cover border-1"
-                    src={user.profile_picture_url}
+                    src={users?.profile_picture_url || user.profile_picture_url}
                     alt="profile_picture"
                   />
                 ) : (

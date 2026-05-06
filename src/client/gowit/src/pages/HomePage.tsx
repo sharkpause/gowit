@@ -144,6 +144,18 @@ export default function HomePage() {
   async function postMail(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
+      if (!name) {
+        throw new Error("Name is required");
+      }
+
+      if (!email) {
+        throw new Error("Email is required");
+      }
+
+      if (!message) {
+        throw new Error("Message is required");
+      }
+
       setLoadingMail(true);
 
       await serverApi.post("/api/contact", {
@@ -151,6 +163,10 @@ export default function HomePage() {
         email,
         question: message,
       });
+
+      setName("");
+      setEmail("");
+      setMessage("");
 
       Swal.fire({
         title: "Question Sent Successfully!",
@@ -167,6 +183,8 @@ export default function HomePage() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
+      } else if (error instanceof Error) {
+        errorAlert(capitalizeEachWord(error.message));
       } else {
         console.log("Error at postMail Function: ", error);
       }
@@ -179,7 +197,7 @@ export default function HomePage() {
     // Simulate fetching featured movies\
     try {
       setLoadingFeatured(true);
-      const response = await serverApi.get("/api/films?limit=100");
+      const response = await serverApi.get("/api/films?limit=10");
       setMovieFeatured(response.data.films);
     } catch (error) {
       console.log("Error fetching featured movies:", error);

@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [id, setId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingButton, setLoadingButton] = useState(false);
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -52,6 +53,7 @@ export default function RegisterPage() {
   const submitRegister = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      setLoadingButton(true);
       if (password !== confirmPassword) {
         return errorAlert("Passwords don't match");
       }
@@ -83,6 +85,8 @@ export default function RegisterPage() {
       } else {
         console.log("Error at Register Page: ", error);
       }
+    } finally {
+      setLoadingButton(false);
     }
   };
 
@@ -160,9 +164,13 @@ export default function RegisterPage() {
             </div>
             <button
               type="submit"
-              className="w-full bg-[#E8630A] hover:bg-[#C75409] py-3 rounded-lg font-bold transition-300 mb-2"
+              className="w-full bg-[#E8630A] hover:bg-[#C75409] py-3 rounded-lg font-bold transition-300 mb-2 flex items-center justify-center"
             >
-              Create Account
+              {loadingButton ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
           <p className="text-center text-gray-400 mt-1">
