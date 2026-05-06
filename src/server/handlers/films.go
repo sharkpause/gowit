@@ -603,6 +603,20 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 			return
 		}
 
+		var originalNote *string
+
+		err = database.QueryRow(
+			`SELECT notes FROM favorites WHERE film_id = ? AND user_id = ?`,
+			filmID, userID,
+		).Scan(&originalNote)
+
+		if *originalNote == request.Notes {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "new note and original note is the same",
+			})
+			return
+		}
+
 		query := `
 			UPDATE favorites SET notes = ? WHERE film_id = ? AND user_id = ?
 		`
