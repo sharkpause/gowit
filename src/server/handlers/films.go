@@ -613,6 +613,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 		if *originalNote == request.Notes {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error": "new note and original note is the same",
+				"same_note": "true",
 			})
 			return
 		}
@@ -629,6 +630,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 
 		context.JSON(http.StatusOK, gin.H{
 			"message": "successfully updated favorite film",
+			"same_note": "false",
 		})
 	}
 }
