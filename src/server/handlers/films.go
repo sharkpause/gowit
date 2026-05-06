@@ -22,7 +22,7 @@ type postFavoriteRequest struct {
 }
 
 type patchFavoriteRequest struct {
-	Notes string `json:"notes" binding:"required"`
+	Notes string `json:"notes"`
 }
 
 type importMovieRequest struct {
