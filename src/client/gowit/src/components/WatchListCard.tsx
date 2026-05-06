@@ -31,11 +31,18 @@ export default function WatchListCard({
         onClick={() => setShowNote(true)}
         className="w-48 md:w-56 lg:w-64 bg-[#1C1E22] rounded-lg overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 hover:scale-102 hover:shadow-2xl hover:shadow-black/50"
       >
-        <img
-          src={poster_url}
-          alt="Movie Poster"
-          className="w-full h-72 object-cover"
-        />
+        <div className="relative">
+          <img
+            src={poster_url}
+            alt="Movie Poster"
+            className="w-full h-72 object-cover"
+          />
+          {notes && notes.trim() && (
+            <div className="absolute left-0 top-0 z-20 bg-[#E8630A] text-white shadow-lg shadow-black text-xs font-semibold px-3 py-1 rounded-br-lg">
+              Noted
+            </div>
+          )}
+        </div>
         <div className="bg-gray-900 h-full py-2 px-3 text-[#F5F2F2]">
           <div className="flex items-center gap-1 mt-1">
             <span>

@@ -27,6 +27,7 @@ export default function DetailPage() {
   const [isEditComment, setIsEditComment] = useState(false);
   const [commentId, setCommentId] = useState(0);
   const [focusEditId, setFocusEditId] = useState<number | null>(null);
+  const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   let { id } = useParams();
@@ -167,6 +168,7 @@ export default function DetailPage() {
   const onCancel = () => {
     setCommentText("");
     setActive(false);
+    setCommentId(0);
   };
 
   const fetchComment = async () => {
@@ -190,6 +192,8 @@ export default function DetailPage() {
       });
 
       if (responseCheck.data.blocked) {
+        setIsEditComment(false);
+        setCommentId(0);
         setAlertComment(true);
         return;
       }
@@ -533,6 +537,8 @@ export default function DetailPage() {
                         deleteComment={deleteComment}
                         focusEditId={focusEditId}
                         setFocusEditId={setFocusEditId}
+                        activeCommentId={activeCommentId}
+                        setActiveCommentId={setActiveCommentId}
                       />
                     );
                   })
@@ -547,7 +553,11 @@ export default function DetailPage() {
         </div>
         {alertComment && (
           <div
-            onClick={() => setAlertComment(false)}
+            onClick={() => {
+              setAlertComment(false);
+              setIsEditComment(false);
+              setCommentId(0);
+            }}
             className={`fixed inset-0 z-50 flex justify-center items-center min-h-screen bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${showAlert ? "opacity-100" : "opacity-0"}`}
           >
             <div
@@ -589,15 +599,15 @@ export default function DetailPage() {
               <div className="space-y-3">
                 <button
                   onClick={() => {
-                    if (isEditComment) {
-                      if (!commentId) {
-                        return;
-                      }
+                    if (isEditComment && commentId) {
                       setAlertComment(false);
                       setFocusEditId(commentId);
+                      setIsEditComment(false);
+                      setCommentId(0);
                     } else {
                       setAlertComment(false);
-                      inputRef.current?.focus();
+                      setActive(true);
+                      setTimeout(() => inputRef.current?.focus(), 50);
                     }
                   }}
                   className="w-full bg-[#E8630A] hover:bg-[#C75409] text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-[#E8630A]/20 active:scale-[0.98]"
@@ -606,18 +616,17 @@ export default function DetailPage() {
                 </button>
                 <button
                   onClick={() => {
-                    if (isEditComment) {
-                      if (!commentId) {
-                        return;
-                      }
+                    if (isEditComment && commentId) {
                       deleteComment(commentId);
                       setAlertComment(false);
                       setIsEditComment(false);
                       setCommentId(0);
+                      setActiveCommentId(null);
                     } else {
                       setAlertComment(false);
                       setCommentText("");
                       setActive(false);
+                      setActiveCommentId(null);
                     }
                   }}
                   className="w-full py-3 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm"

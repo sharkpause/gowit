@@ -591,8 +591,8 @@ func GoogleCallbackHandler(database *sql.DB) func(*gin.Context) {
 			userInfo.Name,
 			userInfo.Email,
 			userInfo.ID,
-			1,
 			"/media/profile_pictures/default_profile_picture.webp",
+			1,
 		)
 		if err != nil {
 			requestContext.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})

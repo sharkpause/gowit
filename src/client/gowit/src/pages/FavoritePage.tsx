@@ -36,9 +36,45 @@ export default function FavoritePage() {
 
   const deleteFavorite = async (id: number) => {
     try {
-      await serverApi.delete("/api/favorites/" + id);
+      Swal.fire({
+        title: "Remove from Favorites?",
+        html: '<p class="text-gray-300 text-sm">This movie will no longer appear in your favorites.</p>',
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, remove it",
+        cancelButtonText: "Cancel",
+        reverseButtons: true,
+        buttonsStyling: false,
+        background: "#0F1115",
+        color: "#F5F2F2",
+        customClass: {
+          title: "text-2xl font-bold text-white mb-4",
+          htmlContainer: "text-white",
 
-      fetchFavorite();
+          confirmButton:
+            "px-6 py-3 mx-2 rounded-lg bg-[#E8630A] text-white text-base font-semibold hover:bg-[#C75409] transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-[#E8630A]/20",
+          cancelButton:
+            "px-6 py-3 mx-2 rounded-lg bg-[#1C1E22] text-gray-300 text-base font-semibold hover:bg-[#2A2D33] hover:text-white transition-all border border-gray-600",
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await serverApi.delete("/api/favorites/" + id);
+          fetchFavorite();
+          Swal.fire({
+            title: "Deleted!",
+            text: "Your file has been deleted.",
+            icon: "success",
+            buttonsStyling: false,
+            background: "#0F1115",
+            color: "#F5F2F2",
+            customClass: {
+              title: "text-white",
+              confirmButton:
+                "px-4 py-2 mx-2 rounded-lg bg-[#E8630A] text-white hover:bg-[#C75409] focus:outline-none",
+            },
+          });
+        }
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         errorAlert(capitalizeEachWord(error.response?.data.error));
@@ -149,7 +185,7 @@ export default function FavoritePage() {
 
   const updateNote = async (id: number, note: string) => {
     try {
-      await serverApi.patch("/api/favorites/" + id, {
+      const response = await serverApi.patch("/api/favorites/" + id, {
         notes: note,
       });
       Swal.fire({
