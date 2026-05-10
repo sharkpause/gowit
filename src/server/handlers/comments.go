@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,12 @@ import (
 type CheckRequest struct {
 	Text string `json:"text"`
 }
+
+type CommentSummaryData struct {
+	Content   string
+	VoteScore int
+}
+
 
 func CreateComment(database *sql.DB) gin.HandlerFunc {
 	return func(context *gin.Context) {
@@ -531,6 +538,106 @@ func CheckWord(restrictedWordSet map[string]struct{}) gin.HandlerFunc {
 
 		c.JSON(200, gin.H{
 			"blocked": blocked,
+		})
+	}
+}
+
+func GetFilmSummary(database *sql.DB) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid film id",
+			})
+			return
+		}
+
+		var summary string
+		var updatedAt time.Time
+
+		err = database.QueryRow(`
+			SELECT summary, updated_at
+			FROM film_ai_summaries
+			WHERE film_id = ?
+		`, filmID).Scan(&summary, &updatedAt)
+
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				context.JSON(http.StatusOK, gin.H{
+					"message": "No cached summary yet",
+					"cached": false,
+				})
+
+				return
+			}
+			
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Internal server error",
+			})
+			fmt.Println(err)
+			return
+		}
+
+		if time.Since(updatedAt) < time.Minute {
+			context.JSON(http.StatusOK, gin.H{
+				"summary": summary,
+				"cached": true,
+			})
+
+			return
+		}
+
+		rows, err := database.Query(`
+			SELECT
+				c.content,
+				COALESCE(SUM(cv.score), 0) as vote_score
+			FROM comments c
+			LEFT JOIN comments_vote cv
+				ON c.id = cv.comment_id
+			WHERE c.film_id = ?
+				AND c.is_deleted = FALSE
+			GROUP BY c.id, c.content
+			ORDER BY vote_score DESC, c.created_at DESC
+			LIMIT 20
+		`, filmID)
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Internal server error",
+			})
+			fmt.Println(err)
+			return
+		}
+
+		var comments []CommentSummaryData
+
+		for rows.Next() {
+
+			var comment CommentSummaryData
+
+			err := rows.Scan(
+				&comment.Content,
+				&comment.VoteScore,
+			)
+
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Internal server error",
+				})
+				fmt.Println(err)
+				return
+			}
+
+			comments = append(comments, comment)
+		}
+
+		fmt.Println(comments)
+
+		defer rows.Close()
+
+		context.JSON(http.StatusOK, gin.H{
+			"message": "Cache expired, regenerate summary",
+			"cached": false,
 		})
 	}
 }

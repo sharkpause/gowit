@@ -57,6 +57,8 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[st
 
 		api.POST("/contact", handlers.Sendmail())
 
+		api.GET("/films/:id/summary", handlers.GetFilmSummary(database))
+
 		// TODO: Later change so that protected APIs are still accessed through {URL}/api and not {URL}/
 		// to keep API consistency
 
