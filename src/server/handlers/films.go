@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"crypto/rand"
+	"encoding/hex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
@@ -806,6 +808,245 @@ func ImportMovie(database *sql.DB) func(*gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
 			"message":       "movies processed",
 			"missing_titles": errorsList,
+		})
+	}
+}
+
+func GenerateFavoriteShareCode(database *sql.DB) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		userIDVal, exists := context.Get("user_id")
+		if !exists {
+			context.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Unauthorized user",
+			})
+			return
+		}
+
+		userID, ok := userIDVal.(uint64)
+		if !ok {
+			context.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Invalid user_id",
+			})
+			return
+		}
+
+		randomBytes := make([]byte, 16)
+
+		_, err := rand.Read(randomBytes)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to generate share code",
+			})
+			fmt.Println(err)
+
+			return
+		}
+
+		shareCode := hex.EncodeToString(randomBytes)
+
+		_, err = database.Exec(`
+			INSERT INTO shared_watchlists (user_id, share_code)
+			VALUES (?, ?)
+			ON DUPLICATE KEY UPDATE
+				share_code = VALUES(share_code)
+		`, userID, shareCode)
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to save share code",
+			})
+			fmt.Println(err)
+
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"share_code": shareCode,
+		})
+	}
+}
+
+func GetSharedWatchlist(database *sql.DB) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		shareCode := context.Param("code")
+		if shareCode == "" {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid share code",
+			})
+			return
+		}
+
+		var userID uint64
+		var username string
+
+		err := database.QueryRow(`
+			SELECT
+				sw.user_id,
+				u.name
+			FROM shared_watchlists sw
+			JOIN users u
+				ON sw.user_id = u.id
+			WHERE sw.share_code = ?
+		`, shareCode).Scan(
+			&userID,
+			&username,
+		)
+
+		if err == sql.ErrNoRows {
+			context.JSON(http.StatusNotFound, gin.H{
+				"error": "Shared watchlist not found",
+			})
+			return
+		}
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Internal server error",
+			})
+			fmt.Println(err)
+
+			return
+		}
+
+		page := 1
+		limit := 10
+		sort := "title"
+		order := "ASC"
+
+		if pageParam := context.Query("page"); pageParam != "" {
+			pageQueryValue, err := strconv.Atoi(pageParam)
+			if err != nil || pageQueryValue < 1 {
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "Invalid page parameter",
+				})
+				return
+			}
+			page = pageQueryValue
+		}
+
+		if limitParam := context.Query("limit"); limitParam != "" {
+			limitQueryValue, err := strconv.Atoi(limitParam)
+			if err != nil || limitQueryValue < 1 || limitQueryValue > 100 {
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "Limit must be between 1 and 100",
+				})
+				return
+			}
+			limit = limitQueryValue
+		}
+
+		if sortParam := context.Query("sort"); sortParam != "" {
+			sortParam = strings.ToLower(sortParam)
+			switch sortParam {
+			case "title", "release_date", "average_rating", "popularity", "runtime":
+				sort = sortParam
+
+			default:
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "Invalid sort parameter",
+				})
+				return
+			}
+		}
+
+		if orderParam := context.Query("order"); orderParam != "" {
+			orderParam = strings.ToUpper(orderParam)
+			switch orderParam {
+			case "ASC", "DESC":
+				order = orderParam
+
+			default:
+				context.JSON(http.StatusBadRequest, gin.H{
+					"error": "Invalid order parameter",
+				})
+				return
+			}
+		}
+
+		conditions := []string{"favorite.user_id = ?"}
+		args := []any{userID}
+
+		if searchParam := context.Query("search"); searchParam != "" {
+			conditions = append(conditions, "film.title LIKE ?")
+			args = append(args, "%"+searchParam+"%")
+		}
+
+		where := ""
+		if len(conditions) > 0 {
+			where = "WHERE " + strings.Join(conditions, " AND ")
+		}
+
+		offset := (page - 1) * limit
+
+		query := fmt.Sprintf(
+			`SELECT
+				favorite.id, favorite.notes,
+				film.id, film.title, film.description, film.poster_image_url,
+				film.average_rating, film.release_date, film.runtime
+			FROM favorites favorite
+			JOIN films film ON favorite.film_id = film.id
+			%s
+			ORDER BY film.%s %s
+			LIMIT ? OFFSET ?`,
+			where, sort, order,
+		)
+
+		args = append(args, limit, offset)
+
+		rows, err := database.Query(query, args...)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Database error",
+			})
+			fmt.Println(err)
+			return
+		}
+
+		defer rows.Close()
+
+		var favorites []models.Favorite
+		var releaseDate sql.NullTime
+
+		for rows.Next() {
+			var favorite models.Favorite
+
+			err := rows.Scan(
+				&favorite.ID,
+				&favorite.Notes,
+				&favorite.FilmID,
+				&favorite.Title,
+				&favorite.Description,
+				&favorite.PosterImageURL,
+				&favorite.AverageRating,
+				&releaseDate,
+				&favorite.Runtime,
+			)
+
+			if err != nil {
+				fmt.Println(err)
+
+				context.JSON(http.StatusInternalServerError, gin.H{
+					"error": "Internal server error",
+				})
+				return
+			}
+
+			if releaseDate.Valid {
+				releaseYear := int64(releaseDate.Time.Year())
+				favorite.ReleaseYear = &releaseYear
+			}
+
+			favorites = append(favorites, favorite)
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"owner": gin.H{
+				"name": username,
+			},
+			"favorites": favorites,
+			"metadata": gin.H{
+				"amount": len(favorites),
+			},
 		})
 	}
 }
