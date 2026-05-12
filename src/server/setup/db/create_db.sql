@@ -176,8 +176,7 @@ CREATE TABLE film_ai_summaries (
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		ON UPDATE CURRENT_TIMESTAMP,
 
-	CONSTRAINT fk_summary_film
-		FOREIGN KEY (film_id)
+	FOREIGN KEY (film_id)
 		REFERENCES films(id)
 		ON DELETE CASCADE
 );

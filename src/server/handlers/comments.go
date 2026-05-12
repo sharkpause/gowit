@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
+	"google.golang.org/genai"
 )
 
 type CheckRequest struct {
@@ -542,7 +543,7 @@ func CheckWord(restrictedWordSet map[string]struct{}) gin.HandlerFunc {
 	}
 }
 
-func GetFilmSummary(database *sql.DB) gin.HandlerFunc {
+func GetFilmSummary(database *sql.DB, geminiClient *genai.Client) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
 		if err != nil {
@@ -561,29 +562,30 @@ func GetFilmSummary(database *sql.DB) gin.HandlerFunc {
 			WHERE film_id = ?
 		`, filmID).Scan(&summary, &updatedAt)
 
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				context.JSON(http.StatusOK, gin.H{
-					"message": "No cached summary yet",
-					"cached": false,
-				})
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			fmt.Println(err)
 
-				return
-			}
-			
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Internal server error",
 			})
-			fmt.Println(err)
 			return
 		}
 
-		if time.Since(updatedAt) < time.Minute {
+		needsRegeneration := false
+
+		if errors.Is(err, sql.ErrNoRows) {
+			needsRegeneration = true
+		}
+
+		if !needsRegeneration && time.Since(updatedAt) >= 24 * time.Hour {
+			needsRegeneration = true
+		}
+
+		if !needsRegeneration {
 			context.JSON(http.StatusOK, gin.H{
 				"summary": summary,
 				"cached": true,
 			})
-
 			return
 		}
 
@@ -602,12 +604,15 @@ func GetFilmSummary(database *sql.DB) gin.HandlerFunc {
 		`, filmID)
 
 		if err != nil {
+			fmt.Println(err)
+
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Internal server error",
 			})
-			fmt.Println(err)
 			return
 		}
+
+		defer rows.Close()
 
 		var comments []CommentSummaryData
 
@@ -621,22 +626,70 @@ func GetFilmSummary(database *sql.DB) gin.HandlerFunc {
 			)
 
 			if err != nil {
+				fmt.Println(err)
+
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Internal server error",
 				})
-				fmt.Println(err)
 				return
 			}
 
 			comments = append(comments, comment)
 		}
 
-		fmt.Println(comments)
+		if len(comments) == 0 {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"message": "Not enough comments to generate summary",
+			})
+			return
+		}
 
-		defer rows.Close()
+		var promptBuilder strings.Builder
+		promptBuilder.WriteString(`
+		You are an assistant that summarizes audience opinions about films.
+
+		Your task:
+		- Read the provided movie comments
+		- Identify the most common positive and negative opinions
+		- Write a concise summary in 2-4 sentences
+		- Keep the tone neutral and informative
+		- Do not mention vote counts
+		- Do not mention individual users
+		- Do not invent opinions that are not present in the comments
+		- If opinions are mixed, mention both sides
+
+		Movie comments:
+		`)
+
+		for _, comment := range comments {
+
+			promptBuilder.WriteString(
+				fmt.Sprintf(
+					"\nComment (score: %d): %s\n",
+					comment.VoteScore,
+					comment.Content,
+				),
+			)
+		}
+
+		response, err := geminiClient.Models.GenerateContent(
+			context.Request.Context(),
+			"gemini-2.5-flash",
+			genai.Text(promptBuilder.String()),
+			nil,
+		)
+
+		generatedSummary := response.Text()
+		_, err = database.Exec(`
+			INSERT INTO film_ai_summaries (film_id, summary)
+			VALUES (?, ?)
+			ON DUPLICATE KEY UPDATE
+				summary = VALUES(summary),
+				updated_at = CURRENT_TIMESTAMP
+		`, filmID, generatedSummary)
 
 		context.JSON(http.StatusOK, gin.H{
-			"message": "Cache expired, regenerate summary",
+			"summary": generatedSummary,
 			"cached": false,
 		})
 	}
