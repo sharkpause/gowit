@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
-	"context"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"

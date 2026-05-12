@@ -10,6 +10,7 @@ import Navbar from "../components/Navbar";
 
 export default function SharedFavoritePage() {
   const [favorite, setFavorite] = useState<WatchListType[]>([]);
+  const [user, setUser] = useState("");
   const [sort, setSort] = useState("title");
   const [order, setOrder] = useState("ASC");
   const [search, setSearch] = useState("");
@@ -24,6 +25,7 @@ export default function SharedFavoritePage() {
       );
 
       setFavorite(response.data.favorites || []);
+      setUser(response.data.owner.name || "");
     } catch (error) {
       console.log("Error at Favorite Page: ", error);
     }
@@ -38,7 +40,6 @@ export default function SharedFavoritePage() {
         "Average Rating": el.average_rating ?? 0,
         "Release Year": el.release_year,
         "Duration (Minutes)": el.runtime,
-        Note: el.notes,
       };
     });
 
@@ -69,8 +70,13 @@ export default function SharedFavoritePage() {
     <>
       <Navbar />
       <div
-        className={`bg-[#0F1115] overflow-hidden px-3 sm:px-4 md:px-8 lg:px-36 ${favorite.length > 0 || search.length > 0 ? "pt-24 sm:pt-28 md:pt-32" : "pt-8"} pb-12 sm:pb-16`}
+        className={`bg-[#0F1115] overflow-hidden px-3 sm:px-4 md:px-8 lg:px-36 ${favorite.length > 0 || search.length > 0 ? "pt-16 sm:pt-20 md:pt-24" : "pt-8"} pb-12 sm:pb-16`}
       >
+        <div className="flex justify-center items-center mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#F5F2F2] text-center">
+            <span className="text-[#E8630A]">{user}'s</span> Watchlist
+          </h1>
+        </div>
         {favorite.length > 0 || search.length > 0 ? (
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div className="flex items-center gap-2">

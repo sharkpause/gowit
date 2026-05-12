@@ -239,11 +239,10 @@ export default function FavoritePage() {
 
   const handleShare = async () => {
     try {
-      const response = await serverApi.get("/user/favorites/share");
+      const response = await serverApi.get("/api/user/favorites/share");
 
       const shareData = {
         title: `${user?.name || "My"} Movie Watchlist`,
-        text: `Check out ${user?.name || "my"} movie watchlist on Movie App.`,
         url: window.location.href + "/" + response.data.share_code,
       };
 
