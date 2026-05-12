@@ -9,11 +9,9 @@ import (
 
 	"github.com/sharkpause/gowit/auth"
 	"github.com/sharkpause/gowit/handlers"
-
-	"google.golang.org/genai"
 )
 
-func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[string]struct{}, geminiClient *genai.Client) {
+func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[string]struct{}) {
 	router.Use(cors.New(cors.Config{
 		// Ganti origin sesuai frontend kamu
 		AllowOrigins: []string{
@@ -58,8 +56,6 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[st
 		api.GET("/user/:id", handlers.GetOtherUserDetail(database))
 
 		api.POST("/contact", handlers.Sendmail())
-
-		api.GET("/films/:id/summary", handlers.GetFilmSummary(database, geminiClient))
 
 		api.GET("/user/favorites/share", handlers.GenerateFavoriteShareCode(database))
 		api.GET("/user/favorites/:code", handlers.GetSharedWatchlist(database))
