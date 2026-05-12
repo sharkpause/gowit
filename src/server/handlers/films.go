@@ -610,7 +610,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 			filmID, userID,
 		).Scan(&originalNote)
 
-		if *originalNote == request.Notes {
+		if originalNote != nil && *originalNote == request.Notes {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error": "new note and original note is the same",
 				"same_note": "true",
