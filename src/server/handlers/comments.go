@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
+	// "time"
 	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
-	"google.golang.org/genai"
+	// "google.golang.org/genai"
 )
 
 type CheckRequest struct {
@@ -543,154 +543,154 @@ func CheckWord(restrictedWordSet map[string]struct{}) gin.HandlerFunc {
 	}
 }
 
-func GetFilmSummary(database *sql.DB, geminiClient *genai.Client) gin.HandlerFunc {
-	return func(context *gin.Context) {
-		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"message": "Invalid film id",
-			})
-			return
-		}
+// func GetFilmSummary(database *sql.DB, geminiClient *genai.Client) gin.HandlerFunc {
+// 	return func(context *gin.Context) {
+// 		filmID, err := strconv.ParseUint(context.Param("id"), 10, 64)
+// 		if err != nil {
+// 			context.JSON(http.StatusBadRequest, gin.H{
+// 				"message": "Invalid film id",
+// 			})
+// 			return
+// 		}
 
-		var summary string
-		var updatedAt time.Time
+// 		var summary string
+// 		var updatedAt time.Time
 
-		err = database.QueryRow(`
-			SELECT summary, updated_at
-			FROM film_ai_summaries
-			WHERE film_id = ?
-		`, filmID).Scan(&summary, &updatedAt)
+// 		err = database.QueryRow(`
+// 			SELECT summary, updated_at
+// 			FROM film_ai_summaries
+// 			WHERE film_id = ?
+// 		`, filmID).Scan(&summary, &updatedAt)
 
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			fmt.Println(err)
+// 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+// 			fmt.Println(err)
 
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Internal server error",
-			})
-			return
-		}
+// 			context.JSON(http.StatusInternalServerError, gin.H{
+// 				"message": "Internal server error",
+// 			})
+// 			return
+// 		}
 
-		needsRegeneration := false
+// 		needsRegeneration := false
 
-		if errors.Is(err, sql.ErrNoRows) {
-			needsRegeneration = true
-		}
+// 		if errors.Is(err, sql.ErrNoRows) {
+// 			needsRegeneration = true
+// 		}
 
-		if !needsRegeneration && time.Since(updatedAt) >= 24 * time.Hour {
-			needsRegeneration = true
-		}
+// 		if !needsRegeneration && time.Since(updatedAt) >= 24 * time.Hour {
+// 			needsRegeneration = true
+// 		}
 
-		if !needsRegeneration {
-			context.JSON(http.StatusOK, gin.H{
-				"summary": summary,
-				"cached": true,
-			})
-			return
-		}
+// 		if !needsRegeneration {
+// 			context.JSON(http.StatusOK, gin.H{
+// 				"summary": summary,
+// 				"cached": true,
+// 			})
+// 			return
+// 		}
 
-		rows, err := database.Query(`
-			SELECT
-				c.content,
-				COALESCE(SUM(cv.score), 0) as vote_score
-			FROM comments c
-			LEFT JOIN comments_vote cv
-				ON c.id = cv.comment_id
-			WHERE c.film_id = ?
-				AND c.is_deleted = FALSE
-			GROUP BY c.id, c.content
-			ORDER BY vote_score DESC, c.created_at DESC
-			LIMIT 20
-		`, filmID)
+// 		rows, err := database.Query(`
+// 			SELECT
+// 				c.content,
+// 				COALESCE(SUM(cv.score), 0) as vote_score
+// 			FROM comments c
+// 			LEFT JOIN comments_vote cv
+// 				ON c.id = cv.comment_id
+// 			WHERE c.film_id = ?
+// 				AND c.is_deleted = FALSE
+// 			GROUP BY c.id, c.content
+// 			ORDER BY vote_score DESC, c.created_at DESC
+// 			LIMIT 20
+// 		`, filmID)
 
-		if err != nil {
-			fmt.Println(err)
+// 		if err != nil {
+// 			fmt.Println(err)
 
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Internal server error",
-			})
-			return
-		}
+// 			context.JSON(http.StatusInternalServerError, gin.H{
+// 				"message": "Internal server error",
+// 			})
+// 			return
+// 		}
 
-		defer rows.Close()
+// 		defer rows.Close()
 
-		var comments []CommentSummaryData
+// 		var comments []CommentSummaryData
 
-		for rows.Next() {
+// 		for rows.Next() {
 
-			var comment CommentSummaryData
+// 			var comment CommentSummaryData
 
-			err := rows.Scan(
-				&comment.Content,
-				&comment.VoteScore,
-			)
+// 			err := rows.Scan(
+// 				&comment.Content,
+// 				&comment.VoteScore,
+// 			)
 
-			if err != nil {
-				fmt.Println(err)
+// 			if err != nil {
+// 				fmt.Println(err)
 
-				context.JSON(http.StatusInternalServerError, gin.H{
-					"message": "Internal server error",
-				})
-				return
-			}
+// 				context.JSON(http.StatusInternalServerError, gin.H{
+// 					"message": "Internal server error",
+// 				})
+// 				return
+// 			}
 
-			comments = append(comments, comment)
-		}
+// 			comments = append(comments, comment)
+// 		}
 
-		if len(comments) == 0 {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"message": "Not enough comments to generate summary",
-			})
-			return
-		}
+// 		if len(comments) == 0 {
+// 			context.JSON(http.StatusBadRequest, gin.H{
+// 				"message": "Not enough comments to generate summary",
+// 			})
+// 			return
+// 		}
 
-		var promptBuilder strings.Builder
-		promptBuilder.WriteString(`
-		You are an assistant that summarizes audience opinions about films.
+// 		var promptBuilder strings.Builder
+// 		promptBuilder.WriteString(`
+// 		You are an assistant that summarizes audience opinions about films.
 
-		Your task:
-		- Read the provided movie comments
-		- Identify the most common positive and negative opinions
-		- Write a concise summary in 2-4 sentences
-		- Keep the tone neutral and informative
-		- Do not mention vote counts
-		- Do not mention individual users
-		- Do not invent opinions that are not present in the comments
-		- If opinions are mixed, mention both sides
+// 		Your task:
+// 		- Read the provided movie comments
+// 		- Identify the most common positive and negative opinions
+// 		- Write a concise summary in 2-4 sentences
+// 		- Keep the tone neutral and informative
+// 		- Do not mention vote counts
+// 		- Do not mention individual users
+// 		- Do not invent opinions that are not present in the comments
+// 		- If opinions are mixed, mention both sides
 
-		Movie comments:
-		`)
+// 		Movie comments:
+// 		`)
 
-		for _, comment := range comments {
+// 		for _, comment := range comments {
 
-			promptBuilder.WriteString(
-				fmt.Sprintf(
-					"\nComment (score: %d): %s\n",
-					comment.VoteScore,
-					comment.Content,
-				),
-			)
-		}
+// 			promptBuilder.WriteString(
+// 				fmt.Sprintf(
+// 					"\nComment (score: %d): %s\n",
+// 					comment.VoteScore,
+// 					comment.Content,
+// 				),
+// 			)
+// 		}
 
-		response, err := geminiClient.Models.GenerateContent(
-			context.Request.Context(),
-			"gemini-2.5-flash",
-			genai.Text(promptBuilder.String()),
-			nil,
-		)
+// 		response, err := geminiClient.Models.GenerateContent(
+// 			context.Request.Context(),
+// 			"gemini-2.5-flash",
+// 			genai.Text(promptBuilder.String()),
+// 			nil,
+// 		)
 
-		generatedSummary := response.Text()
-		_, err = database.Exec(`
-			INSERT INTO film_ai_summaries (film_id, summary)
-			VALUES (?, ?)
-			ON DUPLICATE KEY UPDATE
-				summary = VALUES(summary),
-				updated_at = CURRENT_TIMESTAMP
-		`, filmID, generatedSummary)
+// 		generatedSummary := response.Text()
+// 		_, err = database.Exec(`
+// 			INSERT INTO film_ai_summaries (film_id, summary)
+// 			VALUES (?, ?)
+// 			ON DUPLICATE KEY UPDATE
+// 				summary = VALUES(summary),
+// 				updated_at = CURRENT_TIMESTAMP
+// 		`, filmID, generatedSummary)
 
-		context.JSON(http.StatusOK, gin.H{
-			"summary": generatedSummary,
-			"cached": false,
-		})
-	}
-}
+// 		context.JSON(http.StatusOK, gin.H{
+// 			"summary": generatedSummary,
+// 			"cached": false,
+// 		})
+// 	}
+// }
