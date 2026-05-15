@@ -1,5 +1,5 @@
 import { Dot, NotebookPen, Star, X } from "lucide-react";
-import { useState } from "react";
+import { useState, type Dispatch } from "react";
 
 export default function WatchListCard({
   id,
@@ -10,7 +10,8 @@ export default function WatchListCard({
   year,
   minute,
   notes,
-  updateNote,
+  isShared,
+  onOpenNote,
 }: {
   id: number;
   poster_url: string;
@@ -20,22 +21,27 @@ export default function WatchListCard({
   year: number;
   minute: number;
   notes: string;
-  updateNote: (id: number, note: string) => Promise<void>;
+  isShared: boolean;
+  onOpenNote: () => void;
 }) {
-  const [showNote, setShowNote] = useState(false);
-  const [note, setNote] = useState(notes);
-
   return (
     <>
       <div
-        onClick={() => setShowNote(true)}
-        className="w-48 md:w-56 lg:w-64 bg-[#1C1E22] rounded-lg overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 hover:scale-102 hover:shadow-2xl hover:shadow-black/50"
+        onClick={onOpenNote}
+        className={`w-48 md:w-56 lg:w-64 bg-[#1C1E22] rounded-lg overflow-hidden shadow-lg transition-transform duration-200 hover:scale-102 hover:shadow-2xl hover:shadow-black/50 ${isShared ? "" : "cursor-pointer"}`}
       >
-        <img
-          src={poster_url}
-          alt="Movie Poster"
-          className="w-full h-72 object-cover"
-        />
+        <div className="relative">
+          <img
+            src={poster_url}
+            alt="Movie Poster"
+            className="w-full h-72 object-cover"
+          />
+          {notes && notes.trim() && (
+            <div className="absolute left-0 top-0 z-20 bg-[#E8630A] text-white shadow-lg shadow-black text-xs font-semibold px-3 py-1 rounded-br-lg">
+              Noted
+            </div>
+          )}
+        </div>
         <div className="bg-gray-900 h-full py-2 px-3 text-[#F5F2F2]">
           <div className="flex items-center gap-1 mt-1">
             <span>
@@ -58,62 +64,6 @@ export default function WatchListCard({
           </div>
         </div>
       </div>
-
-      {showNote && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={() => setShowNote(false)}
-        >
-          <div
-            className="relative bg-[#1C1E22] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-[#F5F2F2]">
-                <NotebookPen size={18} className="text-[#E8630A]" />
-                <h3 className="font-semibold text-lg">My Note</h3>
-              </div>
-              <button
-                onClick={() => setShowNote(false)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <p className="text-gray-400 text-sm mb-3">
-              <span className="text-[#F5F2F2] font-medium">{title}</span>{" "}
-              &mdash; {year}
-            </p>
-
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Write Your Note About This Film..."
-              rows={5}
-              className="w-full bg-[#0F1115] text-[#F5F2F2] placeholder-gray-500 border border-white/10 focus:border-white/30 focus:outline-none rounded-xl px-4 py-3 resize-none text-sm"
-            />
-
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => setShowNote(false)}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  updateNote(id, note);
-                  setShowNote(false);
-                }}
-                className="px-5 py-2 text-sm bg-[#E8630A] hover:bg-[#C75409] text-white font-semibold rounded-lg transition-colors"
-              >
-                Save Note
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
