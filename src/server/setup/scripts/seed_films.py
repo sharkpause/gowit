@@ -40,14 +40,9 @@ def download_youtube_video(url: str, output_path: str) -> int | None:
         print(f"Skipping video (already exists): {output_path}")
 
         ydl_opts = {
-            # tell yt-dlp which JS runtime(s) to enable
-            "js_runtimes": {"node": {}},  # use Node.js if available
-
-            # your cookie handling (example)
-            "cookiesfrombrowser": ("firefox",),
-
-            # other options you want
-            "format": "bestvideo+bestaudio/best",
+            "format": "best[height<=720][ext=mp4]/mp4/best",
+            "js_runtimes": {"node": {}},
+            "cookiefile": "cookies.txt",
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -59,12 +54,12 @@ def download_youtube_video(url: str, output_path: str) -> int | None:
                 return None
 
     ydl_opts = {
-        "format": "bestvideo+bestaudio/best",
+        "format": "best[height<=720][ext=mp4]/mp4/best",
         "outtmpl": output_path,
-        "merge_output_format": "mp4",
         "quiet": True,
+        "noplaylist": True,
         "js_runtimes": {"node": {}},
-        "cookiesfrombrowser": ("firefox",),
+        "cookiefile": "cookies.txt",
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -203,7 +198,6 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                         "INSERT INTO trailers (trailer_url, trailer_duration) VALUES (%s, %s)",
                         (trailer_url, trailer_duration),
                     )
-                    connection.commit()
                     trailer_id = cursor.lastrowid
 
                     # download thumbnail ONCE
@@ -212,7 +206,6 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                     download_file(thumbnail_download_url, thumbnail_local_path)
 
                     thumbnail_url = "/media/thumbnails/" + thumbnail_filename + ".webp"
-                    convert_folder_to_webp(THUMBNAIL_DIR)
 
                 credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
                 credits_resp = requests.get(credits_url, params=details_params, timeout=10)
@@ -238,8 +231,6 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                     download_file(poster_download_url, poster_local_path)
 
                     poster_url = "/media/posters/" + poster_filename + '.webp'
-
-                    convert_folder_to_webp(POSTER_DIR)
                 
                 runtime = details.get("runtime")
 
@@ -274,7 +265,6 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                                 release_date
                             ),
                         )
-                        connection.commit()
                         film_id = cursor.lastrowid
                     except mysql.connector.Error as e:
                         print(f"Ignored insert error for film {title!r}: {e}")
@@ -299,14 +289,12 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                         continue
                     try:
                         cursor.execute("INSERT IGNORE INTO genres (name) VALUES (%s)", (genre_name,))
-                        connection.commit()
                         cursor.execute("SELECT id FROM genres WHERE name=%s", (genre_name,))
                         gid = cursor.fetchone()[0]
                         cursor.execute(
                             "INSERT IGNORE INTO film_genres (film_id, genre_id) VALUES (%s, %s)",
                             (film_id, gid),
                         )
-                        connection.commit()
                     except Exception as e:
                         print(f"Warning: genre handling failed for {genre_name}: {e}")
 
@@ -317,14 +305,12 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                         continue
                     try:
                         cursor.execute("INSERT IGNORE INTO production_companies (name) VALUES (%s)", (company_name,))
-                        connection.commit()
                         cursor.execute("SELECT id FROM production_companies WHERE name=%s", (company_name,))
                         cid = cursor.fetchone()[0]
                         cursor.execute(
                             "INSERT IGNORE INTO film_production_companies (film_id, company_id) VALUES (%s, %s)",
                             (film_id, cid),
                         )
-                        connection.commit()
                     except Exception as e:
                         print(f"Warning: production company handling failed for {company_name}: {e}")
 
@@ -338,12 +324,10 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                         cursor.execute("INSERT IGNORE INTO production_countries (iso_code, name) VALUES (%s, %s)",
                             (country_code, country_name)
                         )
-                        connection.commit()
                         cursor.execute(
                             "INSERT IGNORE INTO film_production_countries (film_id, country_code) VALUES (%s, %s)",
                             (film_id, country_code),
                         )
-                        connection.commit()
                     except Exception as e:
                         print(f"Warning: production country handling failed for {country_name}: {e}")
 
@@ -357,21 +341,22 @@ def seed_films(connection=None, movie_csv_path="movies.csv", limit=10): # Edit t
                             "INSERT IGNORE INTO film_casts (film_id, actor_name, cast_order) VALUES (%s, %s, %s)",
                             (film_id, actor_name, cast_order),
                         )
-                        connection.commit()
                     except Exception as e:
                         print(f"Warning: cast insert failed for {actor_name}: {e}")
 
                 print(f"Seeded movie: {title!r} (film_id={film_id})")
-                processed += 1
-
+                connection.commit()
             except requests.exceptions.RequestException as re:
                 print(f"HTTP error for movie_id={movie_id}: {re}")
-                processed += 1
-                continue
+                connection.rollback()
             except Exception as ex:
                 print(f"Unexpected error for movie_id={movie_id}: {ex}")
+                connection.rollback()
+            finally:
                 processed += 1
-                continue
+    
+    convert_folder_to_webp(POSTER_DIR)
+    convert_folder_to_webp(THUMBNAIL_DIR)
 
     cursor.close()
     if own_connection:

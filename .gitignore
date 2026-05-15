@@ -38,3 +38,5 @@ src/client/gowit/public/media
 !src/client/gowit/public/media/profile_pictures/default_profile_picture.webp
 
 Gowit.pem
+src/server/setup/scripts/cookies.txt
+src/server/setup/db/flowchart.drawio.png
