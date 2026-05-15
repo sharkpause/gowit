@@ -7,8 +7,9 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { capitalizeEachWord } from "../helper/helper";
 import Navbar from "../components/Navbar";
-import { MoreVertical, Star, Users } from "lucide-react";
+import { Check, MoreVertical, Share2, Star, Users } from "lucide-react";
 import Comment from "../components/Comment";
+import toast from "react-hot-toast";
 
 export default function DetailPage() {
   const [detailMovie, setDetailMovie] = useState<MovieType>();
@@ -27,7 +28,9 @@ export default function DetailPage() {
   const [isEditComment, setIsEditComment] = useState(false);
   const [commentId, setCommentId] = useState(0);
   const [focusEditId, setFocusEditId] = useState<number | null>(null);
+  const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
 
   let { id } = useParams();
 
@@ -167,6 +170,7 @@ export default function DetailPage() {
   const onCancel = () => {
     setCommentText("");
     setActive(false);
+    setCommentId(0);
   };
 
   const fetchComment = async () => {
@@ -190,6 +194,8 @@ export default function DetailPage() {
       });
 
       if (responseCheck.data.blocked) {
+        setIsEditComment(false);
+        setCommentId(0);
         setAlertComment(true);
         return;
       }
@@ -251,6 +257,33 @@ export default function DetailPage() {
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: detailMovie?.title,
+      text: `Check out ${detailMovie?.title} on Movie App`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard", {
+          icon: <Check className="w-5 h-5 font-semibold" />,
+          style: {
+            fontWeight: 500,
+            borderRadius: "10px",
+            background: "#0F1115",
+            color: "#fff",
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     checkUser();
     fetchMovie();
@@ -266,9 +299,21 @@ export default function DetailPage() {
       <div className="bg-[#0F1115] min-h-screen">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-10">
           <div className="bg-[#0B0C0D] border border-gray-800 rounded-lg p-4 sm:p-6 md:p-8 shadow-xl mt-8 sm:mt-10 md:mt-12">
-            <h2 className="text-white mb-4 sm:mb-6 font-bold text-2xl sm:text-3xl md:text-4xl break-words">
-              {detailMovie?.title}
-            </h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-white mb-4 sm:mb-6 font-bold text-2xl sm:text-3xl md:text-4xl">
+                {detailMovie?.title}
+              </h2>
+              <div
+                onClick={handleShare}
+                className="p-3 flex justify-center items-center bg-white/5 hover:bg-[#E8630A]/20 rounded-full cursor-pointer transition-all shadow-lg shadow-white/5 hover:shadow-[#E8630A]/20 hover:scale-110 mb-4"
+              >
+                <Share2
+                  size={28}
+                  style={{ margin: 0 }}
+                  className="text-white mb-4 sm:mb-6 font-bold"
+                />
+              </div>
+            </div>
 
             <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-2xl bg-black">
               <iframe
@@ -533,6 +578,8 @@ export default function DetailPage() {
                         deleteComment={deleteComment}
                         focusEditId={focusEditId}
                         setFocusEditId={setFocusEditId}
+                        activeCommentId={activeCommentId}
+                        setActiveCommentId={setActiveCommentId}
                       />
                     );
                   })
@@ -547,7 +594,11 @@ export default function DetailPage() {
         </div>
         {alertComment && (
           <div
-            onClick={() => setAlertComment(false)}
+            onClick={() => {
+              setAlertComment(false);
+              setIsEditComment(false);
+              setCommentId(0);
+            }}
             className={`fixed inset-0 z-50 flex justify-center items-center min-h-screen bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${showAlert ? "opacity-100" : "opacity-0"}`}
           >
             <div
@@ -589,15 +640,15 @@ export default function DetailPage() {
               <div className="space-y-3">
                 <button
                   onClick={() => {
-                    if (isEditComment) {
-                      if (!commentId) {
-                        return;
-                      }
+                    if (isEditComment && commentId) {
                       setAlertComment(false);
                       setFocusEditId(commentId);
+                      setIsEditComment(false);
+                      setCommentId(0);
                     } else {
                       setAlertComment(false);
-                      inputRef.current?.focus();
+                      setActive(true);
+                      setTimeout(() => inputRef.current?.focus(), 50);
                     }
                   }}
                   className="w-full bg-[#E8630A] hover:bg-[#C75409] text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-[#E8630A]/20 active:scale-[0.98]"
@@ -606,18 +657,17 @@ export default function DetailPage() {
                 </button>
                 <button
                   onClick={() => {
-                    if (isEditComment) {
-                      if (!commentId) {
-                        return;
-                      }
+                    if (isEditComment && commentId) {
                       deleteComment(commentId);
                       setAlertComment(false);
                       setIsEditComment(false);
                       setCommentId(0);
+                      setActiveCommentId(null);
                     } else {
                       setAlertComment(false);
                       setCommentText("");
                       setActive(false);
+                      setActiveCommentId(null);
                     }
                   }}
                   className="w-full py-3 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm"
