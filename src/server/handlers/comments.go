@@ -679,6 +679,15 @@ func GetFilmSummary(database *sql.DB, geminiClient *genai.Client) gin.HandlerFun
 			nil,
 		)
 
+		if err != nil {
+			fmt.Println(err)
+
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Internal server error",
+			})
+			return
+		}
+
 		generatedSummary := response.Text()
 		_, err = database.Exec(`
 			INSERT INTO film_ai_summaries (film_id, summary)
