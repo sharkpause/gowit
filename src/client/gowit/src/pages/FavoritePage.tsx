@@ -131,7 +131,6 @@ export default function FavoritePage() {
   const createImport = async () => {
     try {
       setLoadingImport(true);
-      console.log(fileImport.length);
 
       if (fileImport.length < 1) {
         errorAlert("Please Input Excel File First!");
@@ -203,8 +202,6 @@ export default function FavoritePage() {
 
   const updateNote = async (id: number, note: string) => {
     try {
-      console.log(id, "aa", note);
-
       await serverApi.patch("/api/favorites/" + id, {
         notes: note,
       });
