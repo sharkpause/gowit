@@ -44,14 +44,14 @@ def main():
         database=os.getenv("DB_NAME"),
     )
 
+    print('Seeding with indonesian_movies.csv')
+    seed_films(connection, movie_csv_path='indonesian_movies.csv')
+
     print("Seeding movies...")
     seed_films(connection)
 
     print('Seeding with coming_soon.csv')
     seed_films(connection, movie_csv_path='coming_soon.csv')
-
-    print('Seeding with indonesian_movies.csv')
-    seed_films(movie_csv_path='indonesian_movies.csv')
 
     connection.close()
 

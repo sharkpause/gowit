@@ -5,7 +5,7 @@ API_KEY = '882d288921f536a9af57c8cf3d5bd020'
 
 BASE_URL = 'https://api.themoviedb.org/3/discover/movie'
 
-MAX_PAGES = 10
+MAX_PAGES = 5
 
 movies_data = []
 
