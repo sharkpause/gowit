@@ -31,7 +31,6 @@ export default function DetailPage() {
   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-
   let { id } = useParams();
 
   useEffect(() => {

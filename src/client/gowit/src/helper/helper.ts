@@ -18,8 +18,11 @@ export function commentDate(created_at: string) {
   const created_at_length = created_at.length - 1;
 
   const dateComment = new Date(
-    created_at.slice(0, created_at_length) + "+07:00",
+    created_at.slice(0, created_at_length) + "0",
+    // created_at.slice(0, created_at_length) + "+07:00",
   );
+
+
 
   const diffMs = nowDate.getTime() - dateComment.getTime();
 

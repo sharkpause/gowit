@@ -42,7 +42,7 @@ export default function ProfilePage() {
           Accept: "application/json",
         },
       });
-      console.log(res.data);
+
       setTimeout(() => {
         setPicture(res.data.url);
       }, 1000);
