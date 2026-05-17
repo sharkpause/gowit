@@ -192,3 +192,39 @@ CREATE TABLE shared_watchlists (
 		REFERENCES users(id)
 		ON DELETE CASCADE
 );
+
+INSERT INTO restricted_words (word) VALUES
+	('asshole'),
+	('assmunch'),
+	('bastard'),,
+	('bitch'),
+	('bitches'),
+	('bullshit'),
+	('clusterfuck'),
+	('cock'),
+	('cocks'),
+	('cunt'),
+	('dick'),
+	('dildo'),
+	('fuck'),
+	('fuckin'),
+	('fucking'),
+	('fucktards'),
+	('fag'),
+	('faggot'),
+	('kike'),
+	('motherfucker'),
+	('nigga'),
+	('nigger'),
+	('pisspig'),
+	('pussy'),
+	('schlong'),
+	('shit'),
+	('shitty'),
+	('slanteye'),
+	('slut'),
+	('spastic'),
+	('twat'),
+	('tranny'),
+	('whore');
+
