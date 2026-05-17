@@ -259,7 +259,6 @@ export default function DetailPage() {
   const handleShare = async () => {
     const shareData = {
       title: detailMovie?.title,
-      text: `Check out ${detailMovie?.title} on Movie App`,
       url: window.location.href,
     };
 

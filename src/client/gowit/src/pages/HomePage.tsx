@@ -204,7 +204,7 @@ export default function HomePage() {
     try {
       setLoadingTop(true);
       const response = await serverApi.get(
-        "/api/films?sort=average_rating&order=desc&limit=10",
+        "/api/films?sort=average_rating&order=desc&limit=5",
       );
       setTopMovie(response.data.films);
     } catch (error) {

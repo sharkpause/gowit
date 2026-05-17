@@ -25,7 +25,7 @@ export default function SharedFavoritePage() {
         `/api/user/favorites/${encryptId}?sort=${sort}&order=${order}&search=${search}`,
       );
 
-      if (response.data.) {
+      if (response.data.same_user) {
         return navigate('/watchlist')
       }
 
