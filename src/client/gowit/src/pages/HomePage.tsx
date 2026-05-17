@@ -348,13 +348,13 @@ export default function HomePage() {
                     opacity: 0,
                     filter: "blur(10px) brightness(0.5)",
                     transition: {
-                      duration: 0.8,
-                      ease: "easeOut",
+                      duration: 2.2,
+                      ease: [0.4, 0, 0.2, 1],
                     },
                   }}
                   transition={{
                     duration: bgIndex === 0 ? 4.0 : 3.0,
-                    ease: "easeOut",
+                    ease: [0.16, 1, 0.3, 1],
                   }}
                   className="absolute inset-0 bg-cover bg-center"
                   style={{
@@ -366,7 +366,7 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f1114] via-transparent to-transparent" />
             </div>
 
-            <div className=" flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left">
+            <div className="flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={bgIndex}

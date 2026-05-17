@@ -1,5 +1,5 @@
 import { Heart, Download, Table, RectangleVertical, Star } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 import type { ImportType, WatchListType } from "../type";
 import WatchListCard from "../components/WatchListCard";
@@ -17,12 +17,17 @@ export default function SharedFavoritePage() {
   const [viewMode, setViewMode] = useState("grid");
 
   const { encryptId } = useParams();
+  const navigate = useNavigate()
 
   const fetchFavorite = async () => {
     try {
       const response = await serverApi.get(
         `/api/user/favorites/${encryptId}?sort=${sort}&order=${order}&search=${search}`,
       );
+
+      if (response.data.) {
+        return navigate('/watchlist')
+      }
 
       setFavorite(response.data.favorites || []);
       setUser(response.data.owner.name || "");
