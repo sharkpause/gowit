@@ -44,7 +44,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[st
 		
 		filmsAPI.GET("/:id/rating", handlers.GetRating(database))
 
-		filmsAPI.GET("/:id/comments",auth.OptionalAuth(), handlers.GetCommentByFilmID(database))
+		filmsAPI.GET("/:id/comments", auth.OptionalAuth(), handlers.GetCommentByFilmID(database))
 		
 		api.POST("/register", handlers.RegisterUser(database))
 		api.POST("/login", handlers.LoginUser(database))
@@ -57,7 +57,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[st
 
 		api.POST("/contact", handlers.Sendmail())
 
-		api.GET("/user/favorites/:code", handlers.GetSharedWatchlist(database))
+		api.GET("/user/favorites/:code", auth.OptionalAuth(), handlers.GetSharedWatchlist(database))
 
 		// TODO: Later change so that protected APIs are still accessed through {URL}/api and not {URL}/
 		// to keep API consistency

@@ -246,7 +246,7 @@ export default function FavoritePage() {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(window.location.href + "/" + response.data.share_code);
         toast.success("Link copied to clipboard", {
           icon: <Check className="w-5 h-5 font-semibold" />,
           style: {
