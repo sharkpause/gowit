@@ -77,7 +77,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[st
 			
 			protected.GET("/favorites/:id", handlers.FavoriteListCheck(database)) // please think a better naming, i have no idea
 			// protected.POST("/favorites/add", handlers.AddMultipleFilmsToFavorite(database))
-			api.GET("/user/favorites/share", handlers.GenerateFavoriteShareCode(database))
+			protected.GET("/user/favorites/share", handlers.GenerateFavoriteShareCode(database))
 
 			protected.POST("/films/add", handlers.ImportMovie(database))
 
