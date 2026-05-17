@@ -909,6 +909,19 @@ func GetSharedWatchlist(database *sql.DB) gin.HandlerFunc {
 			return
 		}
 
+		currentUserIDVal, exists := context.Get("user_id")
+		if exists {
+			currentUserID, ok := currentUserIDVal.(uint64)
+
+			if ok && currentUserID == userID {
+				context.Redirect(
+					http.StatusFound,
+					"http://localhost:5173/watchlist",
+				)
+				return
+			}
+		}
+
 		page := 1
 		limit := 10
 		sort := "title"
