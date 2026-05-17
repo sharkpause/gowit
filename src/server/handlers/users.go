@@ -171,40 +171,36 @@ func RegisterUser(database *sql.DB) func(*gin.Context) {
         })
 	}
 }
+
 func VerifyEmail(database *sql.DB) gin.HandlerFunc{
 	return func(context *gin.Context){
 		token := context.Query("token")
 		var userid uint64
 		err := database.QueryRow("SELECT user_id FROM verification_token WHERE token = ? AND expires_at > NOW()",token).Scan(&userid)
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusBadRequest,gin.H{
-				"message": "invalid or expired token",
-			})
+			context.Redirect(http.StatusFound, "http://localhost:5173/verification-failed")
 			return
 		}
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
-				"message": "db error",
-			})
+			context.Redirect(http.StatusFound, "http://localhost:5173/verification-failed")
 			return
 		}
 		tx, err := database.Begin()
         if err != nil {
-            context.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
-            return
+            context.Redirect(http.StatusFound, "http://localhost:5173/verification-failed")
+			return
         }
 		_, err = tx.Exec(`UPDATE users SET is_verified=true WHERE id=?`, userid)
         if err != nil {
             tx.Rollback()
-            context.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+            context.Redirect(http.StatusFound, "http://localhost:5173/verification-failed")
             return
         }
 
         tx.Exec(`DELETE FROM verification_token WHERE user_id= ?`, userid)
         tx.Commit()
-		context.JSON(http.StatusOK, gin.H{"message": "email verified, you can now log in"})
+		context.Redirect(http.StatusFound, "http://localhost:5173/verification-successful")
 	}
-
 }
 
 func ResendVerification(database *sql.DB) gin.HandlerFunc{

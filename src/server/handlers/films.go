@@ -908,6 +908,18 @@ func GetSharedWatchlist(database *sql.DB) gin.HandlerFunc {
 			return
 		}
 
+		currentUserIDVal, exists := context.Get("user_id")
+		if exists {
+			currentUserID, ok := currentUserIDVal.(uint64)
+
+			if ok && currentUserID == userID {
+				context.JSON(http.StatusOK, gin.H{
+					"same_user": true,
+				})
+				return
+			}
+		}
+
 		page := 1
 		limit := 10
 		sort := "title"
