@@ -13,6 +13,8 @@ import MoviesPage from "./pages/MoviesPage";
 import { UserProvider } from "./context";
 import { Toaster } from "react-hot-toast";
 import SharedFavoritePage from "./pages/SharedFavoritePage";
+import VerificationSuccess from "./pages/VerificationSuccess";
+import VerificationFailed from "./pages/VerificationFailed";
 
 function App() {
   return (
@@ -32,6 +34,14 @@ function App() {
               path="/watchlist/:encryptId"
               element={<SharedFavoritePage />}
             ></Route>
+            <Route
+              path="/verification-successful"
+              element={<VerificationSuccess />}
+            />
+            <Route
+              path="/verification-failed"
+              element={<VerificationFailed />}
+            />
             <Route path="/" element={<Layout />}>
               <Route path="watchlist" element={<FavoritePage />} />
               <Route path="profile" element={<ProfilePage />} />

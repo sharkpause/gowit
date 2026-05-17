@@ -72,82 +72,84 @@ export default function SharedFavoritePage() {
       <div
         className={`bg-[#0F1115] overflow-hidden px-3 sm:px-4 md:px-8 lg:px-36 ${favorite.length > 0 || search.length > 0 ? "pt-16 sm:pt-20 md:pt-24" : "pt-8"} pb-12 sm:pb-16`}
       >
-        <div className="flex justify-center items-center mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#F5F2F2] text-center">
-            <span className="text-[#E8630A]">{user}'s</span> Watchlist
-          </h1>
-        </div>
         {favorite.length > 0 || search.length > 0 ? (
-          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <div className="flex items-center gap-2">
-              <label className="text-[#F5F2F2] text-xs sm:text-sm font-medium">
-                Sort:
-              </label>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
-              >
-                <option value="title">Title</option>
-                <option value="average_rating">Rating</option>
-                <option value="release_date">Year</option>
-                <option value="popularity">Popularity</option>
-                <option value="runtime">Runtime</option>
-              </select>
+          <>
+            <div className="flex justify-center items-center mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#F5F2F2] text-center">
+                <span className="text-[#E8630A]">{user}'s</span> Watchlist
+              </h1>
             </div>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="flex items-center gap-2">
+                <label className="text-[#F5F2F2] text-xs sm:text-sm font-medium">
+                  Sort:
+                </label>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+                >
+                  <option value="title">Title</option>
+                  <option value="average_rating">Rating</option>
+                  <option value="release_date">Year</option>
+                  <option value="popularity">Popularity</option>
+                  <option value="runtime">Runtime</option>
+                </select>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <label className="text-[#F5F2F2] text-xs sm:text-sm font-medium whitespace-nowrap">
-                Order:
-              </label>
-              <select
-                value={order}
-                onChange={(e) => setOrder(e.target.value)}
-                className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
-              >
-                <option value="ASC">Ascending</option>
-                <option value="DESC">Descending</option>
-              </select>
-            </div>
+              <div className="flex items-center gap-2">
+                <label className="text-[#F5F2F2] text-xs sm:text-sm font-medium whitespace-nowrap">
+                  Order:
+                </label>
+                <select
+                  value={order}
+                  onChange={(e) => setOrder(e.target.value)}
+                  className="bg-[#1C1E22] text-[#F5F2F2] text-xs sm:text-sm text-center px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+                >
+                  <option value="ASC">Ascending</option>
+                  <option value="DESC">Descending</option>
+                </select>
+              </div>
 
-            <input
-              type="text"
-              className="flex-1 text-[#F5F2F2] text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
-              placeholder="Search"
-              onChange={(e) => setSearch(e.target.value)}
-            />
+              <input
+                type="text"
+                className="flex-1 text-[#F5F2F2] text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 border rounded-lg border-gray-700 focus:outline-none focus:border-[#E8630A] transition-colors cursor-pointer"
+                placeholder="Search"
+                onChange={(e) => setSearch(e.target.value)}
+              />
 
-            <div className="flex gap-1 bg-[#1C1E22] rounded-lg p-1 border border-gray-700">
+              <div className="flex gap-1 bg-[#1C1E22] rounded-lg p-1 border border-gray-700">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`flex items-center justify-center px-3 py-2 rounded-md transition-all duration-200 ${
+                    viewMode === "grid"
+                      ? "bg-[#E8630A] text-white "
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <RectangleVertical className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`flex items-center justify-center px-3 py-2 rounded-md transition-all duration-200 ${
+                    viewMode === "table"
+                      ? "bg-[#E8630A] text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <Table className="w-4 h-4" />
+                </button>
+              </div>
+
               <button
-                onClick={() => setViewMode("grid")}
-                className={`flex items-center justify-center px-3 py-2 rounded-md transition-all duration-200 ${
-                  viewMode === "grid"
-                    ? "bg-[#E8630A] text-white "
-                    : "text-gray-400 hover:text-white"
-                }`}
+                onClick={download}
+                className="bg-[#1C1E22] text-[#F5F2F2] px-3 sm:px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
               >
-                <RectangleVertical className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("table")}
-                className={`flex items-center justify-center px-3 py-2 rounded-md transition-all duration-200 ${
-                  viewMode === "table"
-                    ? "bg-[#E8630A] text-white"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                <Table className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className=" sm:inline">Export</span>
               </button>
             </div>
-
-            <button
-              onClick={download}
-              className="bg-[#1C1E22] text-[#F5F2F2] px-3 sm:px-4 py-2 rounded-lg border border-gray-700 hover:border-[#E8630A] focus:outline-none transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
-            >
-              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className=" sm:inline">Export</span>
-            </button>
-          </div>
+          </>
         ) : (
           ""
         )}
@@ -259,21 +261,16 @@ export default function SharedFavoritePage() {
             </button>
           </div>
         ) : (
-          <div className="min-h-screen flex flex-col justify-center items-center text-[#F5F2F2] space-y-4 px-4">
-            <Heart className="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 font-thin" />
-            <h1 className="text-xl sm:text-2xl md:text-3xl text-center font-semibold mt-4">
-              Your Watchlist has no titles yet.
-            </h1>
-            <p className="text-sm sm:text-base font-light text-gray-400 text-center max-w-md">
-              Keep track of movies and TV shows you want to watch.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full pt-2">
-              <Link
-                to="/"
-                className="w-full sm:w-auto mt-2 bg-[#E8630A] rounded-lg px-6 py-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105 text-center text-sm sm:text-base font-semibold"
-              >
-                Explore Movies
-              </Link>
+          <div className="min-h-screen flex justify-center items-center px-4 text-[#F5F2F2]">
+            <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 px-6 py-10 text-center ">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
+                No Movies Yet
+              </h1>
+
+              <p className="mt-4 text-sm sm:text-base text-[#F5F2F2]/70 leading-relaxed">
+                <span className="text-[#E8630A] font-semibold">{user}</span>{" "}
+                hasn&apos;t added any movies to this watchlist.
+              </p>
             </div>
           </div>
         )}
