@@ -1,14 +1,14 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-	"crypto/rand"
-	"encoding/hex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
@@ -814,6 +814,7 @@ func ImportMovie(database *sql.DB) func(*gin.Context) {
 
 func GenerateFavoriteShareCode(database *sql.DB) gin.HandlerFunc {
 	return func(context *gin.Context) {
+		fmt.Println(context.Get("user_id"))
 		userIDVal, exists := context.Get("user_id")
 		if !exists {
 			context.JSON(http.StatusUnauthorized, gin.H{

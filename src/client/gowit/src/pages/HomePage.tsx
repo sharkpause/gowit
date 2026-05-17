@@ -86,12 +86,6 @@ export default function HomePage() {
         behavior: "smooth",
       });
     }
-    if (location.hash === "#contact-us") {
-      const el = document.getElementById("contact-us");
-      el?.scrollIntoView({
-        behavior: "smooth",
-      });
-    }
   }, [location]);
 
   useEffect(() => {
@@ -210,7 +204,7 @@ export default function HomePage() {
     try {
       setLoadingTop(true);
       const response = await serverApi.get(
-        "/api/films?sort=average_rating&order=desc&limit=10",
+        "/api/films?sort=average_rating&order=desc&limit=5",
       );
       setTopMovie(response.data.films);
     } catch (error) {
@@ -372,7 +366,7 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f1114] via-transparent to-transparent" />
             </div>
 
-            <div className="relative flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left">
+            <div className="flex flex-col z-10 h-screen w-full justify-end items-start px-6 sm:px-12 md:px-20 pb-16 sm:pb-24 md:pb-32 text-left">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={bgIndex}
