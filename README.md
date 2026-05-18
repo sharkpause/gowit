@@ -34,3 +34,9 @@ This how-to-run manual has only been tested for Linux machines, adjust according
    $ npm install
    $ npm run dev
    ```
+
+## NOTE FOR WINDOWS
+because webp library is a cgo library, windows user need to have gcc and enable cgo option on go environment by running this command on powershell.
+   ```powershell
+   go env -w CGO_ENABLED=1
+   ```
