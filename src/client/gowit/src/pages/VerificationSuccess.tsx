@@ -2,6 +2,7 @@ import { Check } from "lucide-react";
 import { Link } from "react-router";
 
 export default function VerificationSuccess() {
+  localStorage.removeItem("userEmail");
   return (
     <div className="bg-[#050608] min-h-screen px-3 pt-16 pb-16 flex items-center justify-center">
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 max-w-md w-full text-center">
