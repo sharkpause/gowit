@@ -1,14 +1,14 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-	"crypto/rand"
-	"encoding/hex"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sharkpause/gowit/models"
@@ -521,7 +521,7 @@ func UpdateFavoriteFilm(database *sql.DB) func(*gin.Context) {
 			filmID, userID,
 		).Scan(&originalNote)
 
-		if *originalNote == request.Notes {
+		if originalNote != nil && *originalNote == request.Notes {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error": "new note and original note is the same",
 				"same_note": "true",
@@ -814,6 +814,7 @@ func ImportMovie(database *sql.DB) func(*gin.Context) {
 
 func GenerateFavoriteShareCode(database *sql.DB) gin.HandlerFunc {
 	return func(context *gin.Context) {
+		fmt.Println(context.Get("user_id"))
 		userIDVal, exists := context.Get("user_id")
 		if !exists {
 			context.JSON(http.StatusUnauthorized, gin.H{
@@ -906,6 +907,18 @@ func GetSharedWatchlist(database *sql.DB) gin.HandlerFunc {
 			fmt.Println(err)
 
 			return
+		}
+
+		currentUserIDVal, exists := context.Get("user_id")
+		if exists {
+			currentUserID, ok := currentUserIDVal.(uint64)
+
+			if ok && currentUserID == userID {
+				context.JSON(http.StatusOK, gin.H{
+					"same_user": true,
+				})
+				return
+			}
 		}
 
 		page := 1

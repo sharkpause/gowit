@@ -11,10 +11,15 @@ import SearchPage from "./pages/SearchPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import MoviesPage from "./pages/MoviesPage";
 import { UserProvider } from "./context";
+import { Toaster } from "react-hot-toast";
+import SharedFavoritePage from "./pages/SharedFavoritePage";
+import VerificationSuccess from "./pages/VerificationSuccess";
+import VerificationFailed from "./pages/VerificationFailed";
 
 function App() {
   return (
     <>
+      <Toaster />
       <BrowserRouter>
         <UserProvider>
           <Routes>
@@ -25,7 +30,18 @@ function App() {
             <Route path="/movies/:id" element={<DetailPage />} />
             <Route path="/profile/:userId" element={<UserProfilePage />} />
             <Route path="/movies" element={<MoviesPage />} />
-
+            <Route
+              path="/watchlist/:encryptId"
+              element={<SharedFavoritePage />}
+            ></Route>
+            <Route
+              path="/verification-successful"
+              element={<VerificationSuccess />}
+            />
+            <Route
+              path="/verification-failed"
+              element={<VerificationFailed />}
+            />
             <Route path="/" element={<Layout />}>
               <Route path="watchlist" element={<FavoritePage />} />
               <Route path="profile" element={<ProfilePage />} />

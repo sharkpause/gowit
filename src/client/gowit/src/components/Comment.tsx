@@ -25,6 +25,8 @@ export default function Comment({
   deleteComment,
   focusEditId,
   setFocusEditId,
+  activeCommentId,
+  setActiveCommentId,
 }: {
   comment: CommentType;
   fetchComment: () => Promise<void>;
@@ -36,6 +38,8 @@ export default function Comment({
   deleteComment: (comment_id: number) => Promise<void>;
   focusEditId: number | null;
   setFocusEditId: Dispatch<SetStateAction<number | null>>;
+  activeCommentId: number | null;
+  setActiveCommentId: Dispatch<SetStateAction<number | null>>;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [active, setActive] = useState(false);
@@ -57,6 +61,7 @@ export default function Comment({
   const cancelReply = () => {
     setText("");
     setActive(false);
+    setActiveCommentId(null);
   };
 
   const fetchReply = async () => {
@@ -102,6 +107,7 @@ export default function Comment({
       fetchComment();
       setText("");
       setActive(false);
+      setActiveCommentId(null);
     } catch (error) {
       console.log("Error at postReply function", error);
     }
@@ -119,11 +125,15 @@ export default function Comment({
     setEditingId(id);
     setEditText(currentContent);
     setOpenMenuKey(null);
+    setActiveCommentId(comment.id);
   };
 
   const handleEditCancel = () => {
     setEditingId(null);
     setEditText("");
+    if (activeCommentId === comment.id) {
+      setActiveCommentId(null);
+    }
   };
 
   useEffect(() => {
@@ -215,22 +225,48 @@ export default function Comment({
           {comment.is_owner && !comment.is_deleted ? (
             <div className="relative">
               <button
-                onClick={() =>
-                  setOpenMenuKey((prev) =>
-                    prev === `comment-${comment.id}`
-                      ? null
-                      : `comment-${comment.id}`,
-                  )
+                onClick={() => {
+                  const isMenuOpen = openMenuKey === `comment-${comment.id}`;
+                  setOpenMenuKey(isMenuOpen ? null : `comment-${comment.id}`);
+                  if (!isMenuOpen) {
+                    setActiveCommentId(comment.id);
+                  } else if (
+                    activeCommentId === comment.id &&
+                    !editingId &&
+                    !active
+                  ) {
+                    setActiveCommentId(null);
+                  }
+                }}
+                disabled={
+                  (activeCommentId !== null &&
+                    activeCommentId !== comment.id) ||
+                  active === true ||
+                  editingId !== null
                 }
-                className="p-1 hover:bg-white/10 rounded-full transition text-gray-400 hover:text-white"
+                className={`p-1 hover:bg-white/10 rounded-full transition text-gray-400 hover:text-white ${
+                  (activeCommentId !== null &&
+                    activeCommentId !== comment.id) ||
+                  active === true ||
+                  editingId !== null
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               >
                 <MoreVertical className="w-4 h-4" />
               </button>
               {openMenuKey === `comment-${comment.id}` && (
                 <div className="absolute right-0 mt-1 w-40 bg-[#1C1E22] border border-gray-700 rounded-lg shadow-lg z-10">
                   <button
-                    onClick={() => handleEditStart(comment.id, comment.content)}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition rounded-t-lg"
+                    disabled={active === true}
+                    onClick={() => {
+                      if (active) return;
+                      handleEditStart(comment.id, comment.content);
+                      setOpenMenuKey(null);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition rounded-t-lg ${
+                      active === true ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     Edit
                   </button>
@@ -238,6 +274,7 @@ export default function Comment({
                     onClick={() => {
                       deleteComment(comment.id);
                       setOpenMenuKey(null);
+                      setActiveCommentId(null);
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition border-t border-gray-700"
                   >
@@ -273,6 +310,7 @@ export default function Comment({
                   if (!success) return;
                   await fetchReply();
                   setEditText("");
+                  setActiveCommentId(null);
                 }}
                 className={`px-4 py-2 rounded-full text-xs ${
                   editText.trim()
@@ -333,8 +371,25 @@ export default function Comment({
           </button>
           {userId ? (
             <button
-              onClick={() => setActive(!active)}
-              className="text-white font-bold hover:text-white hover:bg-white/20 px-3 py-2 rounded-full text-sm transition"
+              onClick={() => {
+                const newActiveState = !active;
+                if (newActiveState) {
+                  setActiveCommentId(comment.id);
+                } else if (activeCommentId === comment.id) {
+                  setActiveCommentId(null);
+                }
+                setActive(newActiveState);
+              }}
+              disabled={
+                (activeCommentId !== null && activeCommentId !== comment.id) ||
+                editingId !== null
+              }
+              className={`text-white font-bold hover:text-white hover:bg-white/20 px-3 py-2 rounded-full text-sm transition ${
+                (activeCommentId !== null && activeCommentId !== comment.id) ||
+                editingId !== null
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
             >
               Reply
             </button>
@@ -878,6 +933,7 @@ export default function Comment({
                   setAlertReply(false);
                   setShowAlertReply(false);
                   setIsEditReplyMode(false);
+                  setActiveCommentId(null);
                   setAlertReplyId(0);
                 }}
                 className="w-full py-3 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm"
