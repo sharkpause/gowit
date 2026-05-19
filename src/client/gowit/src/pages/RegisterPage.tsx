@@ -64,6 +64,13 @@ export default function RegisterPage() {
         password,
       });
 
+      localStorage.setItem(
+        "userEmail",
+        JSON.stringify({
+          email: email,
+        }),
+      );
+
       Swal.fire({
         title: "Register Successful!",
 

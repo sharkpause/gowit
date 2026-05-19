@@ -512,7 +512,7 @@ export default function FavoritePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full pt-2">
             <Link
-              to="/"
+              to="/movies"
               className="w-full sm:w-auto mt-2 bg-[#E8630A] rounded-lg px-6 py-3 hover:bg-[#E8630A]/90 transition-all shadow-md shadow-[#E8630A]/40 hover:shadow-[#E8630A]/50 hover:scale-105 text-center text-sm sm:text-base font-semibold"
             >
               Explore Movies
