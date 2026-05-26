@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sharkpause/gowit/db"
 	"github.com/sharkpause/gowit/routes"
+	"google.golang.org/genai"
 )
 
 func main() {
@@ -40,7 +42,18 @@ func main() {
 		fmt.Println("Could ont load restricted words set from the database")
 	}
 
-	routes.SetupAPIRoutes(router, database, restrictedWordsSet)
+	client, err := genai.NewClient(
+		context.Background(),
+		&genai.ClientConfig{
+			APIKey: os.Getenv("GEMINI_API_KEY"),
+		},
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	routes.SetupAPIRoutes(router, database, restrictedWordsSet, client)
 
 	router.Run(os.Getenv("SERVER_PORT"))
 }

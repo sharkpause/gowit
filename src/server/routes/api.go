@@ -6,12 +6,13 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/genai"
 
 	"github.com/sharkpause/gowit/auth"
 	"github.com/sharkpause/gowit/handlers"
 )
 
-func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[string]struct{}) {
+func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[string]struct{}, geminiClient *genai.Client) {
 	router.Use(cors.New(cors.Config{
 		// Ganti origin sesuai frontend kamu
 		AllowOrigins: []string{
@@ -58,6 +59,7 @@ func SetupAPIRoutes(router *gin.Engine, database *sql.DB, restrictedWords map[st
 		api.POST("/contact", handlers.Sendmail())
 
 		api.GET("/user/favorites/:code", auth.OptionalAuth(), handlers.GetSharedWatchlist(database))
+		api.GET("/films/:id/summary", handlers.GetFilmSummary(database, geminiClient))
 
 		// TODO: Later change so that protected APIs are still accessed through {URL}/api and not {URL}/
 		// to keep API consistency

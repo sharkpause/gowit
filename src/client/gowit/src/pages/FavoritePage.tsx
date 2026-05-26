@@ -118,9 +118,6 @@ export default function FavoritePage() {
 
       for (const element of parsedData) {
         container.push(element.title);
-        // Can push empty titles because excel conversion is case-sensitive
-        // So for example if on the excel spreadsheet it's Title, nothing
-        // Will be pushed, only if the column is spelled title instead
       }
 
       setFileImport(container);
