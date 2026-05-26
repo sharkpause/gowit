@@ -37,7 +37,6 @@ export default function ProfilePage() {
       formData.append("profile_picture", file);
 
       const res = await serverApi.patch("/api/updateuser", formData, {
-        // **no manual Content-Type!**
         headers: {
           Accept: "application/json",
         },
