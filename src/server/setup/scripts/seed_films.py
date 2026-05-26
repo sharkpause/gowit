@@ -370,3 +370,6 @@ if __name__ == "__main__":
     print('Seeding with coming_soon.csv')
     seed_films(movie_csv_path='coming_soon.csv')
 
+    print('Seeding with indonesian_movies.csv')
+    seed_films(movie_csv_path='indonesian_movies.csv')
+

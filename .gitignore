@@ -39,5 +39,4 @@ src/client/gowit/public/media
 
 Gowit.pem
 src/server/setup/scripts/cookies.txt
-.gitignore
 src/server/setup/db/flowchart.drawio.png

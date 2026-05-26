@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { capitalizeEachWord } from "../helper/helper";
 import Navbar from "../components/Navbar";
-import { Check, MoreVertical, Share2, Star, Users } from "lucide-react";
+import { MoreVertical, Star, Users, Sparkles, Frown, Share2, Check } from "lucide-react";
 import Comment from "../components/Comment";
 import toast from "react-hot-toast";
 
@@ -29,6 +29,13 @@ export default function DetailPage() {
   const [commentId, setCommentId] = useState(0);
   const [focusEditId, setFocusEditId] = useState<number | null>(null);
   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
+  
+  const [aiSummary, setAiSummary] = useState("");
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [isSummaryError, setisSummaryError] = useState(false);
+  const [noSummaryAvailable, setNoSummaryAvailable] = useState(false);
+  
   const inputRef = useRef<HTMLInputElement>(null);
 
   let { id } = useParams();
@@ -183,6 +190,45 @@ export default function DetailPage() {
       console.log("Error at Fetch Comment", error);
     }
   };
+  
+  const fetchAISummary = async () => {
+    try {
+      setIsSummaryLoading(true);
+      setisSummaryError(false);
+      setNoSummaryAvailable(false);
+
+      const response = await serverApi.get(
+        `/api/films/${id}/summary`,
+      );
+
+      setAiSummary(response.data.summary);
+
+      if(!response.data.cached) {
+        setIsGeneratingSummary(true);
+
+        setTimeout(() => {
+          setIsGeneratingSummary(false);
+        }, 1500);
+      }
+    } catch (error) {
+      console.log("Error at Fetch AI Summary", error);
+
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          setNoSummaryAvailable(true);
+        } else {
+          setisSummaryError(true);
+        }
+      } else {
+        setisSummaryError(true);
+      }
+    } finally {
+      setIsSummaryLoading(false);
+      if(isGeneratingSummary) {
+        setIsGeneratingSummary(false);
+      }
+    }
+  };
 
   const postComment = async () => {
     try {
@@ -288,6 +334,7 @@ export default function DetailPage() {
     checkFavoriteMovie();
     fetchRating();
     fetchComment();
+    fetchAISummary();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [id]);
 
@@ -509,6 +556,62 @@ export default function DetailPage() {
                     </p>
                   </div>
                 </div>
+              </div>
+              <div className="mt-10 bg-white/5 border border-gray-800 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="text-[#E8630A] w-6 h-6" />
+
+                  <h3 className="text-white text-2xl font-bold">
+                    AI Review Summary
+                  </h3>
+                </div>
+
+                {isSummaryLoading ? (
+
+                  <div className="flex justify-center py-6">
+                    <div className="w-6 h-6 border-2 border-gray-600 border-t-[#E8630A] rounded-full animate-spin"></div>
+                  </div>
+
+                ) : isSummaryError ? (
+
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3">
+                    <Frown className="text-red-400 w-5 h-5 mt-0.5 flex-shrink-0" />
+
+                    <div>
+                      <p className="text-red-300 font-semibold">
+                        AI Summary Unavailable
+                      </p>
+
+                      <p className="text-red-400 text-sm mt-1 leading-relaxed">
+                        Sorry, we couldn't generate the AI review summary right now.
+                        Please try again in a little while.
+                      </p>
+                    </div>
+                  </div>
+
+                ) : noSummaryAvailable ? (
+
+                  <div className="bg-white/5 border border-gray-700 rounded-lg p-4">
+                    <p className="text-gray-400 text-sm">
+                      No AI summary available yet. Be the first to leave a comment!
+                    </p>
+                  </div>
+
+                ) : isGeneratingSummary ? (
+
+                  <div className="flex items-center gap-3 text-gray-400 animate-pulse">
+                    <Sparkles className="w-5 h-5 text-[#E8630A]" />
+
+                    <p>Summarizing audience reviews...</p>
+                  </div>
+
+                ) : (
+
+                  <p className="text-gray-300 leading-relaxed">
+                    {aiSummary}
+                  </p>
+
+                )}
               </div>
               {/* Comment Section */}
               <div className="mt-10">
