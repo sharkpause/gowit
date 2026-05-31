@@ -52,7 +52,7 @@ export default function HomePage() {
       isMovie: true,
     },
     {
-      image: "/Herobg2.png",
+      image: "/Herobg2.jpeg",
       logoImage: "/Herobg2logo.png",
       logoSize: "max-h-[65px] md:max-h-[95px]",
       desc: "A group of university students conducting community service in a remote village uncover terrifying supernatural secrets tied to ancient local traditions.",
@@ -60,7 +60,7 @@ export default function HomePage() {
       isMovie: true,
     },
     {
-      image: "/Herobg3.jpg",
+      image: "/Herobg3.webp",
       logoImage: "/Herobg3logo.png",
       logoSize: "max-h-[100px] md:max-h-[160px]",
       desc: "An elite tactical squad raids a criminal-controlled apartment tower in Jakarta, only to become trapped inside and forced to fight their way through hordes of ruthless gangsters to survive.",
