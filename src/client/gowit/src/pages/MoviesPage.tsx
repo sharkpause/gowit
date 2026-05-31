@@ -3,21 +3,16 @@ import { useEffect, useState } from "react";
 import { serverApi } from "../api";
 import type { MovieType } from "../type";
 import Navbar from "../components/Navbar";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<MovieType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
 
   const fetchMovies = async () => {
     setLoading(true);
 
-    const response = await serverApi.get(`/api/films?page=${page}&limit=10`);
-    setMovies((prev) => [...prev, ...response.data.films]);
-    setHasMore(response.data.hasMore);
-    setPage((prev) => prev + 1);
+    const response = await serverApi.get(`/api/films?limit=100`);
+    setMovies(response.data.films);
     setLoading(false);
   };
 
@@ -32,46 +27,36 @@ export default function MoviesPage() {
         {loading && <p className="text-gray-400">Loading...</p>}
 
         <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          <InfiniteScroll
-            dataLength={movies.length}
-            next={fetchMovies}
-            hasMore={hasMore}
-            loader={<p className="text-gray-400">Loading...</p>}
-            endMessage={<p className="text-gray-400">No more data.</p>}
-          >
-            {movies.map((movie) => (
-              <Link to={`/movies/${movie.id}`} key={movie.id}>
-                <div className="group relative cursor-pointer transform transition duration-300 hover:scale-105">
-                  <img
-                    src={movie.poster_image_url}
-                    alt={movie.title}
-                    className="rounded-xl"
-                  />
+          {movies.map((movie) => (
+            <Link to={`/movies/${movie.id}`} key={movie.id}>
+              <div className="group relative cursor-pointer transform transition duration-300 hover:scale-105">
+                <img
+                  src={movie.poster_image_url}
+                  alt={movie.title}
+                  className="rounded-xl"
+                />
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 rounded-xl flex flex-col justify-end p-4">
-                    <h3 className="text-sm font-semibold">{movie.title}</h3>
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 rounded-xl flex flex-col justify-end p-4">
+                  <h3 className="text-sm font-semibold">{movie.title}</h3>
 
-                    <p className="text-xs text-gray-300">
-                      {movie.release_year}
-                    </p>
+                  <p className="text-xs text-gray-300">{movie.release_year}</p>
 
-                    <span
-                      className={`text-sm font-bold mt-1 ${
-                        movie.average_rating >= 4
-                          ? "text-green-400"
-                          : movie.average_rating >= 3
-                            ? "text-yellow-400"
-                            : "text-red-400"
-                      }`}
-                    >
-                      ⭐ {movie.average_rating}
-                    </span>
-                  </div>
+                  <span
+                    className={`text-sm font-bold mt-1 ${
+                      movie.average_rating >= 4
+                        ? "text-green-400"
+                        : movie.average_rating >= 3
+                          ? "text-yellow-400"
+                          : "text-red-400"
+                    }`}
+                  >
+                    ⭐ {movie.average_rating}
+                  </span>
                 </div>
-              </Link>
-            ))}
-          </InfiniteScroll>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </>
