@@ -8,16 +8,15 @@ export default function MoviesPage() {
   const [movies, setMovies] = useState<MovieType[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const fetchMovies = async () => {
+    setLoading(true);
+
+    const response = await serverApi.get(`/api/films?limit=100`);
+    setMovies(response.data.films);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchMovies = async () => {
-      setLoading(true);
-
-      const response = await serverApi.get("/api/films?limit=100");
-      setMovies(response.data.films);
-
-      setLoading(false);
-    };
-
     fetchMovies();
   }, []);
 
