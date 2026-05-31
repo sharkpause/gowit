@@ -562,7 +562,7 @@ export default function DetailPage() {
                   <Sparkles className="text-[#E8630A] w-6 h-6" />
 
                   <h3 className="text-white text-2xl font-bold">
-                    AI Review Summary
+                    Review Summary
                   </h3>
                 </div>
 

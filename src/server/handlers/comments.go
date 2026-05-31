@@ -646,19 +646,21 @@ func GetFilmSummary(database *sql.DB, geminiClient *genai.Client) gin.HandlerFun
 
 		var promptBuilder strings.Builder
 		promptBuilder.WriteString(`
-		You are an assistant that summarizes audience opinions about films.
+		Kamu adalah asisten yang merangkum opini penonton tentang film.
 
-		Your task:
-		- Read the provided movie comments
-		- Identify the most common positive and negative opinions
-		- Write a concise summary in 2-4 sentences
-		- Keep the tone neutral and informative
-		- Do not mention vote counts
-		- Do not mention individual users
-		- Do not invent opinions that are not present in the comments
-		- If opinions are mixed, mention both sides
+		Tugasmu:
 
-		Movie comments:
+		Baca komentar film yang diberikan
+		Identifikasi opini positif dan negatif yang paling umum
+		Tulis ringkasan singkat dalam 2–4 kalimat
+		Gunakan nada yang netral dan informatif
+		Jangan menyebut jumlah vote
+		Jangan menyebut pengguna secara individu
+		Jangan mengarang opini yang tidak ada di komentar
+		Jika opini bercampur, sebutkan kedua sisinya
+		Semua output dalam bahasa Indonesia
+
+		Komentar film:
 		`)
 
 		for _, comment := range comments {

@@ -196,7 +196,7 @@ CREATE TABLE shared_watchlists (
 INSERT INTO restricted_words (word) VALUES
 	('asshole'),
 	('assmunch'),
-	('bastard'),,
+	('bastard'),
 	('bitch'),
 	('bitches'),
 	('bullshit'),
