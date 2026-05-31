@@ -282,10 +282,32 @@ func GetFilms(database *sql.DB) func(*gin.Context) {
 			films = append(films, *film)
 		}
 
+		countQuery := fmt.Sprintf(`
+			SELECT COUNT(*)
+			FROM films AS f
+			%s
+		`, where)
+
+		var totalCount int
+
+		err = database.QueryRow(countQuery, args[:len(args)-2]...).Scan(&totalCount)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		totalPages := (totalCount + limit - 1) / limit
+		hasMore := page < totalPages
+
 		context.JSON(http.StatusOK, gin.H{
 			"films": films,
 			"metadata": gin.H{
 				"amount": len(films),
+				"page": page,
+				"limit": limit,
+				"total": totalCount,
+				"hasMore": hasMore,
 			},
 		})
 	}
